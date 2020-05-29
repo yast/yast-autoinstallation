@@ -81,7 +81,6 @@ module Y2Autoinstallation
     def suse_register
       return true unless registration_module_available? # do nothing
 
-      general_section = Yast::Profile.current["general"] || {}
       # autoupgrade detects itself if system is registered and if needed do migration via scc
       if Yast::Profile.current[REGISTER_SECTION] || Yast::Mode.autoupgrade
         Yast::WFM.CallFunction(
@@ -98,10 +97,67 @@ module Y2Autoinstallation
 
         # failed relnotes download is not fatal, ignore ret code
         Yast::WFM.CallFunction("inst_download_release_notes")
-      elsif general_section["semi-automatic"]&.include?("scc")
+      elsif semi_auto?("scc")
         Yast::WFM.CallFunction("inst_scc", ["enable_next" => true])
       end
       true
+    end
+
+    # Convenienve method to check whether a particular client should be run to
+    # be configured manually during the autoinstallation according to the
+    # semi-automatic section
+    #
+    # @return [Boolean]
+    def semi_auto?(name)
+      general_section = Yast::Profile.current["general"] || {}
+      !!general_section["semi-automatic"]&.include?(name)
+    end
+
+    # Autosetup the network
+    def autosetup_network
+      # Prevent to be called twice in case of already configured
+      return if @network_configured
+
+      if Yast::Profile.current["networking"]
+        if network_before_proposal?
+          log.info("Networking setup before the proposal")
+        else
+          log.info("Networking setup at the end of first installation stage")
+        end
+
+        log.info("Importing Network settings from configuration file")
+        Yast::WFM.CallFunction("lan_auto", ["Import", Yast::Profile.current["networking"]])
+        Yast::Profile.remove_sections("networking")
+
+        # Import also the host section in order to resolve hosts only available
+        # with the network configuration and the host entry
+        if Yast::Profile.current["host"] && network_before_proposal?
+          Yast::WFM.CallFunction("host_auto", ["Import", Yast::Profile.current["host"]])
+          Yast::Profile.remove_sections("host")
+        end
+      end
+
+      if semi_auto?("networking")
+        log.info("Networking manual setup before proposal")
+        Yast::WFM.CallFunction("inst_lan", ["enable_next" => true])
+        @network_before_proposal = true
+      end
+
+      Yast::WFM.CallFunction("lan_auto", ["Write"]) if network_before_proposal?
+      @network_configured = true
+    end
+
+    # Convenience method to check whether the network configuration should be
+    # written before the proposal
+    #
+    # @return [Boolean] true when network config should be written before the
+    #   proposal; false when not
+    def network_before_proposal?
+      return @network_before_proposal unless @network_before_proposal.nil?
+
+      networking_section = Yast::Profile.current["networking"] || {}
+
+      @network_before_proposal = networking_section.fetch("setup_before_proposal", false)
     end
 
   private

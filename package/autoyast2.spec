@@ -22,7 +22,7 @@
 %endif
 
 Name:           autoyast2
-Version:        4.3.2
+Version:        4.3.7
 Release:        0
 Summary:        YaST2 - Automated Installation
 License:        GPL-2.0-only
@@ -41,8 +41,8 @@ BuildRequires:  libxml2-tools
 # xsltproc for AutoinstClass
 BuildRequires:  libxslt
 BuildRequires:  rubygem(%{rb_default_ruby_abi}:rspec)
-# Yast::Popup.ErrorAnyQuestion fixed
-BuildRequires:  yast2 >= 4.0.60
+# AutoYaST issue handling
+BuildRequires:  yast2 >= 4.3.2
 # FileSystems.read_default_subvol_from_target
 BuildRequires:  yast2-xml
 BuildRequires:  yast2-transfer
@@ -66,8 +66,8 @@ BuildRequires:  rubygem(%rb_default_ruby_abi:yast-rake)
 
 Requires:       autoyast2-installation = %{version}
 Requires:       libxslt
-# Y2Packager::ProductUpgrade.remove_obsolete_upgrades
-Requires:       yast2 >= 4.2.1
+# AutoYaST issue handling
+Requires:       yast2 >= 4.3.2
 Requires:       yast2-core
 Requires:       yast2-country >= 3.1.13
 # Moving security module to first installation stage
@@ -226,11 +226,6 @@ done
 %{yast_moduledir}/AutoinstClone.rb
 %dir %{yast_yncludedir}/autoinstall
 %{yast_yncludedir}/autoinstall/io.rb
-%{yast_yncludedir}/autoinstall/AdvancedPartitionDialog.rb
-%{yast_yncludedir}/autoinstall/DriveDialog.rb
-%{yast_yncludedir}/autoinstall/PartitionDialog.rb
-%{yast_yncludedir}/autoinstall/StorageDialog.rb
-%{yast_yncludedir}/autoinstall/VolgroupDialog.rb
 %{yast_yncludedir}/autoinstall/common.rb
 %{yast_yncludedir}/autoinstall/tree.rb
 %{yast_yncludedir}/autoinstall/types.rb
@@ -281,11 +276,11 @@ done
 %dir %{yast_libdir}/autoinstall/dialogs
 %{yast_libdir}/autoinstall/dialogs/*.rb
 
+%{yast_libdir}/autoinstall/widgets
+%{yast_libdir}/autoinstall/presenters
+
 %dir %{yast_libdir}/autoinstall/clients
 %{yast_libdir}/autoinstall/clients/*.rb
-
-%dir %{yast_libdir}/autoinstall/autoinst_issues
-%{yast_libdir}/autoinstall/autoinst_issues/*.rb
 
 # scripts
 %{yast_ybindir}/fetch_image.sh

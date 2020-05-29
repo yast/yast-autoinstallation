@@ -80,6 +80,8 @@ module Y2Autoinstallation
         # register the system earlier because the medium does not contain any
         # repositories, we need the repositories from the registration server
         if Y2Packager::MediumType.online? && !Yast::Mode.autoupgrade
+          autosetup_network if network_before_proposal?
+
           res = register_system
           return res if res
         # offline registration need here to init software management according to picked product

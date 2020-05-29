@@ -32,7 +32,7 @@ module Y2Autoinstallation
     # @return [Y2Storage::GuidedProposal,Y2Storage::AutoinstProposal] Y2Storage proposal instance
     attr_reader :proposal
 
-    # @return [Y2Storage::AutoinstIssues::List] Storage proposal issues list
+    # @return [Installation::AutoinstIssues::List] Storage proposal issues list
     attr_reader :issues_list
 
     # Constructor
@@ -42,7 +42,7 @@ module Y2Autoinstallation
     #
     # @see https://www.suse.com/documentation/sles-12/singlehtml/book_autoyast/book_autoyast.html#CreateProfile.Partitioning
     def initialize(partitioning, proposal_settings)
-      @issues_list = Y2Storage::AutoinstIssues::List.new
+      @issues_list = ::Installation::AutoinstIssues::List.new
       build_proposal(partitioning, proposal_settings)
     end
 
@@ -95,7 +95,7 @@ module Y2Autoinstallation
         @proposal = autoinst_proposal(partitioning, proposal_settings)
         @proposal.propose
       end
-      issues_list.add(:no_proposal) unless @proposal.devices
+      issues_list.add(Y2Storage::AutoinstIssues::NoProposal) unless @proposal.devices
     rescue Y2Storage::Error => e
       handle_exception(e)
     end
@@ -139,9 +139,9 @@ module Y2Autoinstallation
       log.warn "Autoinstall proposal failed: #{error.inspect}"
       case error
       when Y2Storage::NoDiskSpaceError
-        issues_list.add(:no_disk_space)
+        issues_list.add(Y2Storage::AutoinstIssues::NoDiskSpace)
       when Y2Storage::Error
-        issues_list.add(:exception, error)
+        issues_list.add(Y2Storage::AutoinstIssues::Exception, error)
       else
         raise error
       end

@@ -49,20 +49,7 @@ module Yast
       Mode.SetMode("normal")
 
       general = {}
-
       general["mode"] = { "confirm" => false }
-
-      # Signature handling is less restrictive in a cloned profile.
-      # https://bugzilla.suse.com/show_bug.cgi?id=248303
-      general["signature-handling"] = {
-        "accept_unsigned_file"         => true,
-        "accept_file_without_checksum" => true,
-        "accept_unknown_gpg_key"       => true,
-        "accept_verification_failed"   => false,
-        "import_gpg_key"               => true,
-        "accept_non_trusted_gpg_key"   => true
-      }
-
       general["storage"] = { "start_multipath" => true } if multipath_in_use?
 
       Mode.SetMode("autoinst_config")

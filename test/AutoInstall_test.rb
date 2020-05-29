@@ -1,12 +1,22 @@
 #!/usr/bin/env rspec
 
 require_relative "test_helper"
-require "autoinstall/autoinst_issues"
-require "autoinstall/autoinst_issues_presenter"
+require "installation/autoinst_issues"
 require "autoinstall/dialogs/question"
+require "installation/autoinst_profile/section_with_attributes"
 
 Yast.import "AutoInstall"
 Yast.import "UI"
+
+module Test
+  module AutoinstProfile
+    class FirewallSection < ::Installation::AutoinstProfile::SectionWithAttributes
+      def self.new_from_hashes(_hash)
+        new
+      end
+    end
+  end
+end
 
 describe "Yast::AutoInstall" do
   subject { Yast::AutoInstall }
@@ -41,7 +51,7 @@ describe "Yast::AutoInstall" do
 
   describe "#valid_imported_values" do
     before(:each) do
-      subject.issues_list = Y2Autoinstallation::AutoinstIssues::List.new
+      subject.issues_list = ::Installation::AutoinstIssues::List.new
     end
 
     context "when no issue has been found" do
@@ -51,9 +61,19 @@ describe "Yast::AutoInstall" do
     end
 
     context "when an issue has been found" do
+      let(:fw_section) { Test::AutoinstProfile::FirewallSection.new }
+
+      before do
+        allow(Test::AutoinstProfile::FirewallSection).to receive(:new_from_hashes)
+          .and_return(fw_section)
+      end
+
       it "shows a popup" do
-        subject.issues_list.add(:invalid_value, "firewall", "FW_DEV_INT", "1",
-          _("Is not supported anymore."))
+        subject.issues_list.add(
+          ::Installation::AutoinstIssues::InvalidValue,
+          fw_section, "FW_DEV_INT", "1",
+          _("Is not supported anymore.")
+        )
         expect_any_instance_of(Y2Autoinstallation::Dialogs::Question).to receive(:run)
           .and_return(:ok)
         expect(subject.valid_imported_values).to eq(true)

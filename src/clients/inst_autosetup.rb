@@ -158,51 +158,12 @@ module Yast
       AutoinstSoftware.merge_product(AutoinstFunctions.selected_product)
 
       # configure general settings
-      AutoinstGeneral.Import(Ops.get_map(Profile.current, "general", {}))
-      Builtins.y2milestone(
-        "general: %1",
-        Ops.get_map(Profile.current, "general", {})
-      )
+      general_section = Profile.current["general"] || {}
+      AutoinstGeneral.Import(general_section)
+      log.info("general: #{general_section}")
       AutoinstGeneral.Write
 
-      AutoinstConfig.network_before_proposal = false
-      general_section = Profile.current["general"] || {}
-      semiauto_network = general_section["semi-automatic"]&.include?("networking")
-
-      if Profile.current["networking"] &&
-          (Profile.current["networking"]["setup_before_proposal"] ||
-            semiauto_network ||
-            !AutoinstConfig.second_stage
-          )
-        if Profile.current["networking"]["setup_before_proposal"]
-          Builtins.y2milestone("Networking setup before the proposal")
-          AutoinstConfig.network_before_proposal = true
-        elsif !AutoinstConfig.second_stage
-          # Second stage of installation will not be called but a
-          # network configuration is available. So this will be written
-          # during the general inst_finish process at the end of the
-          # first stage. But for the installation workflow the linuxrc
-          # network settings will be taken. (bnc#944942)
-          Builtins.y2milestone(
-            "Networking setup at the end of first installation stage"
-          )
-        end
-        Builtins.y2milestone(
-          "Importing Network settings from configuration file"
-        )
-        Call.Function(
-          "lan_auto",
-          ["Import", Ops.get_map(Profile.current, "networking", {})]
-        )
-      end
-
-      if semiauto_network
-        Builtins.y2milestone("Networking manual setup before proposal")
-        Call.Function("inst_lan", ["enable_next" => true])
-        AutoinstConfig.network_before_proposal = true
-      end
-
-      Call.Function("lan_auto", ["Write"]) if AutoinstConfig.network_before_proposal
+      autosetup_network
 
       if Builtins.haskey(Profile.current, "add-on")
         Progress.Title(_("Handling Add-On Products..."))

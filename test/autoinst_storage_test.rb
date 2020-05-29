@@ -15,7 +15,7 @@ describe Yast::AutoinstStorage do
       )
     end
     let(:issues_dialog) { instance_double(Y2Autoinstallation::Dialogs::Question, run: :abort) }
-    let(:issues_list) { Y2Storage::AutoinstIssues::List.new }
+    let(:issues_list) { ::Installation::AutoinstIssues::List.new }
     let(:profile_section) { Y2Storage::AutoinstProfile::PartitionSection.new_from_hashes({}) }
     let(:valid?) { true }
     let(:errors_settings) { { "show" => false, "timeout" => 10 } }
@@ -88,7 +88,7 @@ describe Yast::AutoinstStorage do
       let(:valid?) { false }
 
       before do
-        issues_list.add(:missing_root)
+        issues_list.add(Y2Storage::AutoinstIssues::MissingRoot)
       end
 
       it "shows errors to the user without timeout" do
@@ -130,7 +130,8 @@ describe Yast::AutoinstStorage do
       let(:continue) { true }
 
       before do
-        issues_list.add(:invalid_value, profile_section, :size, "auto")
+        issues_list.add(Y2Storage::AutoinstIssues::InvalidValue,
+          profile_section, :size, "auto")
         allow(subject.log).to receive(:warn).and_call_original
       end
 

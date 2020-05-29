@@ -128,21 +128,6 @@ module Yast
         Ops.get_string(d, "res", "")
       end)
 
-      # keep network on AutoYaST ugprade
-      if !Mode.autoupgrade
-        if !Builtins.haskey(Profile.current, "networking")
-          removeNetwork([]) # no networking section -> no network
-        elsif Ops.get_boolean(
-          Profile.current,
-          ["networking", "keep_install_network"],
-          true
-        ) == false
-          removeNetwork(
-            Ops.get_list(Profile.current, ["networking", "interfaces"], [])
-          ) # networking section without keeping the install network
-        end
-      end
-
       Builtins.foreach(@deps) do |r|
         p = Ops.get_string(r, "res", "")
         d = Ops.get_map(r, "data", {})
@@ -412,54 +397,6 @@ module Yast
       end
       Builtins.y2milestone("MatchInterface id:%1 ret:%2", id, ret)
       ret
-    end
-
-    def removeNetwork(ilist)
-      ilist = deep_copy(ilist)
-      Yast.import "NetworkInterfaces"
-      Builtins.y2milestone("removeNetwork ifaces:%1", ilist)
-      ilist = Builtins.maplist(ilist) do |i|
-        if Builtins.substring(Ops.get_string(i, "device", ""), 0, 7) == "eth-id-"
-          Ops.set(i, "device", MatchInterface(Ops.get_string(i, "device", "")))
-        end
-        deep_copy(i)
-      end
-      Builtins.y2milestone("removeNetwork ifaces:%1", ilist)
-      l = SCR.Read(path(".target.dir"), ["/etc/sysconfig/network", []])
-      netlist = []
-      Builtins.y2milestone("removeNetwork list:%1", l)
-      Builtins.foreach(
-        Convert.convert(l, from: "any", to: "list <string>")
-      ) do |s|
-        if Builtins.issubstring(s, "ifcfg-") &&
-            !Builtins.issubstring(s, "ifcfg-lo")
-          if Builtins.substring(s, 0, 6) == "ifcfg-" && s != "ifcfg-lo"
-            net = Builtins.substring(s, 6)
-            tmp = Builtins.filter(ilist) do |l2|
-              Ops.get_string(l2, "device", "") == net
-            end
-            if Builtins.isempty(tmp)
-              Builtins.y2milestone("removeNetwork net:%1", net)
-              NetworkInterfaces.Delete(net)
-              netlist = Builtins.add(netlist, net)
-              Builtins.y2milestone(
-                "removing installation network: /etc/sysconfig/network/%1",
-                s
-              )
-              SCR.Execute(
-                path(".target.remove"),
-                Builtins.sformat("/etc/sysconfig/network/%1", s)
-              )
-            end
-          end
-        end
-      end
-      Builtins.y2milestone("removeNetwork netlist:%1", netlist)
-      if !Builtins.isempty(netlist)
-        NetworkInterfaces.Commit
-        # NetworkInterfaces::Write( ".*" );
-      end
-      nil
     end
 
     def processWait(resource, stage)

@@ -6,14 +6,13 @@
 # $Id$
 require "yast"
 require "autoinstall/pkg_gpg_check_handler"
-require "autoinstall/autoinst_issues"
-require "autoinstall/autoinst_issues_presenter"
+require "installation/autoinst_issues"
 
 module Yast
   class AutoInstallClass < Module
     include Yast::Logger
 
-    # @return [AutoinstIssues::AutoinstIssues::List] AutoYaST issues list
+    # @return [::Installation::AutoinstIssues::List] AutoYaST issues list
     attr_accessor :issues_list
 
     def main
@@ -28,7 +27,7 @@ module Yast
       Yast.import "TFTP"
 
       @autoconf = false
-      @issues_list = Y2Autoinstallation::AutoinstIssues::List.new
+      @issues_list = ::Installation::AutoinstIssues::List.new
 
       AutoInstall()
     end
@@ -347,10 +346,10 @@ module Yast
         timeout = report_settings["warnings"]["timeout"]
       end
 
-      presenter = Y2Autoinstallation::AutoinstIssuesPresenter.new(@issues_list)
+      presenter = ::Installation::AutoinstIssues::IssuesPresenter.new(@issues_list)
 
       # Showing issues onetime only.
-      @issues_list = Y2Autoinstallation::AutoinstIssues::List.new
+      @issues_list = ::Installation::AutoinstIssues::List.new
 
       log.send(level, presenter.to_plain) if log_message
       return true unless display_message
