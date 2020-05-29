@@ -50,11 +50,19 @@ describe "Yast::AutoInstall" do
     end
 
     context "when an issue has been found" do
+      let(:fw_section) { Y2Firewall::AutoinstProfile::FirewallSection.new }
+
+      before do
+        allow(Y2Firewall::AutoinstProfile::FirewallSection).to receive(:new_from_hashes)
+          .and_return(fw_section)
+      end
+
       it "shows a popup" do
         subject.issues_list.add(
           ::Installation::AutoinstIssues::InvalidValue,
-          "firewall", "FW_DEV_INT", "1",
-          _("Is not supported anymore."))
+          fw_section, "FW_DEV_INT", "1",
+          _("Is not supported anymore.")
+        )
         expect_any_instance_of(Y2Autoinstallation::Dialogs::Question).to receive(:run)
           .and_return(:ok)
         expect(subject.valid_imported_values).to eq(true)

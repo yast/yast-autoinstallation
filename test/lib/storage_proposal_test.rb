@@ -144,7 +144,7 @@ describe Y2Autoinstallation::StorageProposal do
 
       context "but an issue was detected" do
         before do
-          storage_proposal.issues_list.add(:missing_root)
+          storage_proposal.issues_list.add(Y2Storage::AutoinstIssues::MissingRoot)
         end
 
         it "returns false" do
@@ -176,7 +176,7 @@ describe Y2Autoinstallation::StorageProposal do
     end
 
     context "when issues were found" do
-      before { issues_list.add(:missing_root) }
+      before { issues_list.add(Y2Storage::AutoinstIssues::MissingRoot) }
 
       it "returns true" do
         expect(storage_proposal.issues?).to eq(true)
