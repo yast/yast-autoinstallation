@@ -88,7 +88,7 @@ describe Yast::AutoinstStorage do
       let(:valid?) { false }
 
       before do
-        issues_list.add(:missing_root)
+        issues_list.add(Y2Storage::AutoinstIssues::MissingRoot)
       end
 
       it "shows errors to the user without timeout" do
@@ -130,7 +130,8 @@ describe Yast::AutoinstStorage do
       let(:continue) { true }
 
       before do
-        issues_list.add(:invalid_value, profile_section, :size, "auto")
+        issues_list.add(Y2Storage::AutoinstIssues::InvalidValue,
+          profile_section, :size, "auto")
         allow(subject.log).to receive(:warn).and_call_original
       end
 

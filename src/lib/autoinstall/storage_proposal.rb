@@ -95,7 +95,7 @@ module Y2Autoinstallation
         @proposal = autoinst_proposal(partitioning, proposal_settings)
         @proposal.propose
       end
-      issues_list.add(:no_proposal) unless @proposal.devices
+      issues_list.add(Y2Storage::AutoinstIssues::NoProposal) unless @proposal.devices
     rescue Y2Storage::Error => e
       handle_exception(e)
     end
@@ -139,9 +139,9 @@ module Y2Autoinstallation
       log.warn "Autoinstall proposal failed: #{error.inspect}"
       case error
       when Y2Storage::NoDiskSpaceError
-        issues_list.add(:no_disk_space)
+        issues_list.add(Y2Storage::AutoinstIssues::NoDiskSpace)
       when Y2Storage::Error
-        issues_list.add(:exception, error)
+        issues_list.add(Y2Storage::AutoinstIssues:::Exception, error)
       else
         raise error
       end
