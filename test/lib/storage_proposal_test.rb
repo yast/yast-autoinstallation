@@ -2,6 +2,7 @@
 
 require_relative "../test_helper"
 require "autoinstall/storage_proposal"
+require "y2storage/autoinst_issues"
 
 describe Y2Autoinstallation::StorageProposal do
   subject(:storage_proposal) { described_class.new(profile, proposal_settings) }
