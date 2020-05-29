@@ -8,7 +8,6 @@ require "installation/autoinst_profile/section_with_attributes"
 Yast.import "AutoInstall"
 Yast.import "UI"
 
-
 module Test
   module AutoinstProfile
     class FirewallSection < ::Installation::AutoinstProfile::SectionWithAttributes
