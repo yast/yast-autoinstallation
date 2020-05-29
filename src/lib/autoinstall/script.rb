@@ -231,6 +231,7 @@ module Y2Autoinstallation
       "python" => "/usr/bin/python"
     }
     # Runs the script
+    # @return [Boolean] if exit code is zero
     def execute
       return if already_run? && !rerun
 
@@ -240,10 +241,12 @@ module Y2Autoinstallation
       params_s = params.join(" ") # shell escaping is up to user, see documentation
 
       bash_path = Yast::Path.new(".target.bash")
-      Yast::SCR.Execute(bash_path,
+      res = Yast::SCR.Execute(bash_path,
         "#{cmd} #{debug_flag} #{script_path.shellescape} #{params_s} " \
           "&> #{log_path.shellescape}")
       Yast::SCR.Execute(bash_path, "/bin/touch #{run_file.shellescape}")
+
+      return res == 0
     end
 
     def log_path

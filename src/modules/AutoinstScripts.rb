@@ -124,6 +124,24 @@ module Yast
       @scripts.concat(valid_scripts_for(s, "postpartitioning-scripts")
         .map{ |h| Y2Autoinstallation::PostPartitioningScript.new(h) })
 
+      # check for duplicite filenames
+      known = []
+      duplicites = @scripts.each_with_object([]) do |s, d|
+        path = s.script_path
+        if known.include?(path)
+          d << s
+        else
+          known << path
+        end
+      end
+
+      if !duplicites.empty?
+        duplicites.each do |script|
+          conflicting = @scripts.select { |s| s.script_path == script.script_path }
+          Report.Warning(_("Following scripts will overwrite each other:") + conflicting.map(&:inspect).join("\n"))
+        end
+      end
+
       true
     end
 
@@ -232,7 +250,7 @@ module Yast
       target_scripts.each do |script|
         Popup.ShowFeedback("", script.notification) unless script.notification.empty?
 
-        script.execute
+        res = script.execute
 
         Popup.ClearFeedback unless script.notification.empty?
 
@@ -258,6 +276,12 @@ module Yast
           else
             raise "Unexpected feedback_type #{script.feedback.inspect}"
           end
+        # show warning if script return non-zero and no feedback is want
+        elsif !res
+          Report.Warning(format(
+            _("User script %{script_name} failed.\nDetails:\n%{output}"),
+            script_name: script.filename, output: SCR.Read(path(".target.string"), script.log_path)
+          ))
         end
       end
 
