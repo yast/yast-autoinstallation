@@ -2,6 +2,7 @@
 
 require_relative "../test_helper"
 require "autoinstall/storage_proposal"
+require "y2storage/autoinst_issues"
 
 describe Y2Autoinstallation::StorageProposal do
   subject(:storage_proposal) { described_class.new(profile, proposal_settings) }
@@ -144,7 +145,7 @@ describe Y2Autoinstallation::StorageProposal do
 
       context "but an issue was detected" do
         before do
-          storage_proposal.issues_list.add(:missing_root)
+          storage_proposal.issues_list.add(Y2Storage::AutoinstIssues::MissingRoot)
         end
 
         it "returns false" do
@@ -163,7 +164,7 @@ describe Y2Autoinstallation::StorageProposal do
   end
 
   describe "#issues?" do
-    let(:issues_list) { Y2Storage::AutoinstIssues::List.new }
+    let(:issues_list) { ::Installation::AutoinstIssues::List.new }
 
     before do
       allow(storage_proposal).to receive(:issues_list).and_return(issues_list)
@@ -176,7 +177,7 @@ describe Y2Autoinstallation::StorageProposal do
     end
 
     context "when issues were found" do
-      before { issues_list.add(:missing_root) }
+      before { issues_list.add(Y2Storage::AutoinstIssues::MissingRoot) }
 
       it "returns true" do
         expect(storage_proposal.issues?).to eq(true)
