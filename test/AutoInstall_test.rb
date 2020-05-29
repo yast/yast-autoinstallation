@@ -12,8 +12,7 @@ module Test
   module AutoinstProfile
     class FirewallSection < ::Installation::AutoinstProfile::SectionWithAttributes
       def self.new_from_hashes(_hash)
-        result = new
-        result
+        new
       end
     end
   end
