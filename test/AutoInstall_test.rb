@@ -3,9 +3,22 @@
 require_relative "test_helper"
 require "installation/autoinst_issues"
 require "autoinstall/dialogs/question"
+require "installation/autoinst_profile/section_with_attributes"
 
 Yast.import "AutoInstall"
 Yast.import "UI"
+
+
+module Test
+  module AutoinstProfile
+    class FirewallSection < ::Installation::AutoinstProfile::SectionWithAttributes
+      def self.new_from_hashes(_hash)
+        result = new
+        result
+      end
+    end
+  end
+end
 
 describe "Yast::AutoInstall" do
   subject { Yast::AutoInstall }
@@ -50,10 +63,10 @@ describe "Yast::AutoInstall" do
     end
 
     context "when an issue has been found" do
-      let(:fw_section) { Y2Firewall::AutoinstProfile::FirewallSection.new }
+      let(:fw_section) { Test::AutoinstProfile::FirewallSection.new }
 
       before do
-        allow(Y2Firewall::AutoinstProfile::FirewallSection).to receive(:new_from_hashes)
+        allow(Test::AutoinstProfile::FirewallSection).to receive(:new_from_hashes)
           .and_return(fw_section)
       end
 

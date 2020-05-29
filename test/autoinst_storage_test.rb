@@ -15,7 +15,7 @@ describe Yast::AutoinstStorage do
       )
     end
     let(:issues_dialog) { instance_double(Y2Autoinstallation::Dialogs::Question, run: :abort) }
-    let(:issues_list) { Y2Storage::AutoinstIssues::List.new }
+    let(:issues_list) { ::Installation::AutoinstIssues::List.new }
     let(:profile_section) { Y2Storage::AutoinstProfile::PartitionSection.new_from_hashes({}) }
     let(:valid?) { true }
     let(:errors_settings) { { "show" => false, "timeout" => 10 } }
