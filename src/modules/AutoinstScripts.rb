@@ -138,7 +138,7 @@ module Yast
       if !duplicites.empty?
         duplicites.each do |script|
           conflicting = @scripts.select { |s| s.script_path == script.script_path }
-          Report.Warning(_("Following scripts will overwrite each other:") + conflicting.map(&:inspect).join("\n"))
+          Report.Warning(_("Following scripts will overwrite each other:") + "\n" + conflicting.map(&:inspect).join("\n"))
         end
       end
 
