@@ -22,18 +22,19 @@ require "yast"
 module Y2Autoinstallation
   module Clients
     class Autoyast < Yast::Client
+      include Yast::Logger
+
       def initialize
-        Yast.import "Pkg"
-        Yast.import "UI"
         textdomain "autoinst"
+
+        Yast.import "Pkg"
         Yast.import "Wizard"
         Yast.import "Mode"
-        Mode.SetMode("autoinst_config")
+        Yast::Mode.SetMode("autoinst_config")
 
         Yast.import "Profile"
         Yast.import "AutoinstConfig"
         Yast.import "Y2ModuleConfig"
-        Yast.import "Label"
         Yast.import "Sequencer"
         Yast.import "Popup"
         Yast.import "AddOnProduct"
@@ -46,7 +47,7 @@ module Y2Autoinstallation
       end
 
       def main
-        if Builtins.size(Y2ModuleConfig.GroupMap) == 0
+        if Yast::Y2ModuleConfig.GroupMap.empty?
           Yast::Wizard.CreateDialog
           Yast::Popup.Error(_("Error while reading configuration data."))
           Yast::Wizard.CloseDialog
@@ -121,8 +122,7 @@ module Y2Autoinstallation
       end
 
       def openFile(options)
-        options = deep_copy(options)
-        if !Yast::Profile.ReadXML(Ops.get(options, "filename", ""))
+        if !Yast::Profile.ReadXML(options.fetch("filename", ""))
           Yast::Popup.Error(
             _(
               "Error while parsing the control file.\n" \
@@ -135,14 +135,13 @@ module Y2Autoinstallation
           _("Reading configuration data"),
           _("This may take a while")
         )
-        Builtins.foreach(Yast::Profile.ModuleMap) do |p, d|
+        Yast::Profile.ModuleMap.each do |name, values|
           # Set resource name, if not using default value
-          resource = Ops.get_string(d, "X-SuSE-YaST-AutoInstResource", "")
-          resource = p if resource == ""
-          Builtins.y2debug("resource: %1", resource)
-          module_auto = Ops.get_string(d, "X-SuSE-YaST-AutoInstClient", "none")
-          rd = Yast::Y2ModuleConfig.getResourceData(d, resource)
-          Yast::WFM.CallFunction(module_auto, ["Import", rd]) if !rd.nil?
+          resource = values.fetch("X-SuSE-YaST-AutoInstResource", name)
+          log.debug("resource: #{resource}")
+          module_auto = values.fetch("X-SuSE-YaST-AutoInstClient", "none")
+          rd = Yast::Y2ModuleConfig.getResourceData(values, resource)
+          Yast::WFM.CallFunction(module_auto, ["Import", rd]) unless rd.nil?
         end
         Yast::Popup.ClearFeedback
         AutoSequence()
@@ -150,8 +149,7 @@ module Y2Autoinstallation
       end
 
       def runModule(options)
-        options = deep_copy(options)
-        Yast::AutoinstConfig.runModule = Ops.get(options, "modname", "")
+        Yast::AutoinstConfig.runModule = options["modname"] || ""
         AutoSequence()
         true
       end
