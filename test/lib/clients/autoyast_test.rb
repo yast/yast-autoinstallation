@@ -21,6 +21,7 @@ require_relative "../../test_helper"
 require "autoinstall/clients/autoyast"
 
 Yast.import "AutoinstConfig"
+Yast.import "Y2ModuleConfig"
 Yast.import "Profile"
 
 describe Y2Autoinstallation::Clients::Autoyast do
