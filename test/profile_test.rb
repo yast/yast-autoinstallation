@@ -176,11 +176,6 @@ describe Yast::Profile do
       end
     end
 
-    it "sets storage compatibility options" do
-      expect(Yast::Profile).to receive(:storageLibCompat)
-      Yast::Profile.Import(profile)
-    end
-
     it "sets general compatibility options" do
       expect(Yast::Profile).to receive(:generalCompat)
       Yast::Profile.Import(profile)

@@ -99,54 +99,6 @@ module Yast
       nil
     end
 
-    # compatibility to new storage lib in 10.0
-    def storageLibCompat
-      newPart = []
-      Builtins.foreach(Ops.get_list(@current, "partitioning", [])) do |d|
-        if Builtins.haskey(d, "is_lvm_vg") &&
-            Ops.get_boolean(d, "is_lvm_vg", false) == true
-          d = Builtins.remove(d, "is_lvm_vg")
-          Ops.set(d, "type", :CT_LVM)
-        elsif Builtins.haskey(d, "device") &&
-            Ops.get_string(d, "device", "") == "/dev/md"
-          Ops.set(d, "type", :CT_MD)
-        elsif !Builtins.haskey(d, "type")
-          Ops.set(d, "type", :CT_DISK)
-        end
-        # actually, this is not a compatibility hook for the new
-        # storage lib. It's a hook to be compatibel with the autoyast
-        # documentation for reusing partitions
-        #
-        Ops.set(
-          d,
-          "partitions",
-          Builtins.maplist(Ops.get_list(d, "partitions", [])) do |p|
-            if Builtins.haskey(p, "create") &&
-                Ops.get_boolean(p, "create", true) == false &&
-                Builtins.haskey(p, "partition_nr")
-              Ops.set(p, "usepart", Ops.get_integer(p, "partition_nr", 0)) # useless default
-            end
-            if Builtins.haskey(p, "partition_id")
-              # that's a bit strange. There is a naming mixup between
-              # autoyast and the storage part of yast. Actually filesystem_id
-              # does not make sense at all but in autoyast it is the
-              # partition id (maybe that's because yast calls
-              # the partition id "fsid" internally).
-              # partition_id in the profile does not work at all, so we copy
-              # that value to filesystem_id
-              Ops.set(p, "filesystem_id", Ops.get_integer(p, "partition_id", 0))
-            end
-            deep_copy(p)
-          end
-        )
-        newPart = Builtins.add(newPart, d)
-      end
-      Builtins.y2milestone("partitioning is now %1", newPart)
-      Ops.set(@current, "partitioning", newPart)
-
-      nil
-    end
-
     def softwareCompat
       Ops.set(@current, "software", Ops.get_map(@current, "software", {}))
 
@@ -330,7 +282,6 @@ module Yast
         Builtins.y2milestone("start_immediately set to true")
       end
       merge_resource_aliases!
-      storageLibCompat # compatibility to new storage library (SL 10.0)
       generalCompat # compatibility to new language,keyboard and timezone (SL10.1)
       softwareCompat
 
