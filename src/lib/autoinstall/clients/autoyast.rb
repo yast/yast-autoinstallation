@@ -18,6 +18,7 @@
 # find current contact information at www.suse.com.
 
 require "yast"
+require "autoinstall/auto_sequence"
 
 module Y2Autoinstallation
   module Clients
@@ -35,7 +36,6 @@ module Y2Autoinstallation
         Yast.import "Profile"
         Yast.import "AutoinstConfig"
         Yast.import "Y2ModuleConfig"
-        Yast.import "Sequencer"
         Yast.import "Popup"
         Yast.import "AddOnProduct"
         Yast.import "CommandLine"
@@ -43,7 +43,6 @@ module Y2Autoinstallation
 
         Yast.include self, "autoinstall/dialogs.rb"
         Yast.include self, "autoinstall/conftree.rb"
-        Yast.include self, "autoinstall/wizards.rb"
       end
 
       def main
@@ -82,7 +81,7 @@ module Y2Autoinstallation
         @cmdline = {
           "id"         => "autoyast2",
           "help"       => _("AutoYaST"),
-          "guihandler" => fun_ref(method(:AutoSequence), "any ()"),
+          "guihandler" => fun_ref(method(:auto_sequence), "any ()"),
           "actions"    => {
             "file"   => {
               "handler" => fun_ref(
@@ -144,14 +143,23 @@ module Y2Autoinstallation
           Yast::WFM.CallFunction(module_auto, ["Import", rd]) unless rd.nil?
         end
         Yast::Popup.ClearFeedback
-        AutoSequence()
+        auto_sequence
         true
       end
 
       def runModule(options)
         Yast::AutoinstConfig.runModule = options["modname"] || ""
-        AutoSequence()
+        auto_sequence
         true
+      end
+
+    private
+
+      # AutoYaST UI sequence
+      #
+      # @return [Y2Autoinstallation::AutoSequence]
+      def auto_sequence
+        Y2Autoinstallation::AutoSequence.new.run
       end
     end
   end

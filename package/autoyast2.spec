@@ -181,7 +181,6 @@ done
 %{yast_yncludedir}/autoinstall/dialogs.rb
 %{yast_yncludedir}/autoinstall/script_dialogs.rb
 %{yast_yncludedir}/autoinstall/general_dialogs.rb
-%{yast_yncludedir}/autoinstall/wizards.rb
 %{yast_yncludedir}/autoinstall/helps.rb
 %dir %{yast_schemadir}
 %dir %{yast_schemadir}/autoyast
