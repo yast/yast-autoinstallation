@@ -40,6 +40,7 @@ module Y2Autoinstallation
         Yast.import "AddOnProduct"
         Yast.import "CommandLine"
         Yast.import "AutoInstall"
+        Yast.import "UI"
 
         Yast.include self, "autoinstall/dialogs.rb"
         Yast.include self, "autoinstall/conftree.rb"
@@ -83,19 +84,26 @@ module Y2Autoinstallation
           "help"       => _("AutoYaST"),
           "guihandler" => fun_ref(method(:auto_sequence), "any ()"),
           "actions"    => {
-            "file"   => {
+            "file"         => {
               "handler" => fun_ref(
                 method(:run_ui),
                 "boolean (map <string, string>)"
               ),
               "help"    => "file operations"
             },
-            "module" => {
+            "module"       => {
               "handler" => fun_ref(
                 method(:run_ui),
                 "boolean (map <string, string>)"
               ),
               "help"    => "module specific operations"
+            },
+            "list-modules" => {
+              "handler" => fun_ref(
+                method(:list_modules),
+                "void ()"
+              ),
+              "help"    => "list of known modules"
             }
           },
           "options"    => {
@@ -132,6 +140,19 @@ module Y2Autoinstallation
         Yast::AutoinstConfig.runModule = options["modname"] || ""
         auto_sequence
         true
+      end
+
+      # Displays the list of known modules
+      #
+      # @param _options [Hash] Command line options
+      def list_modules(_options)
+        items = Yast::Y2ModuleConfig.ModuleMap.reduce([]) do |all, (name, mod)|
+          all << Item(name, mod["Name"])
+        end
+        Yast::CommandLine.PrintTable(
+          Header(_("Module"), _("Description")),
+          items
+        )
       end
 
     private

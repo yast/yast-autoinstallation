@@ -77,5 +77,18 @@ describe Y2Autoinstallation::Clients::Autoyast do
         end
       end
     end
+
+    describe "'list-modules' command" do
+      let(:args) { ["list-modules"] }
+
+      it "displays the list of supported modules" do
+        expect(Yast::CommandLine).to receive(:PrintTable) do |_header, items|
+          expect(items.size).to eq(Yast::Y2ModuleConfig.ModuleMap.size)
+          name = Yast::Profile.ModuleMap["lan"]["Name"]
+          expect(items.to_s).to include(name)
+        end
+        client.main
+      end
+    end
   end
 end
