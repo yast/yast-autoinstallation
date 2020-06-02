@@ -28,9 +28,17 @@ describe Y2Autoinstallation::Clients::Autoyast do
   subject(:client) { described_class.new }
 
   describe "#main" do
+    let(:auto_sequence) do
+      instance_double(Y2Autoinstallation::AutoSequence, run: :next)
+    end
+
     before do
       allow(Yast::WFM).to receive(:Args).and_return(args)
       allow(Yast::WFM).to receive(:CallFunction)
+      allow(Y2Autoinstallation::AutoSequence).to receive(:new).and_return(auto_sequence)
+      # It is changed by other modules which causes this test to fail.
+      Yast::Stage.Set("normal")
+      Yast::Y2ModuleConfig.main
     end
 
     describe "'file' command" do
@@ -44,7 +52,7 @@ describe Y2Autoinstallation::Clients::Autoyast do
 
       it "starts the AutoYaST UI" do
         allow(Yast::WFM).to receive(:CallFunction)
-        expect(client).to receive(:AutoSequence)
+        expect(auto_sequence).to receive(:run)
         client.main
       end
 
@@ -65,7 +73,7 @@ describe Y2Autoinstallation::Clients::Autoyast do
 
       it "starts the AutoYaST UI with the given module" do
         expect(Yast::AutoinstConfig).to receive(:runModule=).with("kdump")
-        expect(client).to receive(:AutoSequence)
+        expect(auto_sequence).to receive(:run)
         client.main
       end
     end
