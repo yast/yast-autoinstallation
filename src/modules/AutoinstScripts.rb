@@ -58,6 +58,8 @@ module Yast
 
       # default value of settings modified
       @modified = false
+
+      @check_for_duplicites = true
     end
 
     # Function sets internal variable, which indicates, that any
@@ -124,22 +126,28 @@ module Yast
       @scripts.concat(valid_scripts_for(s, "postpartitioning-scripts")
         .map { |h| Y2Autoinstallation::PostPartitioningScript.new(h) })
 
-      # check for duplicite filenames
-      known = []
-      duplicites = @scripts.each_with_object([]) do |script, d|
-        path = script.script_path
-        if known.include?(path)
-          d << script
-        else
-          known << path
+      if @check_for_duplicites
+        # check for duplicite filenames
+        known = []
+        duplicites = @scripts.each_with_object([]) do |script, d|
+          path = script.script_path
+          if known.include?(path)
+            d << script
+          else
+            known << path
+          end
         end
-      end
 
-      if !duplicites.empty?
-        duplicites.each do |dup|
-          conflicting = @scripts.select { |script| script.script_path == dup.script_path }
-          Report.Warning(_("Following scripts will overwrite each other:") + "\n" +
-            conflicting.map(&:inspect).join("\n"))
+        if !duplicites.empty?
+          # check it only because after pre scripts it is reimport, resulting in multiple warnings
+          # so show warning only once
+          @check_for_duplicites = false
+
+          duplicites.each do |dup|
+            conflicting = @scripts.select { |script| script.script_path == dup.script_path }
+            Report.Warning(_("Following scripts will overwrite each other:") + "\n" +
+              conflicting.map(&:inspect).join("\n"))
+          end
         end
       end
 
