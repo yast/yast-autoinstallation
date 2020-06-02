@@ -120,7 +120,7 @@ module Y2Autoinstallation
   protected
 
     # where to download file for get_file_from_url which do not switch itself chroot
-    # Just work-around for not respecting changed chroot (see bsc#897212 and bsc#889931))
+    # Just work-around for not respecting changed chroot (see bsc#897212 and bsc#889931)
     def localfile
       script_path
     end
@@ -129,11 +129,11 @@ module Y2Autoinstallation
 
     # Trasforms location to valid location for downloading script
     def resolve_location
-      return if @location.empty?
+      return if location.empty?
 
-      log.info "Resolving location #{@location.inspect}"
-      @location.strip!
-      return unless @location.start_with?("relurl://")
+      log.info "Resolving location #{location.inspect}"
+      location.strip!
+      return unless location.start_with?("relurl://")
 
       path = location[9..-1] # 9 is relurl:// size
 
