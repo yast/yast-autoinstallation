@@ -85,14 +85,14 @@ module Y2Autoinstallation
           "actions"    => {
             "file"   => {
               "handler" => fun_ref(
-                method(:openFile),
+                method(:run_ui),
                 "boolean (map <string, string>)"
               ),
               "help"    => "file operations"
             },
             "module" => {
               "handler" => fun_ref(
-                method(:runModule),
+                method(:run_ui),
                 "boolean (map <string, string>)"
               ),
               "help"    => "module specific operations"
@@ -102,7 +102,10 @@ module Y2Autoinstallation
             "filename" => { "type" => "string", "help" => "filename=XML_PROFILE" },
             "modname"  => { "type" => "string", "help" => "modname=AYAST_MODULE" }
           },
-          "mappings"   => { "file" => ["filename"], "module" => ["modname"] }
+          "mappings"   => {
+            "file"   => ["filename", "modname"],
+            "module" => ["filename", "modname"]
+          }
         }
 
         # command line options
@@ -120,8 +123,24 @@ module Y2Autoinstallation
         :exit
       end
 
-      def openFile(options)
-        if !Yast::Profile.ReadXML(options.fetch("filename", ""))
+      # Run the main UI
+      #
+      # @param options [Hash] Command line options
+      # @return true
+      def run_ui(options)
+        import_profile(options["filename"]) if options["filename"]
+        Yast::AutoinstConfig.runModule = options["modname"] || ""
+        auto_sequence
+        true
+      end
+
+    private
+
+      # Reads and imports a profile
+      #
+      # @param filename [String] Profile path
+      def import_profile(filename)
+        if !Yast::Profile.ReadXML(filename)
           Yast::Popup.Error(
             _(
               "Error while parsing the control file.\n" \
@@ -143,17 +162,7 @@ module Y2Autoinstallation
           Yast::WFM.CallFunction(module_auto, ["Import", rd]) unless rd.nil?
         end
         Yast::Popup.ClearFeedback
-        auto_sequence
-        true
       end
-
-      def runModule(options)
-        Yast::AutoinstConfig.runModule = options["modname"] || ""
-        auto_sequence
-        true
-      end
-
-    private
 
       # AutoYaST UI sequence
       #
