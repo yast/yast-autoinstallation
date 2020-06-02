@@ -62,9 +62,9 @@ module Y2Autoinstallation
     def to_hash
       {
         "filename" => filename,
-        "source" => source,
+        "source"   => source,
         "location" => location,
-        "debug" => debug
+        "debug"    => debug
       }
     end
 
@@ -101,12 +101,12 @@ module Y2Autoinstallation
       if !location.empty?
         url = Yast::URL.Parse(location)
         res = get_file_from_url(
-          scheme: url["scheme"],
-          host: url["host"],
-          urlpath: url["path"],
+          scheme:    url["scheme"],
+          host:      url["host"],
+          urlpath:   url["path"],
           localfile: localfile,
-          urltok: url,
-          destdir: Yast::AutoinstConfig.destdir
+          urltok:    url,
+          destdir:   Yast::AutoinstConfig.destdir
         )
         # TODO: exception?
         log.error "script #{location} could not be retrieved" unless res
@@ -232,15 +232,15 @@ module Y2Autoinstallation
     # mapping of interpreter keywords and its debug flag
     DEBUG_FLAG_MAP = {
       "shell" => "-x",
-      "perl" => "-w",
-      "ruby" => "-w"
-    }
+      "perl"  => "-w",
+      "ruby"  => "-w"
+    }.freeze
     # mapping of interpreter keywords and its interpreter path
     INTERPRETER_MAP = {
-      "shell" => "/bin/sh", # TODO: why not bash? at least user can now specify interpreter he wants
-      "perl" => "/usr/bin/perl",
+      "shell"  => "/bin/sh",
+      "perl"   => "/usr/bin/perl",
       "python" => "/usr/bin/python"
-    }
+    }.freeze
     # Runs the script
     # @return [Boolean] if exit code is zero
     def execute
@@ -257,7 +257,7 @@ module Y2Autoinstallation
           "&> #{log_path.shellescape}")
       Yast::SCR.Execute(bash_path, "/bin/touch #{run_file.shellescape}")
 
-      return res == 0
+      res == 0
     end
 
     # full path to log file
@@ -384,5 +384,5 @@ module Y2Autoinstallation
   end
 
   # List of known script
-  SCRIPT_TYPES = [PreScript, PostScript, InitScript, ChrootScript, PostPartitioningScript]
+  SCRIPT_TYPES = [PreScript, PostScript, InitScript, ChrootScript, PostPartitioningScript].freeze
 end

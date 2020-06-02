@@ -79,7 +79,7 @@ describe "Yast::AutoinstScripts" do
             { "location" => "https://test.com/script" },
             { "location" => "relurl://script2" }
           ] }
-          expected = [ "https://test.com/script", "https://example2.com/ay/script2"]
+          expected = ["https://test.com/script", "https://example2.com/ay/script2"]
 
           subject.Import(data)
           expect(subject.public_send(type).map(&:location)).to eq expected
@@ -155,16 +155,6 @@ describe "Yast::AutoinstScripts" do
 
         subject.Import(data)
 
-        expected = [
-          { "type" => "pre-scripts", "location" => "http://test.com/script",
-            "filename" => "script1" },
-          { "type" => "post-scripts", "location" => "http://test.com/new_script",
-            "filename" => "script2", "source" => "", "interpreter" => "perl", "chrooted" => false,
-            "debug" => false, "feedback" => false, "feedback_type" => "", "notification" => "" },
-          { "type" => "post-scripts", "location" => "http://test.com/script3",
-            "filename" => "script3" }
-        ]
-
         subject.AddEditScript("script2", "", "perl", "post-scripts", false, false, false, "",
           "http://test.com/new_script", "")
 
@@ -210,7 +200,7 @@ describe "Yast::AutoinstScripts" do
 
       subject.Import(data)
 
-      expect{subject.deleteScript("script2")}.to change{subject.scripts.size}.from(3).to(2)
+      expect { subject.deleteScript("script2") }.to change { subject.scripts.size }.from(3).to(2)
     end
   end
 
@@ -243,14 +233,16 @@ describe "Yast::AutoinstScripts" do
           "pre-scripts" => [{ "location" => "http://test.com/script", "filename" => "script1" }]
         }
 
-        expect_any_instance_of(Yast::Transfer::FileFromUrl).to receive(:get_file_from_url) do |_klass, map|
-          expect(map[:scheme]).to eq "http"
-          expect(map[:host]).to eq "test.com"
-          expect(map[:urlpath]).to eq "/script"
-          expect(map[:localfile]).to match(/pre-scripts\/script1$/)
+        expect_any_instance_of(Yast::Transfer::FileFromUrl).to(
+          receive(:get_file_from_url) do |_klass, map|
+            expect(map[:scheme]).to eq "http"
+            expect(map[:host]).to eq "test.com"
+            expect(map[:urlpath]).to eq "/script"
+            expect(map[:localfile]).to match(/pre-scripts\/script1$/)
 
-          true
-        end
+            true
+          end
+        )
 
         subject.Import(data)
         subject.Write("pre-scripts", true)
@@ -277,14 +269,16 @@ describe "Yast::AutoinstScripts" do
                                            "filename" => "script1" }]
         }
 
-        expect_any_instance_of(Yast::Transfer::FileFromUrl).to receive(:get_file_from_url) do |_klass, map|
-          expect(map[:scheme]).to eq "http"
-          expect(map[:host]).to eq "test.com"
-          expect(map[:urlpath]).to eq "/script"
-          expect(map[:localfile]).to match(/script1$/)
+        expect_any_instance_of(Yast::Transfer::FileFromUrl).to(
+          receive(:get_file_from_url) do |_klass, map|
+            expect(map[:scheme]).to eq "http"
+            expect(map[:host]).to eq "test.com"
+            expect(map[:urlpath]).to eq "/script"
+            expect(map[:localfile]).to match(/script1$/)
 
-          true
-        end
+            true
+          end
+        )
 
         subject.Import(data)
         subject.Write("postpartitioning-scripts", true)
@@ -310,14 +304,16 @@ describe "Yast::AutoinstScripts" do
           "init-scripts" => [{ "location" => "http://test.com/script", "filename" => "script1" }]
         }
 
-        expect_any_instance_of(Yast::Transfer::FileFromUrl).to receive(:get_file_from_url) do |_klass, map|
-          expect(map[:scheme]).to eq "http"
-          expect(map[:host]).to eq "test.com"
-          expect(map[:urlpath]).to eq "/script"
-          expect(map[:localfile]).to eq "/var/adm/autoinstall/init.d/script1"
+        expect_any_instance_of(Yast::Transfer::FileFromUrl).to(
+          receive(:get_file_from_url) do |_klass, map|
+            expect(map[:scheme]).to eq "http"
+            expect(map[:host]).to eq "test.com"
+            expect(map[:urlpath]).to eq "/script"
+            expect(map[:localfile]).to eq "/var/adm/autoinstall/init.d/script1"
 
-          true
-        end
+            true
+          end
+        )
 
         subject.Import(data)
         subject.Write("init-scripts", true)

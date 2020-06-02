@@ -25,8 +25,8 @@ describe Y2Autoinstallation::Script do
   subject do
     described_class.new(
       "filename" => "test.sh",
-      "source" => "echo test",
-      "debug" => true
+      "source"   => "echo test",
+      "debug"    => true
     )
   end
 
@@ -34,8 +34,8 @@ describe Y2Autoinstallation::Script do
     it "returns hash" do
       expect(subject.to_hash).to eq(
         "filename" => "test.sh",
-        "source" => "echo test",
-        "debug" => true,
+        "source"   => "echo test",
+        "debug"    => true,
         "location" => ""
       )
     end
@@ -55,8 +55,8 @@ describe Y2Autoinstallation::Script do
     it "returns filename if it is not empty" do
       script = described_class.new(
         "filename" => "test.sh",
-        "source" => "echo test",
-        "debug" => true
+        "source"   => "echo test",
+        "debug"    => true
       )
 
       expect(script.script_name).to eq "test.sh"
@@ -92,13 +92,15 @@ describe Y2Autoinstallation::Script do
     end
 
     it "ensure that script directory exists" do
-      expect(Yast::SCR).to receive(:Execute).with(path(".target.mkdir"), "/var/adm/autoinstall/scripts")
+      expect(Yast::SCR).to receive(:Execute)
+        .with(path(".target.mkdir"), "/var/adm/autoinstall/scripts")
 
       subject.create_script_file
     end
 
     it "ensure that logs directory exists" do
-      expect(Yast::SCR).to receive(:Execute).with(path(".target.mkdir"), "/var/adm/autoinstall/logs")
+      expect(Yast::SCR).to receive(:Execute)
+        .with(path(".target.mkdir"), "/var/adm/autoinstall/logs")
 
       subject.create_script_file
     end
@@ -122,7 +124,7 @@ describe Y2Autoinstallation::Script do
     it "writes down source if defined" do
       script = described_class.new(
         "filename" => "test.sh",
-        "source" => "echo test"
+        "source"   => "echo test"
       )
 
       expect(Yast::SCR).to receive(:Write).with(
@@ -154,19 +156,27 @@ describe Y2Autoinstallation::ScriptFeedback do
 
     context "feedback is set to true" do
       it "sets value to :message if feedback_type is message" do
-        expect(described_class.new("feedback" => true, "feedback_type" => "message").value).to eq :message
+        expect(described_class.new("feedback" => true, "feedback_type" => "message").value).to(
+          eq :message
+        )
       end
 
       it "sets value to :warning if feedback_type is warning" do
-        expect(described_class.new("feedback" => true, "feedback_type" => "warning").value).to eq :warning
+        expect(described_class.new("feedback" => true, "feedback_type" => "warning").value).to(
+          eq :warning
+        )
       end
 
       it "sets value to :error if feedback_type is error" do
-        expect(described_class.new("feedback" => true, "feedback_type" => "error").value).to eq :error
+        expect(described_class.new("feedback" => true, "feedback_type" => "error").value).to(
+          eq :error
+        )
       end
 
       it "sets value to :popup if feedback_type is empty string" do
-        expect(described_class.new("feedback" => true, "feedback_type" => "").value).to eq :popup
+        expect(described_class.new("feedback" => true, "feedback_type" => "").value).to(
+          eq :popup
+        )
       end
 
       it "sets value to :popup if feedback_type is not defined" do
@@ -187,12 +197,12 @@ end
 describe Y2Autoinstallation::ExecutedScript do
   subject do
     described_class.new(
-      "filename" => "test.sh",
-      "source" => "echo test",
-      "debug" => true,
-      "feedback" => false,
+      "filename"    => "test.sh",
+      "source"      => "echo test",
+      "debug"       => true,
+      "feedback"    => false,
       "interpreter" => "shell",
-      "rerun" => true
+      "rerun"       => true
     )
   end
 
@@ -206,12 +216,12 @@ describe Y2Autoinstallation::ExecutedScript do
     context "script already run and rerun flag is false" do
       it "does nothing" do
         script = described_class.new(
-          "filename" => "test.sh",
-          "source" => "echo test",
-          "debug" => true,
-          "feedback" => false,
+          "filename"    => "test.sh",
+          "source"      => "echo test",
+          "debug"       => true,
+          "feedback"    => false,
           "interpreter" => "shell",
-          "rerun" => false
+          "rerun"       => false
         )
 
         allow(script).to receive(:already_run?).and_return(true)
@@ -231,7 +241,8 @@ describe Y2Autoinstallation::ExecutedScript do
       it "runs script" do
         expect(Yast::SCR).to receive(:Execute).with(
           path(".target.bash"),
-          "/bin/sh -x /var/adm/autoinstall/scripts/test.sh  &> /var/adm/autoinstall/logs/test.sh.log"
+          "/bin/sh -x /var/adm/autoinstall/scripts/test.sh  " \
+            "&> /var/adm/autoinstall/logs/test.sh.log"
         )
 
         subject.execute
@@ -256,7 +267,7 @@ describe Y2Autoinstallation::ExecutedScript do
 end
 
 describe Y2Autoinstallation::PreScript do
-  subject{described_class.new("filename" => "test.sh")}
+  subject { described_class.new("filename" => "test.sh") }
 
   describe "#logs_dir" do
     it "returns path to logs in temporary directory" do
@@ -297,7 +308,7 @@ describe Y2Autoinstallation::ChrootScript do
   end
 
   context "chrooted is set to false" do
-    subject{described_class.new("filename" => "test.sh", "chrooted" => false)}
+    subject { described_class.new("filename" => "test.sh", "chrooted" => false) }
 
     before do
       allow(Yast::AutoinstConfig).to receive(:destdir).and_return("/mnt")
@@ -318,7 +329,7 @@ describe Y2Autoinstallation::ChrootScript do
 end
 
 describe Y2Autoinstallation::PostPartitioningScript do
-  subject{described_class.new("filename" => "test.sh")}
+  subject { described_class.new("filename" => "test.sh") }
 
   before do
     allow(Yast::AutoinstConfig).to receive(:destdir).and_return("/mnt")
@@ -344,7 +355,7 @@ describe Y2Autoinstallation::PostPartitioningScript do
 end
 
 describe Y2Autoinstallation::InitScript do
-  subject{described_class.new("filename" => "test.sh")}
+  subject { described_class.new("filename" => "test.sh") }
 
   describe ".type" do
     it "returns \"init-scripts\"" do

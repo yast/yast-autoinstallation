@@ -100,7 +100,7 @@ module Yast
     def Export
       log.info "Exporting scripts #{scripts.inspect}"
 
-      groups = scripts.group_by {|s| s.class.type }
+      groups = scripts.group_by { |s| s.class.type }
 
       groups.each_with_object({}) { |(type, scs), result| result[type] = scs.map(&:to_hash) }
     end
@@ -114,31 +114,32 @@ module Yast
       # take only hash entries (bnc#986049)
       @scripts = []
       @scripts.concat(valid_scripts_for(s, "pre-scripts")
-        .map{ |h| Y2Autoinstallation::PreScript.new(h) })
+        .map { |h| Y2Autoinstallation::PreScript.new(h) })
       @scripts.concat(valid_scripts_for(s, "init-scripts")
-        .map{ |h| Y2Autoinstallation::InitScript.new(h) })
+        .map { |h| Y2Autoinstallation::InitScript.new(h) })
       @scripts.concat(valid_scripts_for(s, "post-scripts")
-        .map{ |h| Y2Autoinstallation::PostScript.new(h) })
+        .map { |h| Y2Autoinstallation::PostScript.new(h) })
       @scripts.concat(valid_scripts_for(s, "chroot-scripts")
-        .map{ |h| Y2Autoinstallation::ChrootScript.new(h) })
+        .map { |h| Y2Autoinstallation::ChrootScript.new(h) })
       @scripts.concat(valid_scripts_for(s, "postpartitioning-scripts")
-        .map{ |h| Y2Autoinstallation::PostPartitioningScript.new(h) })
+        .map { |h| Y2Autoinstallation::PostPartitioningScript.new(h) })
 
       # check for duplicite filenames
       known = []
-      duplicites = @scripts.each_with_object([]) do |s, d|
-        path = s.script_path
+      duplicites = @scripts.each_with_object([]) do |script, d|
+        path = script.script_path
         if known.include?(path)
-          d << s
+          d << script
         else
           known << path
         end
       end
 
       if !duplicites.empty?
-        duplicites.each do |script|
-          conflicting = @scripts.select { |s| s.script_path == script.script_path }
-          Report.Warning(_("Following scripts will overwrite each other:") + "\n" + conflicting.map(&:inspect).join("\n"))
+        duplicites.each do |dup|
+          conflicting = @scripts.select { |script| script.script_path == dup.script_path }
+          Report.Warning(_("Following scripts will overwrite each other:") + "\n" +
+            conflicting.map(&:inspect).join("\n"))
         end
       end
 
@@ -151,10 +152,10 @@ module Yast
       summary = ""
 
       scripts_desc = {
-        _("Preinstallation Scripts") => pre_scripts,
+        _("Preinstallation Scripts")  => pre_scripts,
         _("Postinstallation Scripts") => post_scripts,
-        _("Chroot Scripts") => chroot_scripts,
-        _("Init Scripts") => init_scripts,
+        _("Chroot Scripts")           => chroot_scripts,
+        _("Init Scripts")             => init_scripts,
         _("Postpartitioning Scripts") => postpart_scripts
       }
 
@@ -188,20 +189,20 @@ module Yast
     # @param [String] type type of script
     # @return [void]
     def AddEditScript(scriptName, source, interpreter, type, chrooted, debug,
-        feedback, feedback_type, location, notification)
+      feedback, feedback_type, location, notification)
 
       deleteScript(scriptName)
 
       script_hash = {
-        "filename" => scriptName,
-        "source"=> source,
-        "interpreter"=> interpreter,
-        "chrooted"=> chrooted,
-        "debug"=> debug,
-        "feedback"=> feedback,
-        "feedback_type"=> feedback_type,
-        "location"=> location,
-        "notification"=> notification,
+        "filename"      => scriptName,
+        "source"        => source,
+        "interpreter"   => interpreter,
+        "chrooted"      => chrooted,
+        "debug"         => debug,
+        "feedback"      => feedback,
+        "feedback_type" => feedback_type,
+        "location"      => location,
+        "notification"  => notification
       }
 
       klass = Y2Autoinstallation::SCRIPT_TYPES.find { |script_class| script_class.type == type }
@@ -278,10 +279,13 @@ module Yast
           end
         # show warning if script return non-zero and no feedback is want
         elsif !res
-          Report.Warning(format(
-            _("User script %{script_name} failed.\nDetails:\n%{output}"),
-            script_name: script.filename, output: SCR.Read(path(".target.string"), script.log_path)
-          ))
+          Report.Warning(
+            format(
+              _("User script %{script_name} failed.\nDetails:\n%{output}"),
+              script_name: script.filename,
+              output:      SCR.Read(path(".target.string"), script.log_path)
+            )
+          )
         end
       end
 
