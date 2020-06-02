@@ -46,7 +46,7 @@ describe Y2Autoinstallation::Clients::Autoyast do
       let(:args) { ["file", "filename=#{path}"] }
 
       it "reads and imports the given profile" do
-        expect(Yast::WFM).to receive(:CallFunction).with("users_auto", ["Import", Hash])
+        expect(Yast::WFM).to receive(:CallFunction).with("language_auto", ["Import", Hash])
         client.main
       end
 
