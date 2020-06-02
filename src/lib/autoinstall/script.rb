@@ -58,6 +58,7 @@ module Y2Autoinstallation
       resolve_location
     end
 
+    # Serialize object to hash, that can be used for exporting scripts
     def to_hash
       {
         "filename" => filename,
@@ -67,11 +68,13 @@ module Y2Autoinstallation
       }
     end
 
+    # directory to which store logs. Can be overwritten in child if different dir is needed.
+    # @note it is created when it does not exist
     def logs_dir
       Yast::AutoinstConfig.logs_dir
     end
 
-    # difference from filename is that it always return non empty string
+    # difference from {#filename} is that it always return non empty string
     # @return [String]
     def script_name
       return filename unless filename.empty?
@@ -124,6 +127,7 @@ module Y2Autoinstallation
 
   private
 
+    # Trasforms location to valid location for downloading script
     def resolve_location
       return if @location.empty?
 
@@ -151,6 +155,9 @@ module Y2Autoinstallation
     # @return [:message | :warning | :error | :popup | :no]
     attr_reader :value
 
+    # @param hash [Hash] hash from which read script feedback value
+    # @option hash [Boolean] "feedback" if feedback is enabled or not
+    # @option hash [String] "feedback_value" how to show feedback
     def initialize(hash)
       @value = if hash["feedback"]
         case hash["feedback_type"]
@@ -166,8 +173,10 @@ module Y2Autoinstallation
       end
     end
 
+    # serializes back feedback to hash
+    # @return [Hash] for values see {#initialize}
     def to_hash
-      case @value
+      case value
       when :message then { "feedback" => true, "feedback_type" => "message" }
       when :warning then { "feedback" => true, "feedback_type" => "warning" }
       when :error then { "feedback" => true, "feedback_type" => "error" }
@@ -179,7 +188,7 @@ module Y2Autoinstallation
     end
   end
 
-  # Scripts that are executed by YaST ( so all expect init scripts )
+  # Scripts that are executed by YaST ( so all except init scripts )
   class ExecutedScript < Script
     # Sets if feedback after script finish should be shown
     # @return [ScriptFeedback]
@@ -220,11 +229,13 @@ module Y2Autoinstallation
       @rerun = !!hash["rerun"]
     end
 
+    # mapping of interpreter keywords and its debug flag
     DEBUG_FLAG_MAP = {
       "shell" => "-x",
       "perl" => "-w",
       "ruby" => "-w"
     }
+    # mapping of interpreter keywords and its interpreter path
     INTERPRETER_MAP = {
       "shell" => "/bin/sh", # TODO: why not bash? at least user can now specify interpreter he wants
       "perl" => "/usr/bin/perl",
@@ -249,16 +260,20 @@ module Y2Autoinstallation
       return res == 0
     end
 
+    # full path to log file
+    # @return [String]
     def log_path
       File.join(logs_dir, script_name + ".log")
     end
 
   private
 
+    # checks if script was already run
     def already_run?
       Yast::SCR.Read(Yast::Path.new(".target.size"), run_file) != -1
     end
 
+    # flag file if script was run
     def run_file
       script_path + "-run"
     end
@@ -266,6 +281,7 @@ module Y2Autoinstallation
 
   # Script that runs before any other and can modify autoyast profile
   class PreScript < ExecutedScript
+    # Overwrites directory as it is expected in tmpdir from which it is copied
     def logs_dir
       File.join(Yast::AutoinstConfig.tmpDir, self.class.type, "logs")
     end
@@ -274,6 +290,7 @@ module Y2Autoinstallation
       "pre-scripts"
     end
 
+    # Overwrites script path as it is expected in tmpdir from which it is copied
     def script_path
       File.join(Yast::AutoinstConfig.tmpDir, self.class.type, script_name)
     end
@@ -289,6 +306,7 @@ module Y2Autoinstallation
   # Script that runs before or after changing to chroot depending on chrooted parameter
   class ChrootScript < ExecutedScript
     # Flag that defines when script should be run
+    # @return [Boolean]
     attr_reader :chrooted
 
     def initialize(hash)
@@ -307,6 +325,7 @@ module Y2Autoinstallation
       "chroot-scripts"
     end
 
+    # Overwrites directory to place it to expected location even when SCR is not yet switched
     def logs_dir
       if chrooted
         super
@@ -315,6 +334,7 @@ module Y2Autoinstallation
       end
     end
 
+    # Overwrites script path to place it to expected location even when SCR is not yet switched
     def script_path
       if chrooted
         super
@@ -363,6 +383,6 @@ module Y2Autoinstallation
     end
   end
 
-  # List of known script 
+  # List of known script
   SCRIPT_TYPES = [PreScript, PostScript, InitScript, ChrootScript, PostPartitioningScript]
 end
