@@ -28,6 +28,9 @@ Yast.import "AutoinstConfig"
 
 module Y2Autoinstallation
   # Base class representing custom user script that runs during various phases of installation.
+  # User docs, rendered:
+  # https://documentation.suse.com/sles/15-SP1/html/SLES-all/configuration.html#createprofile-scripts
+  # source: https://github.com/SUSE/doc-sle/blob/master/xml/ay_custom_user_scripts.xml
   class Script
     include Yast::Logger
     include Yast::Transfer::FileFromUrl
@@ -87,7 +90,7 @@ module Y2Autoinstallation
       end
     end
 
-    # location where script lives
+    # Full path of the script, eg. "/full/path/myscript"
     # @return [String]
     def script_path
       File.join(Yast::AutoinstConfig.scripts_dir, script_name)
@@ -305,7 +308,7 @@ module Y2Autoinstallation
 
   # Script that runs before or after changing to chroot depending on chrooted parameter
   class ChrootScript < ExecutedScript
-    # Flag that defines when script should be run
+    # @return [Boolean] true: run after/inside the chroot; false: run before/outside the chroot
     # @return [Boolean]
     attr_reader :chrooted
 
