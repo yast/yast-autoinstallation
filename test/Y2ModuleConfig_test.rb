@@ -10,42 +10,27 @@ Yast.import "Profile"
 describe Yast::Y2ModuleConfig do
 
   DESKTOP_DATA = YAML.load_file(FIXTURES_PATH.join("desktop_files", "desktops.yml"))
+  DESKTOP_GROUPS = YAML.load_file(FIXTURES_PATH.join("desktop_files", "groups.yml"))
+  AVAILABLE_CLIENTS = ["deploy_image_auto", "files_auto", "general_auto", "scripts_auto",
+                       "software_auto", "services-manager_auto"].freeze
 
   before do
-    allow(Yast::WFM).to receive(:ClientExists).with("audit-laf_auto").and_return(false)
-    allow(Yast::WFM).to receive(:ClientExists).with("autofs_auto").and_return(false)
-    allow(Yast::WFM).to receive(:ClientExists).with("ca_mgm_auto").and_return(false)
-    allow(Yast::WFM).to receive(:ClientExists).with("deploy_image_auto").and_return(true)
-    allow(Yast::WFM).to receive(:ClientExists).with("files_auto").and_return(true)
-    allow(Yast::WFM).to receive(:ClientExists).with("firstboot_auto").and_return(false)
-    allow(Yast::WFM).to receive(:ClientExists).with("general_auto").and_return(true)
-    allow(Yast::WFM).to receive(:ClientExists).with("inetd_auto").and_return(false)
-    allow(Yast::WFM).to receive(:ClientExists).with("language_auto").and_return(false)
-    allow(Yast::WFM).to receive(:ClientExists).with("pxe_auto").and_return(false)
-    allow(Yast::WFM).to receive(:ClientExists).with("restore_auto").and_return(false)
-    allow(Yast::WFM).to receive(:ClientExists).with("runlevel_auto").and_return(false)
-    allow(Yast::WFM).to receive(:ClientExists).with("scripts_auto").and_return(true)
-    allow(Yast::WFM).to receive(:ClientExists).with("software_auto").and_return(true)
-    allow(Yast::WFM).to receive(:ClientExists).with("sshd_auto").and_return(false)
-    allow(Yast::WFM).to receive(:ClientExists).with("sysconfig_auto").and_return(false)
-    allow(Yast::WFM).to receive(:ClientExists).with("unknown_profile_item_1_auto").and_return(false)
-    allow(Yast::WFM).to receive(:ClientExists).with("unknown_profile_item_2_auto").and_return(false)
-    allow(Yast::WFM).to receive(:ClientExists).with("partitioning_auto").and_return(false)
-    allow(Yast::WFM).to receive(:ClientExists).with("upgrade_auto").and_return(false)
-    allow(Yast::WFM).to receive(:ClientExists).with("cobbler_auto").and_return(false)
-    allow(Yast::WFM).to receive(:ClientExists).with("services-manager_auto").and_return(true)
+    allow(Yast::WFM).to receive(:ClientExists) { |c| AVAILABLE_CLIENTS.include?(c) }
+    allow(Yast::Desktop).to receive(:Groups).and_return(DESKTOP_GROUPS)
+    allow(Yast::Desktop).to receive(:Modules).and_return(DESKTOP_DATA)
+    subject.main
   end
 
   describe "#unhandled_profile_sections" do
     let(:profile_unhandled) { File.join(FIXTURES_PATH, "profiles", "unhandled_and_obsolete.xml") }
 
     it "returns all unsupported and unknown profile sections" do
-      Yast::Y2ModuleConfig.instance_variable_set("@ModuleMap", DESKTOP_DATA)
       Yast::Profile.ReadXML(profile_unhandled)
 
       expect(Yast::Y2ModuleConfig.unhandled_profile_sections).to contain_exactly(
-        "audit-laf", "autofs", "ca_mgm", "cobbler", "firstboot", "inetd", "language", "restore",
-        "sshd", "sysconfig", "unknown_profile_item_1", "unknown_profile_item_2"
+        "audit-laf", "autofs", "ca_mgm", "cobbler", "firstboot", "inetd", "language",
+        "restore", "security", "sshd", "sysconfig", "unknown_profile_item_1",
+        "unknown_profile_item_2"
       )
     end
   end
@@ -55,11 +40,52 @@ describe Yast::Y2ModuleConfig do
 
     it "returns all unsupported profile sections" do
       Yast::Profile.ReadXML(profile_unsupported)
-      Yast::Y2ModuleConfig.instance_variable_set("@ModuleMap", DESKTOP_DATA)
 
       expect(Yast::Y2ModuleConfig.unsupported_profile_sections).to contain_exactly(
         "autofs", "ca_mgm", "cobbler", "inetd", "restore", "sshd"
       )
+    end
+  end
+
+  describe "#ReadMenuEntries" do
+    it "returns the modules and groups for the given modes" do
+      modules, groups = subject.ReadMenuEntries(["configure"])
+      expect(modules.keys).to eq(
+        ["add-on", "bootloader", "general", "partitioning", "report", "software"]
+      )
+      expect(groups.keys).to eq(
+        ["Hardware", "Misc", "Net_advanced", "Security", "Software", "Support", "System"]
+      )
+    end
+
+    it "sets the client if missing" do
+      modules, _groups = subject.ReadMenuEntries(["configure"])
+      add_on = modules["add-on"]
+      expect(add_on["X-SuSE-YaST-AutoInstClient"]).to eq("add-on_auto")
+    end
+  end
+
+  describe "#ModuleConfig" do
+    it "returns the modules in a hash indexed by name" do
+      modules = subject.ModuleMap
+      expect(modules["lan"]).to be_a(Hash)
+    end
+
+    it "returns the modules with 'all' and 'configure' mode" do
+      modules = subject.ModuleMap
+      expect(modules).to_not have_key("configuration-management")
+    end
+
+    context "during autoinstallation" do
+      before do
+        allow(Yast::Mode).to receive(:autoinst).and_return(true)
+        subject.main
+      end
+
+      it "returns the modules with 'all' and 'write' modes" do
+        modules = subject.ModuleMap
+        expect(modules).to have_key("configuration-management")
+      end
     end
   end
 
