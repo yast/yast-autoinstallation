@@ -222,4 +222,12 @@ describe Yast::Y2ModuleConfig do
       end
     end
   end
+
+  describe "#clonable_modules" do
+    it "returns the map of clonable modules" do
+      expect(subject.clonable_modules.keys).to eq(
+        ["add-on", "bootloader", "lan", "new", "partitioning", "software"]
+      )
+    end
+  end
 end
