@@ -22,9 +22,6 @@ require "yast"
 module Y2Autoinstallation
   module Clients
     class CloneSystem < Yast::Client
-      # FIXME: unify with conftree.rb
-      ALWAYS_CLONABLE_MODULES ||= ["software", "partitioning", "bootloader"].freeze
-
       def main
         Yast.import "AutoinstClone"
         Yast.import "Profile"
@@ -60,13 +57,7 @@ module Y2Autoinstallation
           end
         end
 
-        Builtins.foreach(Y2ModuleConfig.ModuleMap) do |def_resource, resource_map|
-          clonable = resource_map["X-SuSE-YaST-AutoInstClonable"] == "true"
-
-          if clonable || ALWAYS_CLONABLE_MODULES.include?(def_resource)
-            @moduleList << " " << def_resource
-          end
-        end
+        @moduleList = Y2ModuleConfig.clonable_modules.keys.join(" ")
 
         # if we get no argument or map of options we are not in command line
         if [NilClass, Hash].any? { |c| WFM.Args.first.is_a?(c) }
