@@ -51,7 +51,7 @@ module Y2Autoinstallation
     attr_reader :source
 
     # URI for location from which download script. Either source or location should be defined.
-    # @note supported URIs are all that {Yast::Transfer::FileFromUrl} supports + `relurl://`
+    # @note supported URIs are all that Yast::Transfer::FileFromUrl supports + `relurl://`
     # @return [String] empty string means not defined
     attr_reader :location
 
