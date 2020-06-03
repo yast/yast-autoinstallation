@@ -138,7 +138,7 @@ module Yast
           end
         end
 
-        if !duplicate.empty?
+        if !duplicates.empty?
           # check it only because after pre scripts it is reimport, resulting in multiple warnings
           # so show warning only once
           @check_for_duplicates = false
