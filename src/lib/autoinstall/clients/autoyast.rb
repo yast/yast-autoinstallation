@@ -79,7 +79,7 @@ module Y2Autoinstallation
         )
 
         @cmdline = {
-          "id"         => "autoyast2",
+          "id"         => "autoyast",
           "help"       => _("AutoYaST"),
           "guihandler" => fun_ref(method(:auto_sequence), "any ()"),
           "actions"    => {
