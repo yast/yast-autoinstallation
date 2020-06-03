@@ -36,8 +36,14 @@ module Y2Autoinstallation
     include Yast::Transfer::FileFromUrl
     include Yast::I18n
 
-    # filename of script, used as ID
+    # filename of script, used as ID. If it is empty then it is extracted from location or from
+    # file type.
+    # @see {#script_name} to get always non empty string for script name
     # @return [String]
+    #
+    # @example of values
+    #   "test.sh"
+    #   "script.pl"
     attr_reader :filename
 
     # Source code of script. Either source or location should be defined.
@@ -45,10 +51,12 @@ module Y2Autoinstallation
     attr_reader :source
 
     # URI for location from which download script. Either source or location should be defined.
+    # @note supported URIs are all that {Yast::Transfer::FileFromUrl} supports + `relurl://`
     # @return [String] empty string means not defined
     attr_reader :location
 
     # Flag if script runs in debug mode.
+    # @note works only for interpreter defined by keyword
     # @return [Boolean]
     attr_reader :debug
 
@@ -59,6 +67,13 @@ module Y2Autoinstallation
       @debug = !!hash["debug"]
 
       resolve_location
+    end
+
+    # returns string id of script type
+    # @abstract all children have to define it
+    # @return type
+    def self.type
+      raise NotImplementedError, "#{self.class.inspect} does not define type"
     end
 
     # Serialize object to hash, that can be used for exporting scripts
@@ -72,7 +87,7 @@ module Y2Autoinstallation
     end
 
     # directory to which store logs. Can be overwritten in child if different dir is needed.
-    # @note it is created when it does not exist
+    # @note it is created when it does not exist by {ExecutedScript#execute}
     def logs_dir
       Yast::AutoinstConfig.logs_dir
     end
@@ -198,18 +213,27 @@ module Y2Autoinstallation
     attr_reader :feedback
 
     # Interpreter to use to run script.
+    # @note it is not escaped, so even interpreter parameters is allowed.
     # @return [String]
+    #
+    # @example values
+    #   "shell" # keyword that use /bin/sh as interpreter
+    #   "ruby" # it is not keyword and use ruby from PATH
+    #   "/usr/bin/ruby" # full path to ruby
+    #   "/usr/bin/ruby -w" # full path to ruby with parameter to print warnings
     attr_reader :interpreter
 
     # Notification message during script run
+    # @see {Yast::Popup.Feedback} for string formatting
     # @return [String] empty string if no notification should be shown
     attr_reader :notification
 
-    # Params passed to script
+    # Params passed to script. Parameters have to be already escaped
     # @return [Array]
     attr_reader :params
 
-    # Reruns script even if already ran
+    # By default each script runs only once. This flag if set to true allow to run script everytime
+    # when scripts running.
     # @return [Boolean]
     attr_reader :rerun
 
@@ -284,7 +308,7 @@ module Y2Autoinstallation
 
   # Script that runs before any other and can modify autoyast profile
   class PreScript < ExecutedScript
-    # Overwrites directory as it is expected in tmpdir from which it is copied
+    # Overwrites logs directory as it is expected to live in tmpdir from which log is copied
     def logs_dir
       File.join(Yast::AutoinstConfig.tmpDir, self.class.type, "logs")
     end
@@ -293,7 +317,7 @@ module Y2Autoinstallation
       "pre-scripts"
     end
 
-    # Overwrites script path as it is expected in tmpdir from which it is copied
+    # Overwrites script path as it is expected to live in tmpdir from which script is copied
     def script_path
       File.join(Yast::AutoinstConfig.tmpDir, self.class.type, script_name)
     end
@@ -319,9 +343,7 @@ module Y2Autoinstallation
     end
 
     def to_hash
-      res = super
-      res["chrooted"] = chrooted
-      res
+      super.merge("chrooted" => chrooted)
     end
 
     def self.type
