@@ -737,6 +737,7 @@ module Yast
         "\n"
       valid = true
 
+      # TODO: Use Yast::XML.validate instead of external xmllint
       validators = [
         [
           _("Checking XML with RNG validation..."),

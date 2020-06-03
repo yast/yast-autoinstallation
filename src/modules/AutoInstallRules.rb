@@ -5,6 +5,7 @@
 #
 # $Id$
 require "yast"
+require "autoinstall/xml_checks"
 require "yast2/popup"
 require "y2storage"
 
@@ -425,6 +426,8 @@ module Yast
     # Read rules file
     # @return [void]
     def Read
+      # display an error when the rules file is not valid
+      Y2Autoinstallation::XmlChecks.valid_rules?
       @UserRules = XML.XMLToYCPFile(AutoinstConfig.local_rules_file)
 
       if @UserRules.nil?

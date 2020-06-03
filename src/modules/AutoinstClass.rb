@@ -12,6 +12,7 @@
 #
 # $Id$
 require "yast"
+require "autoinstall/xml_checks"
 
 module Yast
   class AutoinstClassClass < Module
@@ -51,6 +52,9 @@ module Yast
     # Reads classes
     def Read
       if SCR.Read(path(".target.size"), @classPath) != -1
+        # display an error when the rules file is not valid
+        Y2Autoinstallation::XmlChecks.valid_classes?(@classPath)
+
         # TODO: use XML module
         classes_map = Convert.to_map(SCR.Read(path(".xml"), @classPath))
         @Classes = (classes_map && classes_map["classes"]) || []
