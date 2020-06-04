@@ -84,12 +84,16 @@ module Y2Autoinstallation
               }
             },
             "options"    => {
-              "clone" => {
+              "clone"    => {
                 "type" => "string",
                 "help" => _("comma separated list of modules to clone")
+              },
+              "filename" => {
+                "type" => "string",
+                "help" => "filename=OUTPUT_FILE"
               }
             },
-            "mappings"   => { "modules" => ["clone"] }
+            "mappings"   => { "modules" => ["clone", "filename"] }
           }
 
           ret = Yast::CommandLine.Run(cmdline)
@@ -108,17 +112,20 @@ module Y2Autoinstallation
         :dummy
       end
 
-      def doClone(options)
-        target_path = options["target_path"] || "/root/autoinst.xml"
+      # @return [String] Default filename to write the profile to
+      DEFAULT_FILENAME = "/root/autoinst.xml".freeze
+
+      def doClone(options = DEFAULT_FILENAME)
+        filename = options["filename"] || "/root/autoinst.xml"
 
         # Autoyast overwriting an already existing config file.
         # The warning is only needed while calling "yast clone_system". It is not
         # needed in the installation workflow where it will be checked by the file selection box
         # directly. (bnc#888546)
-        if Yast::Mode.normal && Yast::FileUtils.Exists(target_path)
+        if Yast::Mode.normal && Yast::FileUtils.Exists(filename)
           # TRANSLATORS: Warning that an already existing autoyast configuration file
           #              will be overwritten.
-          if !Yast::Popup.ContinueCancel(_("File %s exists! Really overwrite?") % target_path)
+          if !Yast::Popup.ContinueCancel(_("File %s exists! Really overwrite?") % filename)
             return false
           end
         end
@@ -126,7 +133,7 @@ module Y2Autoinstallation
         Yast::Popup.ShowFeedback(
           _("Cloning the system..."),
           # TRANSLATORS: %s is path where profile can be found
-          _("The resulting autoyast profile can be found in %s.") % target_path
+          _("The resulting autoyast profile can be found in %s.") % filename
         )
 
         Yast::AutoinstClone.additional =
@@ -136,7 +143,7 @@ module Y2Autoinstallation
             Yast::ProductControl.clone_modules
           end
         Yast::AutoinstClone.Process
-        Yast::XML.YCPToXMLFile(:profile, Yast::Profile.current, target_path)
+        Yast::XML.YCPToXMLFile(:profile, Yast::Profile.current, filename)
         Yast::Popup.ClearFeedback
         true
       end
