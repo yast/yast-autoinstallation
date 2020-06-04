@@ -19,49 +19,52 @@
 
 require "yast"
 
+Yast.import "AutoinstClone"
+Yast.import "Profile"
+Yast.import "XML"
+Yast.import "Popup"
+Yast.import "ProductControl"
+Yast.import "CommandLine"
+Yast.import "Y2ModuleConfig"
+Yast.import "Mode"
+Yast.import "FileUtils"
+Yast.import "Report"
+Yast.import "Installation"
+Yast.import "PackageSystem"
+
 module Y2Autoinstallation
   module Clients
+    # This client is responsible for cloning the system, generating an AutoYaST profile.
     class CloneSystem < Yast::Client
-      def main
-        Yast.import "AutoinstClone"
-        Yast.import "Profile"
-        Yast.import "XML"
-        Yast.import "Popup"
-        Yast.import "ProductControl"
-        Yast.import "CommandLine"
-        Yast.import "Y2ModuleConfig"
-        Yast.import "Mode"
-        Yast.import "FileUtils"
-        Yast.import "Report"
-        Yast.import "Installation"
-        Yast.import "PackageSystem"
+      include Yast::Logger
 
+      def initialize
         textdomain "autoinst"
+      end
 
-        @moduleList = ""
-
-        if Mode.normal
-          if !PackageSystem.Installed("autoyast2")
-            ret = PackageSystem.InstallAll(["autoyast2"])
+      # Handle the command line options and clone the system
+      def main
+        if Yast::Mode.normal
+          if !Yast::PackageSystem.Installed("autoyast2")
+            ret = Yast::PackageSystem.InstallAll(["autoyast2"])
             # The modules/clients has to be reloaded. So the export
             # will be restarted.
             if ret
-              SCR.Execute(
+              Yast::SCR.Execute(
                 path(".target.bash"),
                 "touch #{Installation.restart_file}"
               )
             end
             return
-          elsif FileUtils.Exists(Installation.restart_file)
-            SCR.Execute(path(".target.remove"), Installation.restart_file)
+          elsif Yast::FileUtils.Exists(Yast::Installation.restart_file)
+            Yast::SCR.Execute(path(".target.remove"), Yast::Installation.restart_file)
           end
         end
 
-        @moduleList = Y2ModuleConfig.clonable_modules.keys.join(" ")
+        modules_list = Yast::Y2ModuleConfig.clonable_modules.keys.join(" ")
 
-        # if we get no argument or map of options we are not in command line
-        if [NilClass, Hash].any? { |c| WFM.Args.first.is_a?(c) }
-          params = WFM.Args.first || {}
+        if [NilClass, Hash].any? { |c| Yast::WFM.Args.first.is_a?(c) }
+          params = Yast::WFM.Args.first || {}
           doClone(params)
         else
           cmdline = {
@@ -76,7 +79,7 @@ module Y2Autoinstallation
                   method(:doClone),
                   "boolean (map <string, any>)"
                 ),
-                "help"    => Builtins.sformat(_("known modules: %1"), @moduleList),
+                "help"    => format(_("known modules: %s"), modules_list),
                 "example" => "modules clone=software,partitioning"
               }
             },
@@ -89,19 +92,19 @@ module Y2Autoinstallation
             "mappings"   => { "modules" => ["clone"] }
           }
 
-          ret = CommandLine.Run(cmdline)
-          Builtins.y2debug("ret = %1", ret)
-
+          ret = Yast::CommandLine.Run(cmdline)
+          log.debug("ret = #{ret}")
         end
-        Builtins.y2milestone("----------------------------------------")
-        Builtins.y2milestone("clone_system finished")
+
+        log.info("----------------------------------------")
+        log.info("clone_system finished")
 
         nil
       end
 
       def GUI
-        Mode.SetUI("commandline")
-        CommandLine.Error(_("Empty parameter list"))
+        Yast::Mode.SetUI("commandline")
+        Yast::CommandLine.Error(_("Empty parameter list"))
         :dummy
       end
 
@@ -112,32 +115,29 @@ module Y2Autoinstallation
         # The warning is only needed while calling "yast clone_system". It is not
         # needed in the installation workflow where it will be checked by the file selection box
         # directly. (bnc#888546)
-        if Mode.normal && FileUtils.Exists(target_path)
+        if Yast::Mode.normal && Yast::FileUtils.Exists(target_path)
           # TRANSLATORS: Warning that an already existing autoyast configuration file
           #              will be overwritten.
-          if !Popup.ContinueCancel(_("File %s exists! Really overwrite?") % target_path)
+          if !Yast::Popup.ContinueCancel(_("File %s exists! Really overwrite?") % target_path)
             return false
           end
         end
 
-        Popup.ShowFeedback(
+        Yast::Popup.ShowFeedback(
           _("Cloning the system..."),
           # TRANSLATORS: %s is path where profile can be found
           _("The resulting autoyast profile can be found in %s.") % target_path
         )
 
-        AutoinstClone.additional =
-          if Ops.get_string(options, "clone", "") != ""
-            Builtins.splitstring(
-              Ops.get_string(options, "clone", ""),
-              ","
-            )
+        Yast::AutoinstClone.additional =
+          if options["clone"]
+            options["clone"].split(",")
           else
-            deep_copy(ProductControl.clone_modules)
+            Yast::ProductControl.clone_modules
           end
-        AutoinstClone.Process
-        XML.YCPToXMLFile(:profile, Profile.current, target_path)
-        Popup.ClearFeedback
+        Yast::AutoinstClone.Process
+        Yast::XML.YCPToXMLFile(:profile, Yast::Profile.current, target_path)
+        Yast::Popup.ClearFeedback
         true
       end
     end
