@@ -20,6 +20,18 @@
 require "yast"
 require "autoinstall/auto_sequence"
 
+Yast.import "Pkg"
+Yast.import "Wizard"
+Yast.import "Mode"
+Yast.import "Profile"
+Yast.import "AutoinstConfig"
+Yast.import "Y2ModuleConfig"
+Yast.import "Popup"
+Yast.import "AddOnProduct"
+Yast.import "CommandLine"
+Yast.import "AutoInstall"
+Yast.import "UI"
+
 module Y2Autoinstallation
   module Clients
     class Autoyast < Yast::Client
@@ -28,19 +40,7 @@ module Y2Autoinstallation
       def initialize
         textdomain "autoinst"
 
-        Yast.import "Pkg"
-        Yast.import "Wizard"
-        Yast.import "Mode"
         Yast::Mode.SetMode("autoinst_config")
-
-        Yast.import "Profile"
-        Yast.import "AutoinstConfig"
-        Yast.import "Y2ModuleConfig"
-        Yast.import "Popup"
-        Yast.import "AddOnProduct"
-        Yast.import "CommandLine"
-        Yast.import "AutoInstall"
-        Yast.import "UI"
 
         Yast.include self, "autoinstall/dialogs.rb"
         Yast.include self, "autoinstall/conftree.rb"
