@@ -121,6 +121,16 @@ describe Y2Autoinstallation::Clients::CloneSystem do
         client.main
       end
 
+      context "when a filename is given" do
+        let(:args) { ["modules", "filename=/tmp/autoinst.xml"] }
+
+        it "clones and writes the profile to the given file" do
+          expect(Yast::AutoinstClone).to receive(:Process)
+          expect(Yast::XML).to receive(:YCPToXMLFile).with(:profile, profile, "/tmp/autoinst.xml")
+          client.main
+        end
+      end
+
       context "when some module names are specified" do
         let(:args) { ["modules", "clone=partitioning,ssh_import"] }
 
