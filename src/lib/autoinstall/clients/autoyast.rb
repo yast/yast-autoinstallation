@@ -34,6 +34,7 @@ Yast.import "UI"
 
 module Y2Autoinstallation
   module Clients
+    # This client is responsible for starting the AutoYaST UI.
     class Autoyast < Yast::Client
       include Yast::Logger
 
@@ -95,6 +96,7 @@ module Y2Autoinstallation
 
         ret = Yast::CommandLine.Run(@cmdline)
         log.debug("ret = #{ret}")
+
         Yast::AddOnProduct.CleanModeConfigSources
         :exit
       end
