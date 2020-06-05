@@ -68,12 +68,11 @@ module Y2Autoinstallation
           doClone(params)
         else
           cmdline = {
-            "id"         => "clone_system",
-            "help"       => _(
+            "id"       => "clone_system",
+            "help"     => _(
               "Client for creating an AutoYaST profile based on the currently running system"
             ),
-            "guihandler" => fun_ref(method(:GUI), "symbol ()"),
-            "actions"    => {
+            "actions"  => {
               "modules" => {
                 "handler" => fun_ref(
                   method(:doClone),
@@ -83,7 +82,7 @@ module Y2Autoinstallation
                 "example" => "modules clone=software,partitioning"
               }
             },
-            "options"    => {
+            "options"  => {
               "clone"    => {
                 "type" => "string",
                 "help" => _("comma separated list of modules to clone")
@@ -93,19 +92,13 @@ module Y2Autoinstallation
                 "help" => "filename=OUTPUT_FILE"
               }
             },
-            "mappings"   => { "modules" => ["clone", "filename"] }
+            "mappings" => { "modules" => ["clone", "filename"] }
           }
 
           Yast::CommandLine.Run(cmdline)
         end
 
         nil
-      end
-
-      def GUI
-        Yast::Mode.SetUI("commandline")
-        Yast::CommandLine.Error(_("Empty parameter list"))
-        :dummy
       end
 
       # @return [String] Default filename to write the profile to
