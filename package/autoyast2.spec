@@ -22,7 +22,7 @@
 %endif
 
 Name:           autoyast2
-Version:        4.3.8
+Version:        4.3.9
 Release:        0
 Summary:        YaST2 - Automated Installation
 License:        GPL-2.0-only
@@ -181,7 +181,6 @@ done
 %{yast_yncludedir}/autoinstall/dialogs.rb
 %{yast_yncludedir}/autoinstall/script_dialogs.rb
 %{yast_yncludedir}/autoinstall/general_dialogs.rb
-%{yast_yncludedir}/autoinstall/wizards.rb
 %{yast_yncludedir}/autoinstall/helps.rb
 %dir %{yast_schemadir}
 %dir %{yast_schemadir}/autoyast
