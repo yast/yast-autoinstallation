@@ -17,12 +17,14 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "yast"
+require "erb"
 
+require "yast"
 require "autoinstall/xml_validator"
 require "yast2/popup"
 
 Yast.import "AutoinstConfig"
+Yast.import "Report"
 
 module Y2Autoinstallation
   class XmlChecks
@@ -56,27 +58,41 @@ module Y2Autoinstallation
       validator = XmlValidator.new(file, schema)
       return true if validator.valid?
 
-      Yast2::Popup.show(error_message(msg, file, schema),
-        headline: :error, details: validator.errors.join("\n"),
-        buttons: { abort: Yast::Label.AbortButton })
-      false
+      if ENV["YAST_SKIP_XML_VALIDATION"] == "1"
+        log.warn "Skipping invalid XML!"
+        return true
+      end
+
+      ret = Yast2::Popup.show(message(msg, validator.errors, file, schema),
+        richtext: true,
+        headline: :error,
+        buttons: :continue_cancel,
+        focus: :cancel
+      ) == :continue
+
+      log.warn "Skipping invalid XML on user request!" if ret
+
+      ret
     end
 
-    private_class_method :check
-
-    def self.error_message(msg, file, schema)
+    def self.message(msg, errors, file, schema)
       xml_file = File.basename(file)
       jing_command = "jing #{schema} #{xml_file}"
       xmllint_command = "xmllint --noout --relaxng #{schema} #{xml_file}"
 
+      "<h3>" + msg + "</h3>" + "<p>" +
+      # TRANSLATORS: Warn user about using invalid XML
+      _("Using an invalid XML document might result in an unexpected behavior, crash or even data loss!") +
+      "</p><h4>" + _("Details") + "</h4>" + ERB::Util.html_escape(errors.join("<br>")) +
+      "<h4>" + _("Note") + "</h4>" +
       # TRANSLATORS: A hints how to check a XML file, displayed as a part of the
       # validation error message, %{jing} and %{xmllint} are replaced by shell commands
-      msg += "\n\n" + _("You can check the file with these commands:\n\n" \
-        "  %{jing}\n" \
-        "  %{xmllint}"
-      ) % {jing: jing_command, xmllint: xmllint_command}
+      "<p>" + _("You can check the file manually with these commands:<br><br>" \
+        "&nbsp;&nbsp;%{jing}<br>" \
+        "&nbsp;&nbsp;%{xmllint}"
+      ) % {jing: jing_command, xmllint: xmllint_command} + "</p>"
     end
 
-    private_class_method :error_message
+    private_class_method :message
   end
 end

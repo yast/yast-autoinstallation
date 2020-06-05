@@ -48,12 +48,6 @@ module Y2Autoinstallation
     private
 
     def validate
-      if ENV["YAST_SKIP_XML_VALIDATION"] == "1"
-        log.info "Skipping XML validation on user request"
-        @errors = []
-        return
-      end
-
       log.info "Validating #{xml} against #{schema}..."
       @errors = Yast::XML.validate(xml, schema)
 

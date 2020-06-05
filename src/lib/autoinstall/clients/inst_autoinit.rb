@@ -197,7 +197,7 @@ module Y2Autoinstallation
         Yast::Progress.NextStage
         Yast::Progress.Title(_("Parsing control file"))
 
-        # display an error when the profile is not valid and abort the installation
+        # validate the profile
         return :abort unless Y2Autoinstallation::XmlChecks.valid_profile?
 
         log.info "Parsing control file"
