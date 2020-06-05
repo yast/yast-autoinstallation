@@ -41,9 +41,9 @@ describe Y2Autoinstallation::Clients::Autoyast do
       Yast::Y2ModuleConfig.main
     end
 
-    describe "'file' and 'module' command" do
+    describe "'ui' command" do
       let(:path) { File.join(FIXTURES_PATH.join("profiles", "leap.xml")) }
-      let(:args) { ["file", "filename=#{path}"] }
+      let(:args) { ["ui", "filename=#{path}"] }
 
       it "reads and imports the given profile" do
         expect(Yast::WFM).to receive(:CallFunction).with("language_auto", ["Import", Hash])
@@ -68,7 +68,7 @@ describe Y2Autoinstallation::Clients::Autoyast do
       end
 
       context "when a module name is given" do
-        let(:args) { ["file", "modname=kdump"] }
+        let(:args) { ["ui", "modname=kdump"] }
 
         it "starts the AutoYaST UI with the given module" do
           expect(Yast::AutoinstConfig).to receive(:runModule=).with("kdump")

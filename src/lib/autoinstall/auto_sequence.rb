@@ -69,7 +69,7 @@ module Y2Autoinstallation
       CreateDialog("System", "general")
       menus
       ret = super(sequence: SEQUENCE_HASH)
-      Yast::UI.CloseDialog
+      Yast::Wizard.CloseDialog
       ret
     end
 

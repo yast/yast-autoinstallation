@@ -65,7 +65,7 @@ module Y2Autoinstallation
 
         if [NilClass, Hash].any? { |c| Yast::WFM.Args.first.is_a?(c) }
           params = Yast::WFM.Args.first || {}
-          doClone(params)
+          clone_system(params)
         else
           cmdline = {
             "id"       => "clone_system",
@@ -75,7 +75,7 @@ module Y2Autoinstallation
             "actions"  => {
               "modules" => {
                 "handler" => fun_ref(
-                  method(:doClone),
+                  method(:clone_system),
                   "boolean (map <string, any>)"
                 ),
                 "help"    => format(_("known modules: %s"), modules_list),
@@ -85,7 +85,9 @@ module Y2Autoinstallation
             "options"  => {
               "clone"    => {
                 "type" => "string",
-                "help" => _("comma separated list of modules to clone")
+                "help" => _(
+                  "Comma separated list of modules to clone. By default, all modules are cloned."
+                )
               },
               "filename" => {
                 "type" => "string",
@@ -104,8 +106,11 @@ module Y2Autoinstallation
       # @return [String] Default filename to write the profile to
       DEFAULT_FILENAME = "/root/autoinst.xml".freeze
 
-      def doClone(options = DEFAULT_FILENAME)
-        filename = options["filename"] || "/root/autoinst.xml"
+      # Clone the system
+      #
+      # @param options [Hash] Action options
+      def clone_system(options)
+        filename = options["filename"] || DEFAULT_FILENAME
 
         # Autoyast overwriting an already existing config file.
         # The warning is only needed while calling "yast clone_system". It is not
