@@ -57,31 +57,38 @@ module Y2Autoinstallation
 
         turn_off_signature_checks
 
-        @cmdline = {
+        cmdline = {
           "id"         => "autoyast",
           "help"       => _("AutoYaST"),
           "guihandler" => fun_ref(method(:auto_sequence), "any ()"),
           "actions"    => {
+            "ui"           => {
+              "handler" => fun_ref(
+                method(:run_ui),
+                "boolean (map <string, string>)"
+              ),
+              "help"    => ui_action_help
+            },
             "file"         => {
               "handler" => fun_ref(
                 method(:run_ui),
                 "boolean (map <string, string>)"
               ),
-              "help"    => "file operations"
+              "help"    => file_action_help
             },
             "module"       => {
               "handler" => fun_ref(
                 method(:run_ui),
                 "boolean (map <string, string>)"
               ),
-              "help"    => "module specific operations"
+              "help"    => module_action_help
             },
             "list-modules" => {
               "handler" => fun_ref(
                 method(:list_modules),
                 "void ()"
               ),
-              "help"    => "list of known modules"
+              "help"    => list_modules_action_help
             }
           },
           "options"    => {
@@ -89,16 +96,18 @@ module Y2Autoinstallation
             "modname"  => { "type" => "string", "help" => "modname=AYAST_MODULE" }
           },
           "mappings"   => {
+            "ui"     => ["filename", "modname"],
             "file"   => ["filename", "modname"],
             "module" => ["filename", "modname"]
           }
         }
 
-        ret = Yast::CommandLine.Run(@cmdline)
+        ret = Yast::CommandLine.Run(cmdline)
         log.debug("ret = #{ret}")
 
         Yast::AddOnProduct.CleanModeConfigSources
-        :exit
+
+        nil
       end
 
       # Run the main UI
@@ -136,7 +145,7 @@ module Y2Autoinstallation
             _(
               "Error while parsing the control file.\n" \
                 "Check the log files for more details or fix the\n" \
-                "control file and try again.\n"
+                "AutoYaST profile and try again.\n"
             )
           )
         end
@@ -190,6 +199,28 @@ module Y2Autoinstallation
             "boolean (string, integer)"
           )
         )
+      end
+
+      # @return [String]
+      def file_action_help
+        _("File specific operations (deprecated). Use 'ui' action with the 'filename' " \
+          "option instead.")
+      end
+
+      # @return [String]
+      def module_action_help
+        _("Module specific operations (deprecated). Use 'ui' action instead with the " \
+          "'modname' option instead.")
+      end
+
+      # @return [String]
+      def ui_action_help
+        _("Opens the AutoYaST UI.")
+      end
+
+      # @return [String]
+      def list_modules_action_help
+        _("List known modules.")
       end
     end
   end
