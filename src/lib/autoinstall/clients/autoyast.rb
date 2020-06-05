@@ -54,30 +54,7 @@ module Y2Autoinstallation
           return :abort
         end
 
-        Yast::Pkg.CallbackImportGpgKey(
-          fun_ref(
-            Yast::AutoInstall.method(:callbackTrue_boolean_map_integer),
-            "boolean (map <string, any>, integer)"
-          )
-        )
-        Yast::Pkg.CallbackAcceptUnknownGpgKey(
-          fun_ref(
-            Yast::AutoInstall.method(:callbackTrue_boolean_string_string_integer),
-            "boolean (string, string, integer)"
-          )
-        )
-        Yast::Pkg.CallbackAcceptFileWithoutChecksum(
-          fun_ref(
-            Yast::AutoInstall.method(:callbackTrue_boolean_string),
-            "boolean (string)"
-          )
-        )
-        Yast::Pkg.CallbackAcceptUnsignedFile(
-          fun_ref(
-            Yast::AutoInstall.method(:callbackTrue_boolean_string_integer),
-            "boolean (string, integer)"
-          )
-        )
+        turn_off_signature_checks
 
         @cmdline = {
           "id"         => "autoyast",
@@ -116,17 +93,8 @@ module Y2Autoinstallation
           }
         }
 
-        # command line options
-        # Init variables
-        @command = ""
-        @flags = []
-        @options = {}
-        @exit = ""
-        @l = []
-
-        @ret = nil
-        @ret = Yast::CommandLine.Run(@cmdline)
-
+        ret = Yast::CommandLine.Run(@cmdline)
+        log.debug("ret = #{ret}")
         Yast::AddOnProduct.CleanModeConfigSources
         :exit
       end
@@ -190,6 +158,36 @@ module Y2Autoinstallation
       # @return [Y2Autoinstallation::AutoSequence]
       def auto_sequence
         Y2Autoinstallation::AutoSequence.new.run
+      end
+
+      # Turn off signature checks
+      #
+      # Signature checks are turned off in the UI.
+      def turn_off_signature_checks
+        Yast::Pkg.CallbackImportGpgKey(
+          fun_ref(
+            Yast::AutoInstall.method(:callbackTrue_boolean_map_integer),
+            "boolean (map <string, any>, integer)"
+          )
+        )
+        Yast::Pkg.CallbackAcceptUnknownGpgKey(
+          fun_ref(
+            Yast::AutoInstall.method(:callbackTrue_boolean_string_string_integer),
+            "boolean (string, string, integer)"
+          )
+        )
+        Yast::Pkg.CallbackAcceptFileWithoutChecksum(
+          fun_ref(
+            Yast::AutoInstall.method(:callbackTrue_boolean_string),
+            "boolean (string)"
+          )
+        )
+        Yast::Pkg.CallbackAcceptUnsignedFile(
+          fun_ref(
+            Yast::AutoInstall.method(:callbackTrue_boolean_string_integer),
+            "boolean (string, integer)"
+          )
+        )
       end
     end
   end

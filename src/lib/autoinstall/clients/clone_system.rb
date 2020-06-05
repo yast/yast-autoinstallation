@@ -96,12 +96,8 @@ module Y2Autoinstallation
             "mappings"   => { "modules" => ["clone", "filename"] }
           }
 
-          ret = Yast::CommandLine.Run(cmdline)
-          log.debug("ret = #{ret}")
+          Yast::CommandLine.Run(cmdline)
         end
-
-        log.info("----------------------------------------")
-        log.info("clone_system finished")
 
         nil
       end
