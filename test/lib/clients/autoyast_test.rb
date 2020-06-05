@@ -76,6 +76,17 @@ describe Y2Autoinstallation::Clients::Autoyast do
           client.main
         end
       end
+
+      context "when was not possible to load the modules configuration" do
+        before do
+          allow(Yast::Y2ModuleConfig).to receive(:GroupMap).and_return({})
+        end
+
+        it "displays an error" do
+          expect(Yast::Popup).to receive(:Error)
+          client.main
+        end
+      end
     end
 
     describe "'list-modules' command" do
