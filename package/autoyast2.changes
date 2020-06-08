@@ -1,11 +1,27 @@
 -------------------------------------------------------------------
-Wed Jun  3 10:08:12 UTC 2020 - Josef Reidinger <jreidinger@suse.com>
+Mon Jun  8 10:08:12 UTC 2020 - Josef Reidinger <jreidinger@suse.com>
 
 - Autoyast User Scripts Improvements:
   - ensure all artifacts are copied to system (bsc#1145269)
   - show warning if script returns non zero value
   - show warning if there are two scripts that overwrite each other
   - allow any interpreter to be used
+- 4.3.10
+
+-------------------------------------------------------------------
+Fri Jun  5 08:03:15 UTC 2020 - Imobach Gonzalez Sosa <igonzalezsosa@suse.com>
+
+- Fix 'autoyast' and 'clone_system' command line interfaces
+  (bsc#1172548):
+  - autoyast: add a list-modules command to list all known modules.
+  - autoyast: display the correct client name in the help text.
+  - autoyast: 'file' and 'module' command are now equivalent.
+    Both of them support setting 'filename' and 'modname'
+    arguments.
+  - clone_system: add a 'filename' option instead of always using
+    '/root/autoinst.xml'.
+  - clone_system: move the logic to find the clonable modules
+    to Y2ModuleConfig.
 - 4.3.9
 
 -------------------------------------------------------------------
