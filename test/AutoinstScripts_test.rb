@@ -9,6 +9,7 @@ describe "Yast::AutoinstScripts" do
 
   before do
     allow(Yast::Mode).to receive(:autoinst).and_return true
+    allow(Yast::SCR).to receive(:Write)
     # re-init
     subject.main
   end
