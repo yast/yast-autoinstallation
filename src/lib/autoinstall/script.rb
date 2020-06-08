@@ -64,7 +64,7 @@ module Y2Autoinstallation
       @filename = hash["filename"] || ""
       @source = hash["source"] || ""
       @location = hash["location"] || ""
-      @debug = !!hash["debug"]
+      @debug = hash.fetch("debug", true)
 
       resolve_location
     end
