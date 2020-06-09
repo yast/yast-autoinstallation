@@ -1,5 +1,4 @@
 require "autoinstall/autosetup_helpers"
-require "autoinstall/xml_checks"
 require "y2packager/medium_type"
 
 Yast.import "AutoInstall"
@@ -196,9 +195,6 @@ module Y2Autoinstallation
 
         Yast::Progress.NextStage
         Yast::Progress.Title(_("Parsing control file"))
-
-        # validate the profile
-        return :abort unless Y2Autoinstallation::XmlChecks.valid_profile?
 
         log.info "Parsing control file"
         if !Yast::Profile.ReadXML(Yast::AutoinstConfig.xml_tmpfile) || Yast::Profile.current.nil?

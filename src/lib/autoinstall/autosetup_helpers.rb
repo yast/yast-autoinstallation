@@ -19,6 +19,7 @@
 
 require "y2storage"
 require "autoinstall/activate_callbacks"
+require "autoinstall/xml_checks"
 
 Yast.import "Profile"
 
@@ -49,6 +50,8 @@ module Y2Autoinstallation
       if Yast::SCR.Read(path(".target.size"), Yast::AutoinstConfig.modified_profile) <= 0
         return :not_found
       end
+
+      return :abort unless Y2Autoinstallation::XmlChecks.valid_modified_profile?
 
       if !Yast::Profile.ReadXML(Yast::AutoinstConfig.modified_profile) ||
           Yast::Profile.current == {}

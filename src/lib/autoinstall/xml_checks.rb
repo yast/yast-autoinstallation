@@ -42,6 +42,12 @@ module Y2Autoinstallation
       check(Yast::AutoinstConfig.xml_tmpfile, PROFILE_SCHEMA, msg)
     end
 
+    def self.valid_modified_profile?
+      # TRANSLATORS: Error message
+      msg = _("The AutoYaST pre-script generated an invalid XML document.")
+      check(Yast::AutoinstConfig.modified_profile, PROFILE_SCHEMA, msg)
+    end
+
     def self.valid_rules?
       # TRANSLATORS: Error message
       msg = _("The AutoYaST rules file is not a valid XML document.")
