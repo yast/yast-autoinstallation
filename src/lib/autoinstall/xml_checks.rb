@@ -72,9 +72,8 @@ module Y2Autoinstallation
       ret = Yast2::Popup.show(message(msg, validator.errors, file, schema),
         richtext: true,
         headline: :error,
-        buttons: :continue_cancel,
-        focus: :cancel
-      ) == :continue
+        buttons:  :continue_cancel,
+        focus:    :cancel) == :continue
 
       log.warn "Skipping invalid XML on user request!" if ret
 
@@ -87,16 +86,16 @@ module Y2Autoinstallation
       xmllint_command = "xmllint --noout --relaxng #{schema} #{xml_file}"
 
       "<h3>" + msg + "</h3>" + "<p>" +
-      # TRANSLATORS: Warn user about using invalid XML
-      _("Using an invalid XML document might result in an unexpected behavior, crash or even data loss!") +
-      "</p><h4>" + _("Details") + "</h4>" + ERB::Util.html_escape(errors.join("<br>")) +
-      "<h4>" + _("Note") + "</h4>" +
-      # TRANSLATORS: A hints how to check a XML file, displayed as a part of the
-      # validation error message, %{jing} and %{xmllint} are replaced by shell commands
-      "<p>" + _("You can check the file manually with these commands:<br><br>" \
+        # TRANSLATORS: Warn user about using invalid XML
+        _("Using an invalid XML document might result in an unexpected behavior, " \
+          "crash or even data loss!") +
+        "</p><h4>" + _("Details") + "</h4>" + ERB::Util.html_escape(errors.join("<br>")) +
+        "<h4>" + _("Note") + "</h4>" +
+        # TRANSLATORS: A hints how to check a XML file, displayed as a part of the
+        # validation error message, %{jing} and %{xmllint} are replaced by shell commands
+        "<p>" + format(_("You can check the file manually with these commands:<br><br>" \
         "&nbsp;&nbsp;%{jing}<br>" \
-        "&nbsp;&nbsp;%{xmllint}"
-      ) % {jing: jing_command, xmllint: xmllint_command} + "</p>"
+        "&nbsp;&nbsp;%{xmllint}"), jing: jing_command, xmllint: xmllint_command) + "</p>"
     end
 
     private_class_method :message

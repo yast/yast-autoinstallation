@@ -35,17 +35,19 @@ module Y2Autoinstallation
 
     def errors
       return @errors if @errors
+
       validate
       @errors
     end
 
     def valid?
       return @errors.empty? if @errors
+
       validate
       @errors.empty?
     end
 
-    private
+  private
 
     def validate
       log.info "Validating #{xml} against #{schema}..."
@@ -58,7 +60,7 @@ module Y2Autoinstallation
       end
     rescue Yast::XMLDeserializationError => e
       log.error "Cannot parse XML: #{e.message}"
-      @errors = [ e.message ]
+      @errors = [e.message]
     end
   end
 end
