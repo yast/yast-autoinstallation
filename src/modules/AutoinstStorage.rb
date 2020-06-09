@@ -55,6 +55,7 @@ module Yast
     def Import(settings)
       log.info "entering Import with #{settings.inspect}"
 
+      settings ||= []
       partitioning = preprocessed_settings(settings)
       return false unless partitioning
 
