@@ -176,6 +176,8 @@ module Yast
         )
       end
 
+      return false if !is_directory && !Y2Autoinstallation::XmlChecks.valid_profile?
+
       ret = if is_directory
         Get(
           AutoinstConfig.scheme,

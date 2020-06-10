@@ -36,10 +36,10 @@ module Y2Autoinstallation
     RULES_SCHEMA = "/usr/share/YaST2/schema/autoyast/rng/rules.rng".freeze
     CLASSES_SCHEMA = "/usr/share/YaST2/schema/autoyast/rng/classes-use.rng".freeze
 
-    def self.valid_profile?
+    def self.valid_profile?(file = Yast::AutoinstConfig.xml_tmpfile)
       # TRANSLATORS: Error message
       msg = _("The AutoYaST profile is not a valid XML document.")
-      check(Yast::AutoinstConfig.xml_tmpfile, PROFILE_SCHEMA, msg)
+      check(file, PROFILE_SCHEMA, msg)
     end
 
     def self.valid_modified_profile?

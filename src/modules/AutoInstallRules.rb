@@ -897,6 +897,9 @@ module Yast
       @tomerge.each_with_index do |file, iter|
         log.info("Working on file: #{file}")
         current_profile = File.join(AutoinstConfig.local_rules_location, file)
+
+        error = true unless Y2Autoinstallation::XmlChecks.valid_profile?(current_profile)
+
         dest_profile = (iter == 0) ? base_profile : cleaned_profile
         if !XML_cleanup(current_profile, dest_profile)
           log.error("Error reading XML file")
