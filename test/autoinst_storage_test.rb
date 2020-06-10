@@ -63,6 +63,14 @@ describe Yast::AutoinstStorage do
       subject.Import([{ "device" => "ask" }])
     end
 
+    context "when no partitioning configuration is given" do
+      it "considers an empty 'partitioning' section" do
+        expect(preprocessor).to receive(:run).with([])
+        expect(Y2Autoinstallation::StorageProposal).to receive(:new).with(settings, anything)
+        subject.Import(nil)
+      end
+    end
+
     context "when settings are not preprocessed successfully" do
       let(:settings) { nil }
 
