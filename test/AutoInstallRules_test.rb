@@ -6,6 +6,7 @@ Yast.import "AutoInstallRules"
 
 describe "Yast::AutoInstallRules" do
   subject { Yast::AutoInstallRules }
+
   before do
     Y2Storage::StorageManager.create_test_instance
     allow(Y2Autoinstallation::XmlChecks).to receive(:valid_profile?).and_return(true)

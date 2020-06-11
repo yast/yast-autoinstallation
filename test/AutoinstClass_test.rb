@@ -16,6 +16,7 @@ describe "Yast::AutoinstClass" do
 
   before(:each) do
     subject.class_dir = CLASS_DIR
+    allow(Y2Autoinstallation::XmlChecks).to receive(:valid_classes?).and_return(true)
   end
 
   describe "#Read" do
