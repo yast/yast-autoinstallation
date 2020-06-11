@@ -16,12 +16,13 @@ module Yast
     # Script Configuration
     # @return  script configuration dialog
     def script_dialog_contents
-      allscripts = Builtins.maplist(AutoinstScripts.merged) do |s|
+      allscripts = AutoinstScripts.scripts.map do |s|
         Item(
-          Id(Ops.get_string(s, "filename", "Unknown")),
-          Ops.get_string(s, "filename", "Unknown"),
-          AutoinstScripts.typeString(Ops.get_string(s, "type", "")),
-          Ops.get_string(s, "interpreter", "Unknown")
+          Id(s.filename),
+          s.filename,
+          AutoinstScripts.typeString(s.class.type),
+          # init scripts does not have interpreter. Is it correct?
+          s.respond_to?(:interpreter) ? s.interpreter : ""
         )
       end
       contents = VBox(
@@ -49,11 +50,10 @@ module Yast
     def ScriptDialog(mode, name)
       script = {}
       if mode == :edit
-        filtered_scripts = Builtins.filter(AutoinstScripts.merged) do |s|
-          Ops.get_string(s, "filename", "") == name
-        end
-        if Ops.greater_than(Builtins.size(filtered_scripts), 0)
-          script = Ops.get_map(filtered_scripts, 0, {})
+        script_o = AutoinstScripts.scripts.find { |s| s.filename == name }
+        if script_o
+          script = script_o.to_hash
+          script["type"] = script_o.class.type
         end
       end
 
@@ -149,6 +149,7 @@ module Yast
           ),
           ComboBox(
             Id(:interpreter),
+            Opt(:editable),
             _("&Interpreter"),
             [
               Item(
@@ -175,22 +176,32 @@ module Yast
             [
               Item(
                 Id("pre-scripts"),
-                "Pre",
+                # TRANSLATORS: Pre installation script type
+                _("Pre"),
                 Ops.get_string(script, "type", "") == "pre-scripts"
               ),
               Item(
+                # TRANSLATORS: Post partitioning installation script type
+                Id("postpartitioning-scripts"),
+                _("PostPartitioning"),
+                Ops.get_string(script, "type", "") == "post-scripts"
+              ),
+              Item(
                 Id("chroot-scripts"),
-                "Chroot",
+                # TRANSLATORS: Change root installation script type
+                _("Chroot"),
                 Ops.get_string(script, "type", "") == "chroot-scripts"
               ),
               Item(
                 Id("post-scripts"),
-                "Post",
+                # TRANSLATORS: Post installation script type
+                _("Post"),
                 Ops.get_string(script, "type", "") == "post-scripts"
               ),
               Item(
                 Id("init-scripts"),
-                "Init",
+                # TRANSLATORS: Init system post installation script type
+                _("Init"),
                 Ops.get_string(script, "type", "") == "init-scripts"
               )
             ]

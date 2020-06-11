@@ -278,11 +278,10 @@ module Yast
         )
         processWait("do_online_update", "post-modules")
         if @online_update_ret == :reboot
-          @script = {
-            "filename" => "zzz_reboot",
-            "source"   => "shutdown -r now"
-          }
-          AutoinstScripts.init = Builtins.add(AutoinstScripts.init, @script)
+          # AddEditScript(scriptName, source, interpreter, type, chrooted, debug, feedback,
+          #  feedback_type, location, notification)
+          AutoinstScripts.AddEditScript("zzz_reboot", "shutdown -r now", "shell", "init",
+            false, false, false, "", "", "") # wonderful API without defaults
         end
       end
 
