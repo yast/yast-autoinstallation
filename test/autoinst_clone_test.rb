@@ -96,11 +96,9 @@ describe Yast::AutoinstClone do
       subject.Process
     end
 
-    it "imports 'general' and 'report' settings" do
+    it "imports 'general' settings" do
       expect(Yast::Call).to receive(:Function).with("general_auto", ["Import", Hash])
       expect(Yast::Call).to receive(:Function).with("general_auto", ["SetModified"])
-      expect(Yast::Call).to receive(:Function).with("report_auto", ["Import", Hash])
-      expect(Yast::Call).to receive(:Function).with("report_auto", ["SetModified"])
       subject.Process
     end
 
