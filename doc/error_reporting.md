@@ -14,6 +14,7 @@ on the `Yast::Popup` mechanism but offers a few additional features:
 * Show/Hide messages depending on its severity (error, messages, yes/no questions, etc.).
 * Messages logging.
 * Time-outs.
+* Support for the command line interface.
 
 ```ruby
 Yast.import "Report"
@@ -48,6 +49,8 @@ a 10 seconds time-out. Additionally, all messages are logged.
   </yesno_messages>
 </report>
 ```
+
+However, this module is not limited to work in AutoYaST, and can be used in any other part of YaST.
 
 ## The New AutoYaST Issues Mechanism
 
