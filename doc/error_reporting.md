@@ -1,7 +1,10 @@
 # Error Reporting in AutoYaST
 
 This document tries to summarize the error reporting mechanisms that, as a developer, you can use
-when writing code for AutoYaST.
+when writing code for AutoYaST. Bear in mind that both mechanisms have different purposes. On the
+one hand, the `Yast::Report` module is the way to go when you want to notify a general problem or
+ask a Yes/No question. On the other hand, the purpose of the AutoYaST issues mechanism is to notify
+semantic issues in the profile.
 
 ## Yast::Report Module
 
@@ -78,9 +81,8 @@ Yast::AutoInstall.issues_list.add(
 )
 ```
 
-An important difference with existing error reporting mechanism in (Auto)YaST is that the messages
-are not shown when they are added. Instead, all of them are displayed at the same point, [after the
-profile is
+An important difference with the `Yast::Report` mechanism is that the messages are not shown when
+they are added. Instead, all of them are displayed at the same point, [after the profile is
 imported](https://github.com/yast/yast-autoinstallation/blob/2edc7bf7d1cee1310a5c120ce9a131d6ff9a430f/src/clients/inst_autosetup.rb#L430).
 Moreover, reporting errors and warning settings are honored when displaying those messages. Check
 the
