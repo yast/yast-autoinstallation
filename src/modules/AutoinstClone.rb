@@ -128,9 +128,6 @@ module Yast
       Call.Function("general_auto", ["Import", General()])
       Call.Function("general_auto", ["SetModified"])
 
-      Call.Function("report_auto", ["Import", Report.Export])
-      Call.Function("report_auto", ["SetModified"])
-
       Profile.Prepare
       nil
     end
