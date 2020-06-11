@@ -195,7 +195,6 @@ module Y2Autoinstallation
 
         Yast::Progress.NextStage
         Yast::Progress.Title(_("Parsing control file"))
-
         log.info "Parsing control file"
         if !Yast::Profile.ReadXML(Yast::AutoinstConfig.xml_tmpfile) || Yast::Profile.current.nil?
           Yast::Popup.Error(
