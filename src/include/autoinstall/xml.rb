@@ -124,7 +124,8 @@ module Yast
           "location",
           "script_source",
           "media_url",
-          "subvolumes_prefix"
+          "subvolumes_prefix",
+          "ntp_policy"
         ]
       )
       #            doc["systemID"] = "/usr/share/autoinstall/dtd/profile.dtd";
