@@ -457,6 +457,21 @@ module Yast
       nil
     end
 
+    # Set the "kexec_reboot" flag in the product
+    # description in order to force a reboot with
+    # kexec at the end of the first installation
+    # stage.
+    # @return [void]
+    def SetRebootAfterFirstStage
+      return unless mode.key?("forceboot")
+
+      ProductFeatures.SetBooleanFeature(
+        "globals",
+        "kexec_reboot",
+        !mode["forceboot"]
+      )
+    end
+
     publish variable: :second_stage, type: "boolean"
     publish variable: :mode, type: "map"
     publish variable: :signature_handling, type: "map"
@@ -476,21 +491,6 @@ module Yast
   private
 
     attr_reader :cio_ignore
-
-    # Set the "kexec_reboot" flag in the product
-    # description in order to force a reboot with
-    # kexec at the end of the first installation
-    # stage.
-    # @return [void]
-    def SetRebootAfterFirstStage
-      return unless mode.key?("forceboot")
-
-      ProductFeatures.SetBooleanFeature(
-        "globals",
-        "kexec_reboot",
-        !mode["forceboot"]
-      )
-    end
   end
 
   AutoinstGeneral = AutoinstGeneralClass.new
