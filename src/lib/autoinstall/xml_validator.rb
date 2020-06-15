@@ -22,17 +22,25 @@ require "yast"
 Yast.import "XML"
 
 module Y2Autoinstallation
+  # Validates an XML document against a given RNG schema
   class XmlValidator
     include Yast::Logger
 
     attr_reader :xml, :schema
 
+    # Constructor
+    # @param xml [String] XML document or path to a XML file
+    # @param schema [String] path to the RNG schema
     def initialize(xml, schema)
       @xml = xml
       @schema = schema
       @errors = nil
     end
 
+    # runs the validation
+    # @return [Array<String>] Returns a list of errors, if the document is not
+    #  well formed it contains syntax errors, if it is not valid it contains
+    #  the validation errors, if it is valid it returns an empty list
     def errors
       return @errors if @errors
 
@@ -40,6 +48,9 @@ module Y2Autoinstallation
       @errors
     end
 
+    # runs the validation
+    # @return [Boolean] returns true if the document is well formed and valid,
+    #  false otherwise
     def valid?
       return @errors.empty? if @errors
 
