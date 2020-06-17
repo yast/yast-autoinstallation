@@ -318,6 +318,15 @@ describe "Yast::AutoInstallRules" do
       end
     end
 
+    context "when a profile is not valid" do
+      it "returns false" do
+        subject.CreateFile("first.xml")
+        expect(Y2Autoinstallation::XmlChecks).to receive(:valid_profile?)
+          .and_return(false)
+        expect(subject.Merge(result_path)).to eq(false)
+      end
+    end
+
     context "when only one XML profile is given" do
       it "does read but not merge this XML profile" do
         subject.CreateFile("first.xml")

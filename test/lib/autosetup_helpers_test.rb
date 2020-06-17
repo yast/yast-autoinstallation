@@ -210,6 +210,21 @@ describe Y2Autoinstallation::AutosetupHelpers do
           expect(client.readModified).to eq(:abort)
         end
       end
+
+      context "when the modified profile is not valid" do
+        before do
+          expect(Y2Autoinstallation::XmlChecks).to receive(:valid_modified_profile?).and_return(false)
+        end
+
+        it "returns :abort" do
+          expect(client.readModified).to eq(:abort)
+        end
+
+        it "sets modified_profile? to false" do
+          client.readModified
+          expect(client.modified_profile?).to eq(false)
+        end
+      end
     end
 
     context "when modified profile does not exist" do
