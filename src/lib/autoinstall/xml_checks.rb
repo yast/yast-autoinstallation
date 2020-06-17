@@ -30,7 +30,6 @@ module Y2Autoinstallation
   # Validates an AutoYaST XML document and displays an error popup
   # for not well formed or invalid documents. It is possible to continue
   # anyway and ignore the found problems at your risk.
-  # 
   class XmlChecks
     extend Yast::Logger
     extend Yast::I18n
