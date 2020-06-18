@@ -339,6 +339,12 @@ describe Yast::Profile do
     end
 
     context "when a module has elements to merge" do
+      let(:custom_export) do
+        {
+          "users"    => [{ "username" => "root" }],
+          "defaults" => { "key1" => "val1" }
+        }
+      end
       let(:custom_module) do
         CUSTOM_MODULE.merge(
           "X-SuSE-YaST-AutoInstClient"     => "custom_auto",
@@ -349,8 +355,19 @@ describe Yast::Profile do
 
       it "adds each element into the current profile" do
         subject.Prepare
-        expect(subject.current["users"]).to be_kind_of(Array)
-        expect(subject.current["defaults"]).to be_kind_of(Hash)
+        expect(subject.current["users"]).to eq(custom_export["users"])
+        expect(subject.current["defaults"]).to eq(custom_export["defaults"])
+      end
+
+      context "but there is no content for some of the elements" do
+        let(:custom_export) do
+          { "defaults" => { "key1" => "val1" } }
+        end
+
+        it "does not include the element with no content" do
+          subject.Prepare
+          expect(subject.current).to_not have_key("users")
+        end
       end
     end
 
