@@ -48,7 +48,6 @@ module Y2Autoinstallation
     def readModified
       textdomain "autoinst"
       if Yast::SCR.Read(path(".target.size"), Yast::AutoinstConfig.modified_profile) <= 0
-        puts "NOT FOUND"
         return :not_found
       end
 

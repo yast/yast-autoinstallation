@@ -52,16 +52,15 @@ module Y2Autoinstallation
     # @return [Boolean] returns true if the document is well formed and valid,
     #  false otherwise
     def valid?
-      return @errors.empty? if @errors
-
-      validate
-      @errors.empty?
+      errors.empty?
     end
 
   private
 
     def validate
-      log.info "Validating #{xml} against #{schema}..."
+      # do not log whole document, only if it is a path
+      log_xml = xml.include?("\n") ? xml : "[XML document #{xml.bytesize} bytes]"
+      log.info "Validating #{log_xml} against #{schema}..."
       @errors = Yast::XML.validate(xml, schema)
 
       if errors.empty?
