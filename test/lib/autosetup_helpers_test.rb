@@ -213,7 +213,8 @@ describe Y2Autoinstallation::AutosetupHelpers do
 
       context "when the modified profile is not valid" do
         before do
-          expect(Y2Autoinstallation::XmlChecks).to receive(:valid_modified_profile?).and_return(false)
+          expect(Y2Autoinstallation::XmlChecks).to receive(:valid_modified_profile?)
+            .and_return(false)
         end
 
         it "returns :abort" do
