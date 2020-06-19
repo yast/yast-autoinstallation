@@ -22,7 +22,7 @@
 %endif
 
 Name:           autoyast2
-Version:        4.3.14
+Version:        4.3.15
 Release:        0
 Summary:        YaST2 - Automated Installation
 License:        GPL-2.0-only
@@ -66,8 +66,8 @@ BuildRequires:  rubygem(%rb_default_ruby_abi:yast-rake)
 
 Requires:       autoyast2-installation = %{version}
 Requires:       libxslt
-# AutoYaST issue handling
-Requires:       yast2 >= 4.3.2
+# XML.validate
+Requires:       yast2 >= 4.3.8
 Requires:       yast2-core
 Requires:       yast2-country >= 3.1.13
 # Moving security module to first installation stage

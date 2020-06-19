@@ -33,6 +33,10 @@ describe Y2Autoinstallation::AutosetupHelpers do
   subject(:client) { DummyClient.new }
   let(:profile_dir_path) { File.join(TESTS_PATH, "tmp") }
 
+  before do
+    allow(Y2Autoinstallation::XmlChecks).to receive(:valid_modified_profile?).and_return(true)
+  end
+
   describe "#probe_storage" do
     let(:storage_manager) { double(Y2Storage::StorageManager) }
 
@@ -204,6 +208,22 @@ describe Y2Autoinstallation::AutosetupHelpers do
 
         it "returns :abort" do
           expect(client.readModified).to eq(:abort)
+        end
+      end
+
+      context "when the modified profile is not valid" do
+        before do
+          expect(Y2Autoinstallation::XmlChecks).to receive(:valid_modified_profile?)
+            .and_return(false)
+        end
+
+        it "returns :abort" do
+          expect(client.readModified).to eq(:abort)
+        end
+
+        it "sets modified_profile? to false" do
+          client.readModified
+          expect(client.modified_profile?).to eq(false)
         end
       end
     end

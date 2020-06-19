@@ -5,6 +5,8 @@
 #
 # $Id$
 require "yast"
+
+require "autoinstall/xml_checks"
 require "y2storage"
 
 module Yast
@@ -174,6 +176,8 @@ module Yast
         )
       end
 
+      return false if !is_directory && !Y2Autoinstallation::XmlChecks.valid_profile?
+
       ret = if is_directory
         Get(
           AutoinstConfig.scheme,
@@ -199,6 +203,9 @@ module Yast
       try_default_rules = false
       if AutoInstallRules.userrules
         Builtins.y2milestone("Reading Rules File")
+        # display an error when the rules file is not valid and return false
+        return false unless Y2Autoinstallation::XmlChecks.valid_rules?
+
         AutoInstallRules.Read
         # returns false if no rules have matched
         ret = AutoInstallRules.GetRules
@@ -224,6 +231,9 @@ module Yast
 
       if process_rules
         rulesret = AutoInstallRules.Process(AutoinstConfig.xml_tmpfile)
+        # validate the profile
+        return false if rulesret && !Y2Autoinstallation::XmlChecks.valid_profile?
+
         Builtins.y2milestone("rulesret=%1", rulesret)
         return rulesret
       end

@@ -734,68 +734,10 @@ module Yast
       deep_copy(m)
     end
 
+    # @deprecated Unused, removed
     def checkProfile
-      file = Ops.add(Ops.add(AutoinstConfig.tmpDir, "/"), "valid.xml")
-      Save(file)
-      summary = "Some schema check failed!\n" \
-        "Please attach your logfile to bug id 211014\n" \
-        "\n"
-      valid = true
-
-      validators = [
-        [
-          _("Checking XML with RNG validation..."),
-          Ops.add(
-            Ops.add("/usr/bin/xmllint --noout --relaxng ", Directory.schemadir),
-            "/autoyast/rng/profile.rng"
-          ),
-          ""
-        ]
-      ]
-      if !Stage.cont && PackageSystem.Installed("jing")
-        validators = Builtins.add(
-          validators,
-          [
-            _("Checking XML with RNC validation..."),
-            Ops.add(
-              Ops.add("/usr/bin/jing >&2 -c ", Directory.schemadir),
-              "/autoyast/rnc/profile.rnc"
-            ),
-            "jing_sucks"
-          ]
-        )
-      end
-
-      Builtins.foreach(validators) do |i|
-        header = Ops.get_string(i, 0, "")
-        cmd = Ops.add(Ops.add(Ops.get_string(i, 1, ""), " "), file)
-        summary = Ops.add(Ops.add(summary, header), "\n")
-        o = Convert.to_map(SCR.Execute(path(".target.bash_output"), cmd))
-        Builtins.y2debug("validation output: %1", o)
-        summary = Ops.add(Ops.add(summary, cmd), "\n")
-        summary = Ops.add(
-          Ops.add(summary, Ops.get_string(o, "stderr", "")),
-          "\n"
-        )
-        summary = Ops.add(summary, "\n")
-        if Ops.get_integer(o, "exit", 1) != 0 ||
-            Ops.get_string(i, 2, "") == "jing_sucks" &&
-                Ops.greater_than(
-                  Builtins.size(Ops.get_string(o, "stderr", "")),
-                  0
-                )
-          valid = false
-        end
-      end
-      if !valid
-        Popup.Error(summary)
-        Builtins.y2milestone(
-          "Profile check failed please attach the log to bug id 211014: %1",
-          summary
-        )
-      end
-
-      nil
+      log.warn("Profile.checkProfile() is obsolete, do not use it")
+      log.warn("Called from #{caller(1).first}")
     end
 
     # Removes the given sections from the profile
