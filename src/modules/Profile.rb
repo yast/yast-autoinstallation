@@ -337,11 +337,16 @@ module Yast
                   from: "any",
                   to:   "map <string, any>"
                 )
-                if Ops.get_string(_MergeTypes, i, "map") == "map"
-                  Ops.set(@current, res, Ops.get_map(rd, res, {}))
-                else
-                  Ops.set(@current, res, Ops.get_list(rd, res, []))
-                end
+
+                value =
+                  if !rd.key?(res)
+                    nil
+                  elsif Ops.get_string(_MergeTypes, i, "map") == "map"
+                    Ops.get_map(rd, res, {})
+                  else
+                    Ops.get_list(rd, res, [])
+                  end
+                Ops.set(@current, res, value) if value
                 i = Ops.add(i, 1)
               end
             else
