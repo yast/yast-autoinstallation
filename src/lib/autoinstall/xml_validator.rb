@@ -18,6 +18,7 @@
 # find current contact information at www.suse.com.
 
 require "yast"
+require "pathname"
 
 Yast.import "XML"
 
@@ -29,7 +30,7 @@ module Y2Autoinstallation
     attr_reader :xml, :schema
 
     # Constructor
-    # @param xml [String] XML document or path to a XML file
+    # @param xml [String] path to a XML file
     # @param schema [String] path to the RNG schema
     def initialize(xml, schema)
       @xml = xml
@@ -58,10 +59,8 @@ module Y2Autoinstallation
   private
 
     def validate
-      # do not log whole document, only if it is a path
-      log_xml = xml.include?("\n") ? xml : "[XML document #{xml.bytesize} bytes]"
-      log.info "Validating #{log_xml} against #{schema}..."
-      @errors = Yast::XML.validate(xml, schema)
+      log.info "Validating #{xml} against #{schema}..."
+      @errors = Yast::XML.validate(Pathname.new(xml), Pathname.new(schema))
 
       if errors.empty?
         log.info "The XML is valid"

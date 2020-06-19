@@ -4,9 +4,11 @@ require_relative "../test_helper"
 require "autoinstall/xml_validator"
 
 describe Y2Autoinstallation::XmlValidator do
-  let(:xml) { "foo.xml" }
-  let(:schema) { "bar.rng" }
-  subject { Y2Autoinstallation::XmlValidator.new(xml, schema) }
+  let(:xml_name) { "foo.xml" }
+  let(:schema_name) { "bar.rng" }
+  let(:xml) { Pathname.new(xml_name) }
+  let(:schema) { Pathname.new(schema_name) }
+  subject { Y2Autoinstallation::XmlValidator.new(xml_name, schema_name) }
 
   describe "#valid?" do
     it "returns true if Yast::XML.validate returns no errors" do
