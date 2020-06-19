@@ -684,7 +684,6 @@ module Yast
                 AutoinstConfig.currentFile
               )
             )
-            # Profile::checkProfile();
             Profile.changed = false
           else
             Popup.Warning(_("An error occurred while saving the file."))
