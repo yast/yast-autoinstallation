@@ -115,7 +115,7 @@ module Y2Autoinstallation
           "crash or even data loss!") +
         "</p><h4>" + _("Details") + "</h4>" + ERB::Util.html_escape(errors.join("<br>")) +
         "<h4>" + _("Note") + "</h4>" +
-        # TRANSLATORS: A hints how to check a XML file, displayed as a part of the
+        # TRANSLATORS: A hint how to check a XML file, displayed as a part of the
         # validation error message, %{jing} and %{xmllint} are replaced by shell commands,
         # use HTML tags and entities (non-breaking space) for formatting the message
         "<p>" + format(_("You can check the file manually with these commands:<br><br>" \
