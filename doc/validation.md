@@ -1,6 +1,6 @@
 # Profile Validation
 
-Since version 4.3.14 AutoYaST validates all XML files (profiles,
+Since version 4.3.15 AutoYaST validates all XML files (profiles,
 rules, classes) before using them to avoid possible problems later.
 
 ## Validation Errors
