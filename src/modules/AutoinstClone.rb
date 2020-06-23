@@ -125,8 +125,10 @@ module Yast
         log.info "Cloning #{resource} took: #{(Time.now - time_start).round} sec"
       end
 
-      Call.Function("general_auto", ["Import", General()])
-      Call.Function("general_auto", ["SetModified"])
+      if @additional.include?("general")
+        Call.Function("general_auto", ["Import", General()])
+        Call.Function("general_auto", ["SetModified"])
+      end
 
       Profile.Prepare
       nil
