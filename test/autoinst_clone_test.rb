@@ -129,7 +129,7 @@ describe Yast::AutoinstClone do
 
     it "creates profile with additional modules" do
       subject.additional = ["general"]
-      expect(Yast::Profile).to receive(:create).with(["general"])
+      expect(Yast::Profile).to receive(:create).with(["general"], target: :default)
       subject.Process
     end
 
@@ -155,6 +155,13 @@ describe Yast::AutoinstClone do
           expect(Yast::Call).to receive(:Function).with("storage_auto", ["Read"])
           subject.Process
         end
+      end
+    end
+
+    context "when a target is given" do
+      it "applies the target when creating the file" do
+        expect(Yast::Profile).to receive(:create).with(Array, target: :compact)
+        subject.Process(target: :compact)
       end
     end
   end

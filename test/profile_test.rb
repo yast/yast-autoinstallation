@@ -294,7 +294,7 @@ describe Yast::Profile do
       allow(Yast::WFM).to receive(:CallFunction)
         .with("custom_auto", ["GetModified"]).and_return(true)
       allow(Yast::WFM).to receive(:CallFunction)
-        .with("custom_auto", ["Export"]).and_return(custom_export)
+        .with("custom_auto", ["Export", "target" => "default"]).and_return(custom_export)
       allow(Yast::AutoinstClone).to receive(:General)
         .and_return("mode" => { "confirm" => false })
 
@@ -306,6 +306,14 @@ describe Yast::Profile do
     it "exports modules data into the current profile" do
       subject.Prepare
       expect(subject.current["custom"]).to be_kind_of(Hash)
+    end
+
+    context "when a 'target' is given" do
+      it "exports the module data using the given 'target'" do
+        expect(Yast::WFM).to receive(:CallFunction)
+          .with("custom_auto", ["Export", "target" => "compact"])
+        subject.Prepare(target: :compact)
+      end
     end
 
     context "when preparation is not needed" do
@@ -404,7 +412,7 @@ describe Yast::Profile do
         .with(["all", "configure"]).and_return([module_map, {}])
       allow(Yast::WFM).to receive(:CallFunction).and_call_original
       allow(Yast::WFM).to receive(:CallFunction)
-        .with("custom_auto", ["Export"]).and_return(custom_export)
+        .with("custom_auto", ["Export", "target" => "default"]).and_return(custom_export)
 
       Yast::Y2ModuleConfig.main
     end
