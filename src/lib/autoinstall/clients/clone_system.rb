@@ -134,7 +134,8 @@ module Y2Autoinstallation
           if options["clone"]
             options["clone"].split(",")
           else
-            Yast::ProductControl.clone_modules
+            # always clone general
+            Yast::ProductControl.clone_modules + ["general"]
           end
         Yast::AutoinstClone.Process
         Yast::XML.YCPToXMLFile(:profile, Yast::Profile.current, filename)
