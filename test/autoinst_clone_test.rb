@@ -92,7 +92,7 @@ describe Yast::AutoinstClone do
     end
 
     it "clones 'additional' modules" do
-      expect(subject).to receive(:CommonClone).with("add-on", module_map["add-on"])
+      expect(subject).to receive(:CommonClone).with(module_map["add-on"])
       subject.Process
     end
 
@@ -121,17 +121,17 @@ describe Yast::AutoinstClone do
     end
 
     it "returns true" do
-      expect(subject.CommonClone("dummy", resource_map)).to eq(true)
+      expect(subject.send(:CommonClone, resource_map)).to eq(true)
     end
 
     it "reads the module settings" do
       expect(Yast::Call).to receive(:Function).with("add-on_auto", ["Read"])
-      subject.CommonClone("dummy", resource_map)
+      subject.send(:CommonClone, resource_map)
     end
 
     it "sets the module as modified" do
       expect(Yast::Call).to receive(:Function).with("add-on_auto", ["SetModified"])
-      subject.CommonClone("dummy", resource_map)
+      subject.send(:CommonClone, resource_map)
     end
 
     context "on 1st stage" do
@@ -139,12 +139,12 @@ describe Yast::AutoinstClone do
 
       it "does not read the module settings" do
         expect(Yast::Call).to_not receive(:Function).with(anything, ["Read"])
-        subject.CommonClone("dummy", resource_map)
+        subject.send(:CommonClone, resource_map)
       end
 
       it "sets the module as modified" do
         expect(Yast::Call).to receive(:Function).with("add-on_auto", ["SetModified"])
-        subject.CommonClone("dummy", resource_map)
+        subject.send(:CommonClone, resource_map)
       end
 
       context "when cloning the software module" do
@@ -154,7 +154,7 @@ describe Yast::AutoinstClone do
 
         it "reads the module settings" do
           expect(Yast::Call).to receive(:Function).with("software_auto", ["Read"])
-          subject.CommonClone("dummy", resource_map)
+          subject.send(:CommonClone, resource_map)
         end
       end
 
@@ -165,7 +165,7 @@ describe Yast::AutoinstClone do
 
         it "reads the module settings" do
           expect(Yast::Call).to receive(:Function).with("storage_auto", ["Read"])
-          subject.CommonClone("dummy", resource_map)
+          subject.send(:CommonClone, resource_map)
         end
       end
     end
@@ -173,16 +173,16 @@ describe Yast::AutoinstClone do
 
   describe "#General" do
     it "includes installation mode configuration" do
-      expect(subject.General).to include("mode" => { "confirm" => false })
+      expect(subject.send(:General)).to include("mode" => { "confirm" => false })
     end
 
     it "includes signature handling settings" do
-      expect(subject.General).to_not include("signature-handling" => Hash)
+      expect(subject.send(:General)).to_not include("signature-handling" => Hash)
     end
 
     context "when multipath is not enabled" do
       it "does not include the 'start_multipath' setting" do
-        expect(subject.General).to_not have_key("storage")
+        expect(subject.send(:General)).to_not have_key("storage")
       end
     end
 
@@ -190,7 +190,7 @@ describe Yast::AutoinstClone do
       let(:storage_scenario) { "multipath.xml" }
 
       it "includes the 'start_multipath' setting" do
-        expect(subject.General).to include("storage" => { "start_multipath" => true })
+        expect(subject.send(:General)).to include("storage" => { "start_multipath" => true })
       end
     end
   end
