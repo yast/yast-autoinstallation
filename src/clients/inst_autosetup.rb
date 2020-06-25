@@ -216,13 +216,17 @@ module Yast
 
       if Builtins.haskey(Profile.current, "timezone")
         Timezone.Import(Ops.get_map(Profile.current, "timezone", {}))
+        Profile.remove_sections("timezone")
       end
       # bnc#891808: infer keyboard from language if needed
       if Profile.current.key?("keyboard")
         Keyboard.Import(Profile.current["keyboard"] || {}, :keyboard)
+        Profile.remove_sections("keyboard")
       elsif Profile.current.key?("language")
         Keyboard.Import(Profile.current["language"] || {}, :language)
       end
+
+      Profile.remove_sections("language")
 
       # one can override the <confirm> option by the commandline parameter y2confirm
       @tmp = Convert.to_string(
