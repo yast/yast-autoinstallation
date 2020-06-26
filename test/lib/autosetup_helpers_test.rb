@@ -268,23 +268,20 @@ describe Y2Autoinstallation::AutosetupHelpers do
         expect(Yast::Profile.current.keys).to_not include("networking")
       end
 
-      context "and the setup is defined to be run before the proposal" do
+      context "and a host section is defined" do
         let(:profile) { networking_section.merge(host_section) }
-        let(:networking_section) { { "networking" => { "setup_before_proposal" => true } } }
 
-        context "and a host section is defined" do
-          it "imports the /etc/hosts config from the profile" do
-            expect(Yast::WFM)
-              .to receive(:CallFunction)
-              .with("host_auto", ["Import", profile["host"]])
+        it "imports the /etc/hosts config from the profile" do
+          expect(Yast::WFM)
+            .to receive(:CallFunction)
+            .with("host_auto", ["Import", profile["host"]])
 
-            client.autosetup_network
-          end
+          client.autosetup_network
+        end
 
-          it "removes the host section from the profile" do
-            client.autosetup_network
-            expect(Yast::Profile.current.keys).to_not include("host")
-          end
+        it "removes the host section from the profile" do
+          client.autosetup_network
+          expect(Yast::Profile.current.keys).to_not include("host")
         end
       end
     end
