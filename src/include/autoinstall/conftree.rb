@@ -20,7 +20,6 @@ module Yast
       Yast.import "Stage"
       Yast.import "Icon"
       Yast.import "AutoinstSoftware"
-      Yast.import "AutoinstClone"
 
       @title = _("Autoinstallation - Configuration")
       @show_source = false

@@ -62,6 +62,26 @@ describe Yast::AutoinstClone do
         "X-SuSE-YaST-Group"            => "System",
         "X-SuSE-DocTeamID"             => "ycc_org.opensuse.yast.Bootloader",
         "X-SuSE-YaST-AutoInstClient"   => "bootloader_auto"
+      },
+      "software"   => {
+        "Name"                         => "Software",
+        "Icon"                         => "yast-sw_single",
+        "X-SuSE-YaST-AutoInst"         => "configure",
+        "X-SuSE-YaST-AutoInstResource" => "software",
+        "X-SuSE-YaST-AutoInstClonable" => "true",
+        "X-SuSE-YaST-Group"            => "System",
+        "X-SuSE-DocTeamID"             => "ycc_org.opensuse.yast.Software",
+        "X-SuSE-YaST-AutoInstClient"   => "software_auto"
+      },
+      "storage"    => {
+        "Name"                         => "Storage",
+        "Icon"                         => "yast-storage",
+        "X-SuSE-YaST-AutoInst"         => "configure",
+        "X-SuSE-YaST-AutoInstResource" => "storage",
+        "X-SuSE-YaST-AutoInstClonable" => "true",
+        "X-SuSE-YaST-Group"            => "System",
+        "X-SuSE-DocTeamID"             => "ycc_org.opensuse.yast.Storage",
+        "X-SuSE-YaST-AutoInstClient"   => "storage_auto"
       }
     }
   end
@@ -82,56 +102,35 @@ describe Yast::AutoinstClone do
   end
 
   describe "#Process" do
+    let(:resource_map) { module_map["add-on"] }
+    let(:initial_stage) { false }
+
     before do
-      allow(subject).to receive(:CommonClone)
-      allow(Yast::Profile).to receive(:Prepare)
+      allow(Yast::Profile).to receive(:create)
+      allow(Yast::Call).to receive(:Function)
+      allow(Yast::Stage).to receive(:initial).and_return(initial_stage)
+      subject.additional = ["add-on"]
     end
 
     it "sets Mode to 'autoinst_config'" do
       expect { subject.Process }.to change { Yast::Mode.mode }.from("normal").to("autoinst_config")
     end
 
-    it "clones 'additional' modules" do
-      expect(subject).to receive(:CommonClone).with("add-on", module_map["add-on"])
+    it "reads the module settings" do
+      expect(Yast::Call).to receive(:Function).with("add-on_auto", ["Read"])
       subject.Process
     end
 
     it "imports 'general' settings when general is in additional modules" do
       subject.additional = ["general"]
       expect(Yast::Call).to receive(:Function).with("general_auto", ["Import", Hash])
-      expect(Yast::Call).to receive(:Function).with("general_auto", ["SetModified"])
       subject.Process
     end
 
-    it "asks the profile to 'prepare'" do
-      expect(Yast::Profile).to receive(:Reset)
-      expect(Yast::Profile).to receive(:prepare=).with(true)
-      expect(Yast::Profile).to receive(:Prepare)
+    it "creates profile with additional modules" do
+      subject.additional = ["general"]
+      expect(Yast::Profile).to receive(:create).with(["general"])
       subject.Process
-    end
-  end
-
-  describe "#CommonClone" do
-    let(:resource_map) { module_map["add-on"] }
-    let(:initial_stage) { false }
-
-    before do
-      allow(Yast::Call).to receive(:Function)
-      allow(Yast::Stage).to receive(:initial).and_return(initial_stage)
-    end
-
-    it "returns true" do
-      expect(subject.CommonClone("dummy", resource_map)).to eq(true)
-    end
-
-    it "reads the module settings" do
-      expect(Yast::Call).to receive(:Function).with("add-on_auto", ["Read"])
-      subject.CommonClone("dummy", resource_map)
-    end
-
-    it "sets the module as modified" do
-      expect(Yast::Call).to receive(:Function).with("add-on_auto", ["SetModified"])
-      subject.CommonClone("dummy", resource_map)
     end
 
     context "on 1st stage" do
@@ -139,33 +138,22 @@ describe Yast::AutoinstClone do
 
       it "does not read the module settings" do
         expect(Yast::Call).to_not receive(:Function).with(anything, ["Read"])
-        subject.CommonClone("dummy", resource_map)
-      end
-
-      it "sets the module as modified" do
-        expect(Yast::Call).to receive(:Function).with("add-on_auto", ["SetModified"])
-        subject.CommonClone("dummy", resource_map)
+        subject.Process
       end
 
       context "when cloning the software module" do
-        let(:resource_map) do
-          { "X-SuSE-YaST-AutoInstClient" => "software_auto" }
-        end
-
         it "reads the module settings" do
+          subject.additional = ["software"]
           expect(Yast::Call).to receive(:Function).with("software_auto", ["Read"])
-          subject.CommonClone("dummy", resource_map)
+          subject.Process
         end
       end
 
       context "when cloning the storage module" do
-        let(:resource_map) do
-          { "X-SuSE-YaST-AutoInstClient" => "storage_auto" }
-        end
-
         it "reads the module settings" do
+          subject.additional = ["storage"]
           expect(Yast::Call).to receive(:Function).with("storage_auto", ["Read"])
-          subject.CommonClone("dummy", resource_map)
+          subject.Process
         end
       end
     end
@@ -173,16 +161,16 @@ describe Yast::AutoinstClone do
 
   describe "#General" do
     it "includes installation mode configuration" do
-      expect(subject.General).to include("mode" => { "confirm" => false })
+      expect(subject.send(:General)).to include("mode" => { "confirm" => false })
     end
 
     it "includes signature handling settings" do
-      expect(subject.General).to_not include("signature-handling" => Hash)
+      expect(subject.send(:General)).to_not include("signature-handling" => Hash)
     end
 
     context "when multipath is not enabled" do
       it "does not include the 'start_multipath' setting" do
-        expect(subject.General).to_not have_key("storage")
+        expect(subject.send(:General)).to_not have_key("storage")
       end
     end
 
@@ -190,7 +178,7 @@ describe Yast::AutoinstClone do
       let(:storage_scenario) { "multipath.xml" }
 
       it "includes the 'start_multipath' setting" do
-        expect(subject.General).to include("storage" => { "start_multipath" => true })
+        expect(subject.send(:General)).to include("storage" => { "start_multipath" => true })
       end
     end
   end
@@ -206,15 +194,16 @@ describe Yast::AutoinstClone do
         ).and_return("Add-On (translated)")
 
       allow(Yast::Builtins)
-        .to receive(:dpgettext)
-          .with("desktop_translations", "/usr/share/locale/", /Bootloader/) { |*a| a.last }
+        .to receive(:dpgettext) { |*a| a.last }
     end
 
     it "returns a list of modules to clone with translated names" do
       modules = subject.createClonableList
       items = modules.map(&:params)
       names = items.map(&:last)
-      expect(names).to eq(["Add-On (translated)", "YaST Boot Loader"])
+      expect(names).to match_array(
+        ["Software", "Storage", "YaST Add-On Products", "YaST Boot Loader"]
+      )
     end
   end
 end

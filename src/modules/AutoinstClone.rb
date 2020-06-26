@@ -35,50 +35,6 @@ module Yast
       @additional = []
     end
 
-    # Detects whether the current system uses multipath
-    # @return [Boolean] if in use
-    def multipath_in_use?
-      !Y2Storage::StorageManager.instance.probed.multipaths.empty?
-    end
-
-    # General options
-    #
-    # @return [Hash] general options
-    def General
-      Yast.import "Mode"
-      Mode.SetMode("normal")
-
-      general = {}
-      general["mode"] = { "confirm" => false }
-      general["storage"] = { "start_multipath" => true } if multipath_in_use?
-
-      Mode.SetMode("autoinst_config")
-      general
-    end
-
-    # Clone a Resource
-    #
-    # @param _resource    [String] resource. Not used.
-    # @param resource_map [Hash] resources map
-    # @return [Array]
-    def CommonClone(_resource, resource_map)
-      auto = Ops.get_string(resource_map, "X-SuSE-YaST-AutoInstClient", "")
-
-      # Do not read settings from system in first stage, autoyast profile
-      # should contain only proposed and user modified values.
-      # Exception: Storage and software module have autoyast modules which are
-      #            defined in autoyast itself.
-      #            So, these modules have to be called.
-      if !Stage.initial ||
-          ["software_auto", "storage_auto"].include?(auto)
-        Call.Function(auto, ["Read"])
-      end
-      # Flagging YAST module for export
-      Call.Function(auto, ["SetModified"])
-
-      true
-    end
-
     # Create a list of clonable resources
     #
     # @return [Array<Yast::Term>] list to be used in widgets (sorted by its label)
@@ -104,12 +60,11 @@ module Yast
 
     # Builds the profile
     #
-    # @return [void]
-    # @see ProfileClass.Prepare
+    # @return [void] returns void and sets profile in ProfileClass.current
+    # @see ProfileClass.create
+    # @see ProfileClass.current for result
     def Process
       log.info "Additional resources: #{@additional}"
-      Profile.Reset
-      Profile.prepare = true
       Mode.SetMode("autoinst_config")
 
       Y2ModuleConfig.ModuleMap.each do |def_resource, resource_map|
@@ -119,27 +74,61 @@ module Yast
 
         next unless @additional.include?(resource)
 
-        log.info "Now cloning: #{resource}"
         time_start = Time.now
-        CommonClone(def_resource, resource_map)
+        read_module(resource_map)
         log.info "Cloning #{resource} took: #{(Time.now - time_start).round} sec"
       end
 
-      if @additional.include?("general")
-        Call.Function("general_auto", ["Import", General()])
-        Call.Function("general_auto", ["SetModified"])
-      end
+      Call.Function("general_auto", ["Import", General()]) if @additional.include?("general")
 
-      Profile.Prepare
+      Profile.create(@additional)
       nil
     end
 
-    publish variable: :Profile, type: "map"
-    publish variable: :base, type: "list <string>"
     publish variable: :additional, type: "list <string>"
-    publish function: :General, type: "map ()"
     publish function: :createClonableList, type: "list ()"
     publish function: :Process, type: "void ()"
+
+  private
+
+    # Detects whether the current system uses multipath
+    # @return [Boolean] if in use
+    def multipath_in_use?
+      !Y2Storage::StorageManager.instance.probed.multipaths.empty?
+    end
+
+    # General options
+    #
+    # @return [Hash] general options
+    def General
+      Yast.import "Mode"
+      Mode.SetMode("normal")
+
+      general = {}
+      general["mode"] = { "confirm" => false }
+      general["storage"] = { "start_multipath" => true } if multipath_in_use?
+
+      Mode.SetMode("autoinst_config")
+      general
+    end
+
+    # Reads module if it is appropriate
+    #
+    # @param resource_map [Hash] resources map
+    # @return [void]
+    def read_module(resource_map)
+      auto = Ops.get_string(resource_map, "X-SuSE-YaST-AutoInstClient", "")
+
+      # Do not read settings from system in first stage, autoyast profile
+      # should contain only proposed and user modified values.
+      # Exception: Storage and software module have autoyast modules which are
+      #            defined in autoyast itself.
+      #            So, these modules have to be called.
+      if !Stage.initial ||
+          ["software_auto", "storage_auto"].include?(auto)
+        Call.Function(auto, ["Read"])
+      end
+    end
   end
 
   AutoinstClone = AutoinstCloneClass.new

@@ -326,6 +326,16 @@ describe Yast::Profile do
       end
     end
 
+    context "when a module exports empty data" do
+      let(:custom_export) { {} }
+
+      it "removes section from Profile" do
+        subject.current["custom"] = { "bla" => "bla" }
+        subject.Prepare
+        expect(subject.current.keys).to_not include("custom")
+      end
+    end
+
     context "when a module has not changed" do
       before do
         allow(Yast::WFM).to receive(:CallFunction)
@@ -378,6 +388,96 @@ describe Yast::Profile do
 
       it "uses the alternative name" do
         subject.Prepare
+        expect(subject.current).to include("alternative")
+        expect(subject.current).to_not include("custom")
+      end
+    end
+  end
+
+  describe "#create" do
+    let(:custom_module) { CUSTOM_MODULE }
+    let(:custom_export) { { "key1" => "val1" } }
+    let(:module_map) { { "custom" => custom_module } }
+
+    before do
+      allow(Yast::Y2ModuleConfig).to receive(:ReadMenuEntries)
+        .with(["all", "configure"]).and_return([module_map, {}])
+      allow(Yast::WFM).to receive(:CallFunction).and_call_original
+      allow(Yast::WFM).to receive(:CallFunction)
+        .with("custom_auto", ["Export"]).and_return(custom_export)
+
+      Yast::Y2ModuleConfig.main
+    end
+
+    it "exports modules data into the current profile" do
+      subject.create(["custom"])
+      expect(subject.current["custom"]).to be_kind_of(Hash)
+    end
+
+    context "when a module is 'hidden'" do
+      let(:custom_module) { CUSTOM_MODULE.merge("Hidden" => "true") }
+
+      it "includes that module" do
+        subject.create(["custom"])
+        expect(subject.current.keys).to include("custom")
+      end
+    end
+
+    context "when a module exports empty data" do
+      let(:custom_export) { {} }
+
+      it "does not include it" do
+        subject.create(["custom"])
+        expect(subject.current).to eq({})
+      end
+    end
+
+    context "when a module has elements to merge" do
+      let(:custom_export) do
+        {
+          "users"    => [{ "username" => "root" }],
+          "defaults" => { "key1" => "val1" }
+        }
+      end
+      let(:custom_module) do
+        CUSTOM_MODULE.merge(
+          "X-SuSE-YaST-AutoInstClient"     => "custom_auto",
+          "X-SuSE-YaST-AutoInstMerge"      => "users,defaults",
+          "X-SuSE-YaST-AutoInstMergeTypes" => "list,map"
+        )
+      end
+
+      it "creates each element in the current profile" do
+        subject.create(["custom"])
+        expect(subject.current["users"]).to eq(custom_export["users"])
+        expect(subject.current["defaults"]).to eq(custom_export["defaults"])
+      end
+
+      context "but there is no content for some of the elements" do
+        let(:custom_export) do
+          { "defaults" => { "key1" => "val1" } }
+        end
+
+        it "does not include the element with no content" do
+          subject.create(["custom"])
+          expect(subject.current).to_not have_key("users")
+        end
+      end
+    end
+
+    context "when a module uses an alternative resource name" do
+      let(:custom_module) do
+        CUSTOM_MODULE.merge("X-SuSE-YaST-AutoInstResource" => "alternative")
+      end
+
+      it "uses the alternative name" do
+        subject.create("alternative")
+        expect(subject.current).to include("alternative")
+        expect(subject.current).to_not include("custom")
+      end
+
+      it "accept as paramter both alternative and original name" do
+        subject.create("custom")
         expect(subject.current).to include("alternative")
         expect(subject.current).to_not include("custom")
       end

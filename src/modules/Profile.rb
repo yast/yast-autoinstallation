@@ -290,6 +290,8 @@ module Yast
     end
 
     # Prepare Profile for saving and remove empty data structs
+    # This is mainly for editing profile when there is some parts we do not write ourself
+    # For creating new one from given set of modules see {#create}
     # @return [void]
     def Prepare
       return if !@prepare
@@ -299,72 +301,25 @@ module Yast
         _("This may take a while")
       )
 
-      e = []
-
-      Builtins.foreach(@ModuleMap) do |p, d|
-        #
-        # Set resource name, if not using default value
-        #
-        resource = Ops.get_string(d, "X-SuSE-YaST-AutoInstResource", "")
-        resource = p if resource == ""
-        tomerge = Ops.get_string(d, "X-SuSE-YaST-AutoInstMerge", "")
-        module_auto = Ops.get_string(d, "X-SuSE-YaST-AutoInstClient", "none")
-        if Convert.to_boolean(WFM.CallFunction(module_auto, ["GetModified"]))
-          resource_data = WFM.CallFunction(module_auto, ["Export"])
-
-          s = 0
-          if tomerge == ""
-            s = if Ops.get_string(d, "X-SuSE-YaST-AutoInstDataType", "map") == "map"
-              Builtins.size(Convert.to_map(resource_data))
-            else
-              Builtins.size(Convert.to_list(resource_data))
-            end
-          end
-
-          if s != 0 || tomerge != ""
-            if Ops.greater_than(Builtins.size(tomerge), 0)
-              i = 0
-              tomergetypes = Ops.get_string(
-                d,
-                "X-SuSE-YaST-AutoInstMergeTypes",
-                ""
-              )
-              _MergeTypes = Builtins.splitstring(tomergetypes, ",")
-
-              Builtins.foreach(Builtins.splitstring(tomerge, ",")) do |res|
-                rd = Convert.convert(
-                  resource_data,
-                  from: "any",
-                  to:   "map <string, any>"
-                )
-
-                value =
-                  if !rd.key?(res)
-                    nil
-                  elsif Ops.get_string(_MergeTypes, i, "map") == "map"
-                    Ops.get_map(rd, res, {})
-                  else
-                    Ops.get_list(rd, res, [])
-                  end
-                Ops.set(@current, res, value) if value
-                i = Ops.add(i, 1)
-              end
-            else
-              Ops.set(@current, resource, resource_data)
-            end
-          elsif s == 0
-            e = Builtins.add(e, resource)
-          end
-        end
-      end
-
-      Builtins.foreach(@current) do |k, v|
-        Ops.set(@current, k, v) if !Builtins.haskey(@current, k) && !Builtins.contains(e, k)
-      end
+      edit_profile
 
       Popup.ClearFeedback
       @prepare = false
       nil
+    end
+
+    # Sets Profile#current to exported values created from given set of modules
+    # @return [Hash] value set to Profile#current
+    def create(modules)
+      Popup.Feedback(
+        _("Collecting configuration data..."),
+        _("This may take a while")
+      ) do
+        @current = {}
+        edit_profile(modules)
+      end
+
+      @current
     end
 
     # Reset profile to initial status
@@ -823,6 +778,46 @@ module Yast
     def resource_aliases_map
       Yast.import "Y2ModuleConfig"
       Y2ModuleConfig.resource_aliases_map
+    end
+
+    # Edits profile for given modules. If nil is passed, it used GetModfied method.
+    def edit_profile(modules = nil)
+      @ModuleMap.each_pair do |name, module_map|
+        #
+        # Set resource name, if not using default value
+        #
+        resource = module_map["X-SuSE-YaST-AutoInstResource"] || name
+        tomerge = module_map["X-SuSE-YaST-AutoInstMerge"] || ""
+        # TODO: is none valid or better use exception?
+        module_auto = module_map["X-SuSE-YaST-AutoInstClient"] || "none"
+        export = if modules
+          modules.include?(resource) || modules.include?(name)
+        else
+          WFM.CallFunction(module_auto, ["GetModified"])
+        end
+        next unless export
+
+        resource_data = WFM.CallFunction(module_auto, ["Export"])
+
+        if tomerge == ""
+          s = (resource_data || {}).size
+          if s > 0
+            @current[resource] = resource_data
+          else
+            @current.delete(resource)
+          end
+        else
+          tomerge.split(",").each_with_index do |res, _i|
+            value = resource_data[res]
+            if !value
+              log.warn "key #{res} expected to be exported from #{resource}"
+              next
+            end
+            # FIXME: no deleting for merged keys, is it correct?
+            @current[res] = value unless value.empty?
+          end
+        end
+      end
     end
   end
 
