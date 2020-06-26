@@ -60,12 +60,11 @@ module Yast
 
     # Builds the profile
     #
-    # @return [void]
-    # @see ProfileClass.Prepare
+    # @return [void] returns void and sets profile in ProfileClass.current
+    # @see ProfileClass.create
+    # @see ProfileClass.current for result
     def Process
       log.info "Additional resources: #{@additional}"
-      Profile.Reset
-      Profile.prepare = true
       Mode.SetMode("autoinst_config")
 
       Y2ModuleConfig.ModuleMap.each do |def_resource, resource_map|
@@ -75,18 +74,14 @@ module Yast
 
         next unless @additional.include?(resource)
 
-        log.info "Now cloning: #{resource}"
         time_start = Time.now
-        CommonClone(resource_map)
+        read_module(resource_map)
         log.info "Cloning #{resource} took: #{(Time.now - time_start).round} sec"
       end
 
-      if @additional.include?("general")
-        Call.Function("general_auto", ["Import", General()])
-        Call.Function("general_auto", ["SetModified"])
-      end
+      Call.Function("general_auto", ["Import", General()]) if @additional.include?("general")
 
-      Profile.Prepare
+      Profile.create(@additional)
       nil
     end
 
@@ -117,12 +112,11 @@ module Yast
       general
     end
 
-    # Clone a Resource
+    # Reads module if it is appropriate
     #
-    # @param _resource    [String] resource. Not used.
     # @param resource_map [Hash] resources map
-    # @return [Array]
-    def CommonClone(resource_map)
+    # @return [void]
+    def read_module(resource_map)
       auto = Ops.get_string(resource_map, "X-SuSE-YaST-AutoInstClient", "")
 
       # Do not read settings from system in first stage, autoyast profile
@@ -134,10 +128,6 @@ module Yast
           ["software_auto", "storage_auto"].include?(auto)
         Call.Function(auto, ["Read"])
       end
-      # Flagging YAST module for export
-      Call.Function(auto, ["SetModified"])
-
-      true
     end
   end
 
