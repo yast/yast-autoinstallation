@@ -32,126 +32,10 @@ module Yast
       Yast.import "Directory"
       Yast.import "PackageSystem"
 
-      # include "autoinstall/io.ycp";
-
       @GroupMap = {}
       @ModuleMap = {}
 
-      # MenuTreeData
-      # @return [Array] of modules
-      @MenuTreeData = []
       Y2ModuleConfig()
-    end
-
-    # Read module configuration files
-    # @return [Hash]
-    def ReadMenuEntries(modes)
-      modes = deep_copy(modes)
-      Desktop.AgentPath = path(".autoyast2.desktop")
-
-      _Values = [
-        "Name",
-        "GenericName",
-        "Icon",
-        "Hidden",
-        "X-SuSE-YaST-AutoInst",
-        RESOURCE_NAME_KEY,
-        RESOURCE_ALIASES_NAME_KEY,
-        "X-SuSE-YaST-AutoInstClient",
-        "X-SuSE-YaST-Group",
-        RESOURCE_NAME_MERGE_KEYS,
-        "X-SuSE-YaST-AutoInstMergeTypes",
-        "X-SuSE-YaST-AutoInstDataType",
-        "X-SuSE-YaST-AutoInstClonable",
-        "X-SuSE-YaST-AutoInstRequires",
-        "X-SuSE-DocTeamID",
-        "X-SuSE-YaST-AutoLogResource"
-      ]
-      Desktop.Read(_Values)
-      configurations = deep_copy(Desktop.Modules)
-
-      groups = deep_copy(Desktop.Groups)
-
-      confs = {}
-
-      Builtins.foreach(configurations) do |name, values|
-        if Builtins.contains(
-          modes,
-          Ops.get_string(values, "X-SuSE-YaST-AutoInst", "")
-        )
-          # determine name of client, if not default name
-          if !Builtins.haskey(values, "X-SuSE-YaST-AutoInstClient") ||
-              Ops.get_string(values, "X-SuSE-YaST-AutoInstClient", "") == ""
-            client = Ops.add(name, "_auto")
-            Builtins.y2debug("client: %1", client)
-            Ops.set(values, "X-SuSE-YaST-AutoInstClient", client)
-          end
-          Builtins.y2debug(
-            "name: %1 values: %2",
-            name,
-            Ops.get_string(values, "X-SuSE-YaST-AutoInstClient", "")
-          )
-          Ops.set(confs, name, values)
-        end
-      end
-      [confs, groups]
-    end
-
-    # Sort tree groups
-    # @param _GroupMap [Hash<String => Hash>] group map
-    # @param _GroupList [Array<String>] group list
-    # @return [Array]
-    def SortGroups(_GroupMap, _GroupList)
-      _GroupMap = deep_copy(_GroupMap)
-      _GroupList = deep_copy(_GroupList)
-      Builtins.sort(_GroupList) do |x, y|
-        first = Ops.get_string(_GroupMap, [x, "SortKey"], "")
-        second = Ops.get_string(_GroupMap, [y, "SortKey"], "")
-        Ops.less_than(first, second)
-      end
-    end
-
-    # Create group tree
-    # @param _Groups [Hash<String => Hash>] groups
-    # @return [void]
-    def CreateGroupTree(_Groups)
-      _Groups = deep_copy(_Groups)
-
-      grouplist = SortGroups(_Groups, Builtins.maplist(_Groups) do |rawname, _group|
-        rawname
-      end)
-
-      Builtins.foreach(grouplist) do |name|
-        title = Desktop.Translate(Ops.get_string(_Groups, [name, "Name"], name))
-        _MeunTreeEntry = { "entry" => name, "title" => title }
-        @MenuTreeData = Builtins.add(@MenuTreeData, _MeunTreeEntry)
-      end
-      nil
-    end
-
-    # Construct Menu Widget
-    # @return [Array]
-    def ConstructMenu
-      CreateGroupTree(@GroupMap)
-
-      Builtins.foreach(@ModuleMap) do |m, v|
-        name = Ops.get_string(v, "Name", "")
-        menu_entry = { "entry" => m, "title" => name }
-        if Builtins.haskey(v, "X-SuSE-YaST-Group")
-          parent = Ops.get_string(v, "X-SuSE-YaST-Group", "")
-          @MenuTreeData = Builtins.maplist(@MenuTreeData) do |k|
-            if Ops.get_string(k, "entry", "") == parent
-              children = Ops.get_list(k, "children", [])
-              children = Builtins.add(children, menu_entry)
-              Ops.set(k, "children", children)
-            end
-            next deep_copy(k)
-          end
-        else
-          @MenuTreeData = Builtins.add(@MenuTreeData, menu_entry)
-        end
-      end
-      nil
     end
 
     # Y2ModuleConfig ()
@@ -170,11 +54,6 @@ module Yast
       Profile.ModuleMap = deep_copy(@ModuleMap)
 
       @GroupMap = Ops.get_map(_MenuEntries, 1, {})
-
-      if Mode.config
-        # construct the tree menu
-        ConstructMenu()
-      end
 
       nil
     end
@@ -301,31 +180,6 @@ module Yast
       deep_copy(m)
     end
 
-    # Set Desktop Icon
-    # @param [String] file Desktop File
-    # @return [Boolean]
-    def SetDesktopIcon(file)
-      filename = Builtins.sformat("%1/%2.desktop", Directory.desktopdir, file)
-      if Ops.less_than(SCR.Read(path(".target.size"), filename), 0)
-        filename = Builtins.sformat(
-          "%1/%2.desktop",
-          "/usr/share/autoinstall/modules",
-          file
-        )
-      end
-      filepath = Ops.add(
-        Ops.add(path(".autoyast2.desktop.v"), filename),
-        path(".\"Desktop Entry\".Icon")
-      )
-      icon = Convert.to_string(SCR.Read(filepath))
-      Builtins.y2debug("icon: %1 (%2)", icon, filepath)
-
-      return false if icon.nil?
-
-      Wizard.SetTitleIcon(icon)
-      true
-    end
-
     # Returns list of all profile sections from the current profile, including
     # unsupported ones, that do not have any handler (AutoYaST client) assigned
     # at the current system and are not handled by AutoYaST itself.
@@ -439,12 +293,9 @@ module Yast
     end
     publish variable: :GroupMap, type: "map <string, map>"
     publish variable: :ModuleMap, type: "map <string, map>"
-    publish variable: :MenuTreeData, type: "list <map>"
-    publish function: :Y2ModuleConfig, type: "void ()"
     publish function: :getResource, type: "string (string)"
     publish function: :getResourceData, type: "any (map, string)"
     publish function: :Deps, type: "list <map> ()"
-    publish function: :SetDesktopIcon, type: "boolean (string)"
     publish function: :required_packages, type: "map <string, list> (list <string>)"
     publish function: :unhandled_profile_sections, type: "list <string> ()"
     publish function: :unsupported_profile_sections, type: "list <string> ()"
@@ -469,6 +320,62 @@ module Yast
       end
       @schema_package[schema]
     end
+
+    # Read module configuration files
+    # @return [Hash]
+    def ReadMenuEntries(modes)
+      modes = deep_copy(modes)
+      Desktop.AgentPath = path(".autoyast2.desktop")
+
+      _Values = [
+        "Name",
+        "GenericName",
+        "Icon",
+        "Hidden",
+        "X-SuSE-YaST-AutoInst",
+        RESOURCE_NAME_KEY,
+        RESOURCE_ALIASES_NAME_KEY,
+        "X-SuSE-YaST-AutoInstClient",
+        "X-SuSE-YaST-Group",
+        RESOURCE_NAME_MERGE_KEYS,
+        "X-SuSE-YaST-AutoInstMergeTypes",
+        "X-SuSE-YaST-AutoInstDataType",
+        "X-SuSE-YaST-AutoInstClonable",
+        "X-SuSE-YaST-AutoInstRequires",
+        "X-SuSE-DocTeamID",
+        "X-SuSE-YaST-AutoLogResource"
+      ]
+      Desktop.Read(_Values)
+      configurations = deep_copy(Desktop.Modules)
+
+      groups = deep_copy(Desktop.Groups)
+
+      confs = {}
+
+      Builtins.foreach(configurations) do |name, values|
+        if Builtins.contains(
+          modes,
+          Ops.get_string(values, "X-SuSE-YaST-AutoInst", "")
+        )
+          # determine name of client, if not default name
+          if !Builtins.haskey(values, "X-SuSE-YaST-AutoInstClient") ||
+              Ops.get_string(values, "X-SuSE-YaST-AutoInstClient", "") == ""
+            client = Ops.add(name, "_auto")
+            Builtins.y2debug("client: %1", client)
+            Ops.set(values, "X-SuSE-YaST-AutoInstClient", client)
+          end
+          Builtins.y2debug(
+            "name: %1 values: %2",
+            name,
+            Ops.get_string(values, "X-SuSE-YaST-AutoInstClient", "")
+          )
+          Ops.set(confs, name, values)
+        end
+      end
+      [confs, groups]
+    end
+
+
   end
 
   Y2ModuleConfig = Y2ModuleConfigClass.new
