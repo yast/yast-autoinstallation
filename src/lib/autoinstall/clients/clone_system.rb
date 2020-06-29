@@ -94,9 +94,11 @@ module Y2Autoinstallation
                 "help" => "filename=OUTPUT_FILE"
               },
               "target"   => {
-                "type" => "string",
-                "help" => _(
-                  "How much information to include in the profile ('default' or 'compact')"
+                "type"     => "enum",
+                "typespec" => ["default", "compact"],
+                "help"     => _(
+                  "How much information to include in the profile. When it is set to 'compact',\n" \
+                  "it omits some configuration details in order to reduce the size of the profile."
                 )
               }
             },

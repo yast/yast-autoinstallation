@@ -60,7 +60,7 @@ module Yast
 
     # Builds the profile
     #
-    # @param target [Symbol] How much information to include in the profile
+    # @param target [Symbol] How much information to include in the profile (:default, :compact)
     # @return [void] returns void and sets profile in ProfileClass.current
     # @see ProfileClass.create
     # @see ProfileClass.current for result
