@@ -292,8 +292,10 @@ module Yast
     # Prepare Profile for saving and remove empty data structs
     # This is mainly for editing profile when there is some parts we do not write ourself
     # For creating new one from given set of modules see {#create}
+    #
+    # @param target [Symbol] How much information to include in the profile (:default, :compact)
     # @return [void]
-    def Prepare
+    def Prepare(target: :default)
       return if !@prepare
 
       Popup.ShowFeedback(
@@ -301,7 +303,7 @@ module Yast
         _("This may take a while")
       )
 
-      edit_profile
+      edit_profile(target: target)
 
       Popup.ClearFeedback
       @prepare = false
@@ -309,14 +311,15 @@ module Yast
     end
 
     # Sets Profile#current to exported values created from given set of modules
+    # @param target [Symbol] How much information to include in the profile (:default, :compact)
     # @return [Hash] value set to Profile#current
-    def create(modules)
+    def create(modules, target: :default)
       Popup.Feedback(
         _("Collecting configuration data..."),
         _("This may take a while")
       ) do
         @current = {}
-        edit_profile(modules)
+        edit_profile(modules, target: target)
       end
 
       @current
@@ -781,7 +784,7 @@ module Yast
     end
 
     # Edits profile for given modules. If nil is passed, it used GetModfied method.
-    def edit_profile(modules = nil)
+    def edit_profile(modules = nil, target: :default)
       @ModuleMap.each_pair do |name, module_map|
         #
         # Set resource name, if not using default value
@@ -797,7 +800,7 @@ module Yast
         end
         next unless export
 
-        resource_data = WFM.CallFunction(module_auto, ["Export"])
+        resource_data = WFM.CallFunction(module_auto, ["Export", "target" => target.to_s])
 
         if tomerge == ""
           s = (resource_data || {}).size
