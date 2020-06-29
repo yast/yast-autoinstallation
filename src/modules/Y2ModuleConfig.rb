@@ -58,22 +58,6 @@ module Yast
       nil
     end
 
-    # Get resource name
-    # @param default_resource [String] resource
-    # @return [String] resource as defined in desktop file
-    def getResource(default_resource)
-      ret = Ops.get_string(
-        @ModuleMap,
-        [default_resource, RESOURCE_NAME_KEY],
-        ""
-      )
-      if ret == ""
-        return default_resource
-      else
-        return ret
-      end
-    end
-
     # Get resource data
     # @param [Hash] resourceMap Resource Map
     # @param resource [String] the resource
@@ -293,7 +277,6 @@ module Yast
     end
     publish variable: :GroupMap, type: "map <string, map>"
     publish variable: :ModuleMap, type: "map <string, map>"
-    publish function: :getResource, type: "string (string)"
     publish function: :getResourceData, type: "any (map, string)"
     publish function: :Deps, type: "list <map> ()"
     publish function: :required_packages, type: "map <string, list> (list <string>)"

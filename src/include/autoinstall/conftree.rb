@@ -332,8 +332,6 @@ module Yast
     # @return [Object]
     def configureModule(resource)
       resourceMap = Ops.get(Y2ModuleConfig.ModuleMap, resource, {})
-      resource = Y2ModuleConfig.getResource(resource)
-      Builtins.y2debug("resource: %1", resource)
 
       module_auto = Ops.get_string(
         resourceMap,
