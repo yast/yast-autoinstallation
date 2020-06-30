@@ -24,8 +24,8 @@
 #          Uwe Gansert <ug@suse.de>
 #
 # $Id$
-require "autoinstall/module_config_builder"
 require "autoinstall/autosetup_helpers"
+require "autoinstall/entries/importer"
 
 module Yast
   import "AutoinstConfig"
@@ -59,7 +59,6 @@ module Yast
       Yast.import "Language"
       Yast.import "Console"
       Yast.import "ServicesManager"
-      Yast.import "Y2ModuleConfig"
       Yast.import "AutoinstFunctions"
       Yast.import "Wizard"
 
@@ -440,29 +439,25 @@ module Yast
 
     # Import Users configuration from profile
     def autosetup_users
-      users_config = ModuleConfigBuilder.build(
-        Y2ModuleConfig.getModuleConfig("users"), Profile.current
-      )
-      if users_config
-        Profile.remove_sections(users_config.keys)
-        Call.Function("users_auto", ["Import", users_config])
+      importer.import_entry("users").each do |e|
+        Profile.remove_sections(e)
       end
     end
 
     # Import security settings from profile
     def autosetup_security
-      security_config = Profile.current["security"]
-      if security_config
-        # Do not start it in second installation stage again.
-        # Writing will be called in inst_finish.
-        Profile.remove_sections("security")
-        Call.Function("security_auto", ["Import", security_config])
+      importer.import_entry("security").each do |e|
+        Profile.remove_sections(e)
       end
     end
 
     # Add YaST2 packages dependencies
     def add_yast2_dependencies
       AutoinstSoftware.AddYdepsFromProfile(Profile.current.keys)
+    end
+
+    def importer
+      Y2Autoinstallation::Entries::Importer.new(Profile.current)
     end
   end
 end

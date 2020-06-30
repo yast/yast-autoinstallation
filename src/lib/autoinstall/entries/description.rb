@@ -33,13 +33,18 @@ module Y2Autoinstallation
         "X-SuSE-YaST-AutoInstClonable",
         "X-SuSE-YaST-AutoInstClient",
         "X-SuSE-YaST-AutoInst",
-        "Hidden"
+        "Hidden",
+        "Name"
       ].freeze
 
       # creates new description with values passed
       # @param values[Hash] hash from Desktop.Modules
       def initialize(values)
         @values = values
+      end
+
+      def name
+        values["Name"]
       end
 
       def mode

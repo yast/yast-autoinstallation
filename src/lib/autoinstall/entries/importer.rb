@@ -83,6 +83,50 @@ module Y2Autoinstallation
         end
       end
 
+      # Import just keys for given entry
+      # @param entry [String | Description] to import
+      # @return [Array<String>] keys that are imported
+      def import_entry(entry)
+        res = []
+
+        description = if entry.is_a?(Description)
+          entry
+        else
+          registry.descriptions.find { |d| d.resource_name == entry }
+        end
+
+        if description
+          data = if description.managed_keys.size == 1
+            resource = description.managed_keys.first
+            if profile.key?(resource)
+              res << resource
+              profile[description.managed_keys.first]
+            else
+              key = description.aliases.find { |a| profile.key?(a) }
+              next unless key
+
+              res << key
+              profile[key]
+            end
+          else # for multiple section prepare profile
+            selection = profile.select { |k, _| description.managed_keys.include?(k) }
+            res.concat(selection.keys)
+            selection
+          end
+
+          Yast::WFM.CallFunction(description.client_name, ["Import", data]) if data
+        else
+          raise "Unknown entry #{entry}" unless WFM.ClientExists("#{entry}_auto")
+          data = profile[entry]
+          if data
+            Yast::WFM.CallFunction("#{entry}_auto", ["Import", data]) 
+            res << entry
+          end
+        end
+
+        res
+      end
+
     private
 
       attr_reader :profile
