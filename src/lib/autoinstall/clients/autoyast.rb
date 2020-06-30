@@ -19,6 +19,7 @@
 
 require "yast"
 require "autoinstall/auto_sequence"
+require "autoinstall/entries/importer"
 
 Yast.import "Pkg"
 Yast.import "Wizard"
@@ -153,14 +154,7 @@ module Y2Autoinstallation
           _("Reading configuration data"),
           _("This may take a while")
         )
-        Yast::Profile.ModuleMap.each do |name, values|
-          # Set resource name, if not using default value
-          resource = values.fetch("X-SuSE-YaST-AutoInstResource", name)
-          log.debug("resource: #{resource}")
-          module_auto = values.fetch("X-SuSE-YaST-AutoInstClient", "none")
-          rd = Yast::Y2ModuleConfig.getResourceData(values, resource)
-          Yast::WFM.CallFunction(module_auto, ["Import", rd]) unless rd.nil?
-        end
+        Y2Autoinstallation::Entries::Importer.new(Profile.current).import_sections
         Yast::Popup.ClearFeedback
       end
 

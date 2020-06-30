@@ -3,6 +3,9 @@
 # Authors:  Anas Nashif <nashif@suse.de>
 #
 # $Id$
+
+require "autoinstall/entries/importer"
+
 module Yast
   module AutoinstallConftreeInclude
     def initialize_autoinstall_conftree(_include_target)
@@ -595,19 +598,7 @@ module Yast
                 _("Reading configuration data"),
                 _("This may take a while")
               )
-              Builtins.foreach(Profile.ModuleMap) do |p, d|
-                # Set resource name, if not using default value
-                resource = Ops.get_string(d, "X-SuSE-YaST-AutoInstResource", "")
-                resource = p if resource == ""
-                Builtins.y2debug("resource: %1", resource)
-                module_auto = Ops.get_string(
-                  d,
-                  "X-SuSE-YaST-AutoInstClient",
-                  "none"
-                )
-                rd = Y2ModuleConfig.getResourceData(d, resource)
-                WFM.CallFunction(module_auto, ["Import", rd]) if !rd.nil?
-              end
+              Y2Autoinstallation::Entries::Importer.new(Profile.current).import_sections
               Popup.ClearFeedback
               Wizard.DeleteMenus # FIXME: sucks sucks sucks sucks sucks
               menus

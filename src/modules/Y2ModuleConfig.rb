@@ -58,70 +58,6 @@ module Yast
       nil
     end
 
-    # Get resource data
-    # @param [Hash] resourceMap Resource Map
-    # @param resource [String] the resource
-    # @return [Object] Resource Data
-    def getResourceData(resourceMap, resource)
-      resourceMap = deep_copy(resourceMap)
-      tmp_resource = Ops.get_string(
-        resourceMap,
-        RESOURCE_NAME_KEY,
-        ""
-      )
-      resource = tmp_resource if tmp_resource != ""
-
-      data_type = Ops.get_string(
-        resourceMap,
-        "X-SuSE-YaST-AutoInstDataType",
-        "map"
-      )
-      tomerge = Ops.get_string(resourceMap, RESOURCE_NAME_MERGE_KEYS, "")
-      tomergetypes = Ops.get_string(
-        resourceMap,
-        "X-SuSE-YaST-AutoInstMergeTypes",
-        ""
-      )
-
-      mergedResource = {}
-      if Ops.greater_than(Builtins.size(tomerge), 0)
-        _MergeTypes = Builtins.splitstring(tomergetypes, ",")
-        _Merge = Builtins.splitstring(tomerge, ",")
-        i = 0
-        Builtins.foreach(_Merge) do |res|
-          if Ops.get(_MergeTypes, i, "map") == "map"
-            Ops.set(
-              mergedResource,
-              res,
-              Builtins.eval(Ops.get_map(Profile.current, res, {}))
-            )
-          else
-            Ops.set(
-              mergedResource,
-              res,
-              Builtins.eval(Ops.get_list(Profile.current, res, []))
-            )
-          end
-          i = Ops.add(i, 1)
-        end
-        if mergedResource == {}
-          return nil
-        else
-          return deep_copy(mergedResource)
-        end
-      elsif data_type == "map"
-        if Ops.get_map(Profile.current, resource, {}) == {}
-          return nil
-        else
-          return Builtins.eval(Ops.get_map(Profile.current, resource, {}))
-        end
-      elsif Ops.get_list(Profile.current, resource, []) == []
-        return nil
-      else
-        return Builtins.eval(Ops.get_list(Profile.current, resource, []))
-      end
-    end
-
     # Simple dependency resolving
     # @return [Array<Hash>]
     def Deps
@@ -277,7 +213,6 @@ module Yast
     end
     publish variable: :GroupMap, type: "map <string, map>"
     publish variable: :ModuleMap, type: "map <string, map>"
-    publish function: :getResourceData, type: "any (map, string)"
     publish function: :Deps, type: "list <map> ()"
     publish function: :required_packages, type: "map <string, list> (list <string>)"
     publish function: :unhandled_profile_sections, type: "list <string> ()"
