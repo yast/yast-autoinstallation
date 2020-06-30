@@ -7,6 +7,8 @@
 require "yast"
 require "yast2/popup"
 
+require "autoinstall/entries/registry"
+
 module Yast
   class ProfileClass < Module
     include Yast::Logger
@@ -757,27 +759,16 @@ module Yast
     #
     # @see merge_aliases_map
     def merge_resource_aliases!
-      resource_aliases_map.each do |alias_name, resource_name|
+      reg = Y2Autoinstallation::Entries::Registry.instance
+      alias_map = reg.descriptions.each_with_object({}) do |d, r|
+        d.aliases.each { |a| r[a] = d.resource_name || d.name }
+      end
+      alias_map.each do |alias_name, resource_name|
         aliased_config = current.delete(alias_name)
         next if aliased_config.nil? || current.key?(resource_name)
 
         current[resource_name] = aliased_config
       end
-    end
-
-    # Module aliases map
-    #
-    # This method delegates on Y2ModuleConfig#resource_aliases_map
-    # and exists just to avoid a circular dependency between
-    # Y2ModuleConfig and Profile (as the former depends on the latter).
-    #
-    # @return [Hash] Map of resource aliases where the key is the alias and the
-    #                value is the resource.
-    #
-    # @see Y2ModuleConfigClass#resource_aliases_map
-    def resource_aliases_map
-      Yast.import "Y2ModuleConfig"
-      Y2ModuleConfig.resource_aliases_map
     end
 
     # Edits profile for given modules. If nil is passed, it used GetModfied method.
