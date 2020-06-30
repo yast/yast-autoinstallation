@@ -8,6 +8,8 @@
 
 require "yast2/system_time"
 
+require "autoinstall/entries/importer"
+
 module Yast
   class InstAutoconfigureClient < Client
     include Yast::Logger
@@ -83,8 +85,9 @@ module Yast
 
       # Report only those that are 'not unsupported', these were already reported
       # Unsupported sections have already been reported in the first stage
-      unsupported_sections = Y2ModuleConfig.unsupported_profile_sections
-      unknown_sections = Y2ModuleConfig.unhandled_profile_sections - unsupported_sections
+      importer = Y2Autoinstallation::Entries::Importer.new(Profile.current)
+      unsupported_sections = importer.obsolete_sections
+      unknown_sections = importer.unhandled_sections - unsupported_sections
       if unknown_sections.any?
         log.error "Could not process these unknown profile sections: #{unknown_sections}"
         needed_packages = Y2ModuleConfig.required_packages(unknown_sections)

@@ -1,4 +1,5 @@
 require "autoinstall/autosetup_helpers"
+require "autoinstall/entries/importer"
 require "y2packager/medium_type"
 
 Yast.import "AutoInstall"
@@ -19,7 +20,6 @@ Yast.import "Progress"
 Yast.import "Report"
 Yast.import "UI"
 Yast.import "URL"
-Yast.import "Y2ModuleConfig"
 
 module Y2Autoinstallation
   module Clients
@@ -136,7 +136,7 @@ module Y2Autoinstallation
 
       # Checking profile for unsupported sections.
       def check_unsupported_profile_sections
-        unsupported_sections = Yast::Y2ModuleConfig.unsupported_profile_sections
+        unsupported_sections = Y2Autoinstallation::Entries::Importer.new(Profile.current).obsolete_sections
         if unsupported_sections.any?
           log.error "Could not process these unsupported profile " \
             "sections: #{unsupported_sections}"

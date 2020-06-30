@@ -35,7 +35,7 @@ module Y2Autoinstallation
       # at the current system and are not handled by AutoYaST itself.
       #
       # @return [Array<String>] of unknown profile sections
-      def unhandled_profile_sections
+      def unhandled_sections
         managed = registry.descriptions.map(&:managed_keys).flatten
 
         profile.keys.select do |name|
@@ -59,7 +59,7 @@ module Y2Autoinstallation
       #
       # @return [Array<String>] of unsupported profile sections
       def obsolete_sections
-        unhandled_profile_sections & Yast::ProfileClass::OBSOLETE_PROFILE_SECTIONS
+        unhandled_sections & Yast::ProfileClass::OBSOLETE_PROFILE_SECTIONS
       end
 
       # Imports profile by calling respective auto clients
