@@ -21,35 +21,9 @@ describe Yast::Y2ModuleConfig do
     subject.main
   end
 
-  describe "#unhandled_profile_sections" do
-    let(:profile_unhandled) { File.join(FIXTURES_PATH, "profiles", "unhandled_and_obsolete.xml") }
-
-    it "returns all unsupported and unknown profile sections" do
-      Yast::Profile.ReadXML(profile_unhandled)
-
-      expect(Yast::Y2ModuleConfig.unhandled_profile_sections).to contain_exactly(
-        "audit-laf", "autofs", "ca_mgm", "cobbler", "firstboot", "inetd", "language",
-        "restore", "security", "sshd", "sysconfig", "unknown_profile_item_1",
-        "unknown_profile_item_2"
-      )
-    end
-  end
-
-  describe "#unsupported_profile_sections" do
-    let(:profile_unsupported) { File.join(FIXTURES_PATH, "profiles", "unhandled_and_obsolete.xml") }
-
-    it "returns all unsupported profile sections" do
-      Yast::Profile.ReadXML(profile_unsupported)
-
-      expect(Yast::Y2ModuleConfig.unsupported_profile_sections).to contain_exactly(
-        "autofs", "ca_mgm", "cobbler", "inetd", "restore", "sshd"
-      )
-    end
-  end
-
   describe "#ReadMenuEntries" do
     it "returns the modules and groups for the given modes" do
-      modules, groups = subject.ReadMenuEntries(["configure"])
+      modules, groups = subject.send(:ReadMenuEntries, ["configure"])
       expect(modules.keys).to eq(
         ["add-on", "bootloader", "general", "partitioning", "report", "software"]
       )
@@ -59,7 +33,7 @@ describe Yast::Y2ModuleConfig do
     end
 
     it "sets the client if missing" do
-      modules, _groups = subject.ReadMenuEntries(["configure"])
+      modules, _groups = subject.send(:ReadMenuEntries, ["configure"])
       add_on = modules["add-on"]
       expect(add_on["X-SuSE-YaST-AutoInstClient"]).to eq("add-on_auto")
     end

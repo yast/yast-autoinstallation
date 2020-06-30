@@ -17,7 +17,7 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "autoinstallation/entries/registry"
+require "autoinstall/entries/registry"
 
 module Y2Autoinstallation
   module Entries
@@ -103,7 +103,7 @@ module Y2Autoinstallation
               profile[description.managed_keys.first]
             else
               key = description.aliases.find { |a| profile.key?(a) }
-              next unless key
+              return res unless key
 
               res << key
               profile[key]
@@ -117,9 +117,10 @@ module Y2Autoinstallation
           Yast::WFM.CallFunction(description.client_name, ["Import", data]) if data
         else
           raise "Unknown entry #{entry}" unless WFM.ClientExists("#{entry}_auto")
+
           data = profile[entry]
           if data
-            Yast::WFM.CallFunction("#{entry}_auto", ["Import", data]) 
+            Yast::WFM.CallFunction("#{entry}_auto", ["Import", data])
             res << entry
           end
         end

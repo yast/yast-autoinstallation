@@ -536,7 +536,6 @@ module Yast
           modulename = getModule
           if modulename != ""
             d = Ops.get(Y2ModuleConfig.ModuleMap, modulename, {})
-            module_auto = ""
             module_auto = if Builtins.haskey(d, "X-SuSE-YaST-AutoInstClient")
               Ops.get_string(
                 d,

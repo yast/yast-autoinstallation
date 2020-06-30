@@ -18,7 +18,7 @@
 # find current contact information at www.suse.com.
 
 require "singleton"
-require "autoinstallation/entries/description"
+require "autoinstall/entries/description"
 
 Yast.import "Desktop"
 
@@ -29,7 +29,7 @@ module Y2Autoinstallation
       include Singleton
 
       def read
-        Yast::Desktop.AgentPath = path(".autoyast2.desktop")
+        Yast::Desktop.AgentPath = Yast::Path.new(".autoyast2.desktop")
         Yast::Desktop.Read(Description::USED_VALUES)
         @descriptions = Yast::Desktop.Modules.map { |_, v| Description.new(v) }
         @groups = Yast::Desktop.Groups

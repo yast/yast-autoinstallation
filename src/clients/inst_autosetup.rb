@@ -457,7 +457,7 @@ module Yast
     end
 
     def importer
-      Y2Autoinstallation::Entries::Importer.new(Profile.current)
+      @importer ||= Y2Autoinstallation::Entries::Importer.new(Profile.current)
     end
   end
 end
