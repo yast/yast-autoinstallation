@@ -357,8 +357,6 @@ module Yast
       end
       [confs, groups]
     end
-
-
   end
 
   Y2ModuleConfig = Y2ModuleConfigClass.new

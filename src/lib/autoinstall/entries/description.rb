@@ -25,7 +25,6 @@ module Y2Autoinstallation
   module Entries
     # Represents single entry description. It is stored in desktop files.
     class Description
-
       # Values used in this class. It is needed to pass it to Desktop.Read.
       USED_VALUES = [
         "X-SuSE-YaST-AutoInstResource",
@@ -35,7 +34,7 @@ module Y2Autoinstallation
         "X-SuSE-YaST-AutoInstClient",
         "X-SuSE-YaST-AutoInst",
         "Hidden"
-      ]
+      ].freeze
 
       # creates new description with values passed
       # @param values[Hash] hash from Desktop.Modules
@@ -69,11 +68,12 @@ module Y2Autoinstallation
         end
       end
 
-      ALWAYS_CLONABLE_MODULES ||= ["software", "partitioning", "bootloader"].freeze
+      ALWAYS_CLONABLE_MODULES = ["software", "partitioning", "bootloader"].freeze
       private_constant :ALWAYS_CLONABLE_MODULES
 
       def clonable?
-        values["X-SuSE-YaST-AutoInstClonable"] == "true" || ALWAYS_CLONABLE_MODULES.include?(resource_name)
+        values["X-SuSE-YaST-AutoInstClonable"] == "true" ||
+          ALWAYS_CLONABLE_MODULES.include?(resource_name)
       end
 
       def client_name
@@ -87,7 +87,6 @@ module Y2Autoinstallation
     private
 
       attr_reader :values
-
     end
   end
 end

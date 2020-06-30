@@ -57,5 +57,3 @@ module Y2Autoinstallation
     end
   end
 end
-
-
