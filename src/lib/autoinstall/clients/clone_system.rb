@@ -19,13 +19,14 @@
 
 require "yast"
 
+require "autoinstall/entries/registry"
+
 Yast.import "AutoinstClone"
 Yast.import "Profile"
 Yast.import "XML"
 Yast.import "Popup"
 Yast.import "ProductControl"
 Yast.import "CommandLine"
-Yast.import "Y2ModuleConfig"
 Yast.import "Mode"
 Yast.import "FileUtils"
 Yast.import "Report"
@@ -61,7 +62,8 @@ module Y2Autoinstallation
           end
         end
 
-        modules_list = Yast::Y2ModuleConfig.clonable_modules.keys.join(" ")
+        registry = Y2Autoinstallation::Entries::Registry.instance
+        modules_list = registry.descriptions.select(&:clonable?).map(&:resource_name).join(" ")
 
         if [NilClass, Hash].any? { |c| Yast::WFM.Args.first.is_a?(c) }
           params = Yast::WFM.Args.first || {}

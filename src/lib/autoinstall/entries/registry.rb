@@ -31,7 +31,7 @@ module Y2Autoinstallation
       def read
         Yast::Desktop.AgentPath = Yast::Path.new(".autoyast2.desktop")
         Yast::Desktop.Read(Description::USED_VALUES)
-        @descriptions = Yast::Desktop.Modules.map { |_, v| Description.new(v) }
+        @descriptions = Yast::Desktop.Modules.map { |k, v| Description.new(v, k) }
         @groups = Yast::Desktop.Groups
 
         @read = true

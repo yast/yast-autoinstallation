@@ -13,7 +13,6 @@ module Yast
       Yast.import "Popup"
       Yast.import "Profile"
       Yast.import "Directory"
-      Yast.import "Y2ModuleConfig"
       Yast.import "Wizard"
       Yast.import "AutoinstConfig"
       Yast.import "AutoinstClass"

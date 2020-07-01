@@ -42,8 +42,9 @@ module Y2Autoinstallation
 
       # creates new description with values passed
       # @param values[Hash] hash from Desktop.Modules
-      def initialize(values)
+      def initialize(values, fallback_name)
         @values = values
+        @fallback_name = fallback_name
       end
 
       def name
@@ -55,7 +56,7 @@ module Y2Autoinstallation
       end
 
       def resource_name
-        values["X-SuSE-YaST-AutoInstResource"]
+        values["X-SuSE-YaST-AutoInstResource"] || @fallback_name
       end
 
       def aliases

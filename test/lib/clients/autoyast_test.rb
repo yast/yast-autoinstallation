@@ -38,7 +38,6 @@ describe Y2Autoinstallation::Clients::Autoyast do
       allow(Y2Autoinstallation::AutoSequence).to receive(:new).and_return(auto_sequence)
       # It is changed by other modules which causes this test to fail.
       Yast::Stage.Set("normal")
-      Yast::Y2ModuleConfig.main
     end
 
     describe "'ui' command" do
@@ -79,7 +78,10 @@ describe Y2Autoinstallation::Clients::Autoyast do
 
       context "when was not possible to load the modules configuration" do
         before do
-          allow(Yast::Y2ModuleConfig).to receive(:GroupMap).and_return({})
+          # reset singleton
+          allow(Yast::Desktop).to receive(:Groups)
+            .and_return({})
+          Singleton.__init__(Y2Autoinstallation::Entries::Registry)
         end
 
         it "displays an error" do
@@ -93,9 +95,12 @@ describe Y2Autoinstallation::Clients::Autoyast do
       let(:args) { ["list-modules"] }
 
       it "displays the list of supported modules" do
+        Singleton.__init__(Y2Autoinstallation::Entries::Registry)
         expect(Yast::CommandLine).to receive(:PrintTable) do |_header, items|
-          expect(items.size).to eq(Yast::Y2ModuleConfig.ModuleMap.size)
-          name = Yast::Profile.ModuleMap["lan"]["Name"]
+          registry = Y2Autoinstallation::Entries::Registry.instance
+          expect(items.size).to eq(registry.configurable_descriptions.size)
+          name = registry.configurable_descriptions
+            .find { |d| d.resource_name == "networking" }.name
           expect(items.to_s).to include(name)
         end
         client.main

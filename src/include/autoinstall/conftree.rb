@@ -633,11 +633,7 @@ module Yast
           ret = :menu_saveas
         elsif ret == "menu_new" # NEW
           Profile.Reset
-          Builtins.foreach(Profile.ModuleMap) do |p, d|
-            resource = Ops.get_string(d, "X-SuSE-YaST-AutoInstResource", "")
-            resource = p if resource == ""
-            resetModule(resource)
-          end
+          registry.descriptions.each { |d| resetModule(d.resource_name) }
           AutoinstConfig.currentFile = ""
           ShowSource() if UI.WidgetExists(Id(:class_source))
           group = getGroup

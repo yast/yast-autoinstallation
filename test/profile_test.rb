@@ -3,7 +3,6 @@
 require_relative "test_helper"
 
 Yast.import "Profile"
-Yast.import "Y2ModuleConfig"
 Yast.import "AutoinstClone"
 
 describe Yast::Profile do
@@ -194,8 +193,10 @@ describe Yast::Profile do
       end
 
       before do
-        allow(Yast::Y2ModuleConfig).to receive(:ModuleMap)
+        # reset singleton
+        allow(Yast::Desktop).to receive(:Modules)
           .and_return("custom" => custom_module)
+        Singleton.__init__(Y2Autoinstallation::Entries::Registry)
       end
 
       context "and configuration for the resource is missing" do
@@ -288,8 +289,10 @@ describe Yast::Profile do
     let(:module_map) { { "custom" => custom_module } }
 
     before do
-      allow(Yast::Y2ModuleConfig).to receive(:ReadMenuEntries)
-        .with(["all", "configure"]).and_return([module_map, {}])
+      # reset singleton
+      allow(Yast::Desktop).to receive(:Modules)
+        .and_return(module_map)
+      Singleton.__init__(Y2Autoinstallation::Entries::Registry)
       allow(Yast::WFM).to receive(:CallFunction).and_call_original
       allow(Yast::WFM).to receive(:CallFunction)
         .with("custom_auto", ["GetModified"]).and_return(true)
@@ -298,7 +301,6 @@ describe Yast::Profile do
       allow(Yast::AutoinstClone).to receive(:General)
         .and_return("mode" => { "confirm" => false })
 
-      Yast::Y2ModuleConfig.main
       subject.Reset
       subject.prepare = prepare
     end
@@ -400,13 +402,13 @@ describe Yast::Profile do
     let(:module_map) { { "custom" => custom_module } }
 
     before do
-      allow(Yast::Y2ModuleConfig).to receive(:ReadMenuEntries)
-        .with(["all", "configure"]).and_return([module_map, {}])
+      # reset singleton
+      allow(Yast::Desktop).to receive(:Modules)
+        .and_return(module_map)
+      Singleton.__init__(Y2Autoinstallation::Entries::Registry)
       allow(Yast::WFM).to receive(:CallFunction).and_call_original
       allow(Yast::WFM).to receive(:CallFunction)
         .with("custom_auto", ["Export"]).and_return(custom_export)
-
-      Yast::Y2ModuleConfig.main
     end
 
     it "exports modules data into the current profile" do
@@ -472,12 +474,6 @@ describe Yast::Profile do
 
       it "uses the alternative name" do
         subject.create("alternative")
-        expect(subject.current).to include("alternative")
-        expect(subject.current).to_not include("custom")
-      end
-
-      it "accept as paramter both alternative and original name" do
-        subject.create("custom")
         expect(subject.current).to include("alternative")
         expect(subject.current).to_not include("custom")
       end

@@ -51,8 +51,6 @@ module Yast
 
       @ModuleMap = Ops.get_map(_MenuEntries, 0, {})
 
-      Profile.ModuleMap = deep_copy(@ModuleMap)
-
       @GroupMap = Ops.get_map(_MenuEntries, 1, {})
 
       nil

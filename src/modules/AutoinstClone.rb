@@ -16,6 +16,8 @@
 require "yast"
 require "y2storage"
 
+require "autoinstall/entries/registry"
+
 module Yast
   # This module drives the AutoYaST cloning process
   class AutoinstCloneClass < Module
@@ -25,7 +27,6 @@ module Yast
       Yast.import "Mode"
       Yast.import "Call"
       Yast.import "Profile"
-      Yast.import "Y2ModuleConfig"
       Yast.import "AutoinstConfig"
       Yast.import "Report"
 
@@ -39,20 +40,11 @@ module Yast
     #
     # @return [Array<Yast::Term>] list to be used in widgets (sorted by its label)
     def createClonableList
-      module_map = Y2ModuleConfig.ModuleMap
-      clonable_items = module_map.each_with_object([]) do |(def_resource, resource_map), items|
-        log.debug "r: #{def_resource} => #{resource_map["X-SuSE-YaST-AutoInstClonable"]}"
-        clonable = resource_map["X-SuSE-YaST-AutoInstClonable"] == "true"
-        next unless clonable
+      clonable_items = registry.descriptions.each_with_object([]) do |description, items|
+        log.debug "r: #{description.inspect}"
+        next unless description.clonable?
 
-        desktop_file = resource_map.fetch("X-SuSE-DocTeamID", "").slice(4..-1)
-        translation_key = "Name(#{desktop_file}.desktop): #{resource_map["Name"]}"
-        name = Builtins.dpgettext("desktop_translations", "/usr/share/locale/", translation_key)
-        name = resource_map.fetch("Name", "") if name == translation_key
-        # Set resource name, if not using default value
-        resource_name = resource_map.fetch("X-SuSE-YaST-AutoInstResource", "")
-        resource_name = def_resource if resource_name.empty?
-        items << Item(Id(resource_name), name)
+        items << Item(Id(description.resource_name), description.translated_name)
       end
 
       clonable_items.sort_by { |i| i[1] }
@@ -67,16 +59,13 @@ module Yast
       log.info "Additional resources: #{@additional}"
       Mode.SetMode("autoinst_config")
 
-      Y2ModuleConfig.ModuleMap.each do |def_resource, resource_map|
+      registry.descriptions.each do |description|
         # Set resource name, if not using default value
-        resource = resource_map.fetch("X-SuSE-YaST-AutoInstResource", "")
-        resource = def_resource if resource.empty?
-
-        next unless @additional.include?(resource)
+        next unless @additional.include?(description.resource_name)
 
         time_start = Time.now
-        read_module(resource_map)
-        log.info "Cloning #{resource} took: #{(Time.now - time_start).round} sec"
+        read_module(description)
+        log.info "Cloning #{description.resource_name} took: #{(Time.now - time_start).round} sec"
       end
 
       Call.Function("general_auto", ["Import", General()]) if @additional.include?("general")
@@ -114,10 +103,10 @@ module Yast
 
     # Reads module if it is appropriate
     #
-    # @param resource_map [Hash] resources map
+    # @param description [Y2Autoinstallation::Entries::Description]
     # @return [void]
-    def read_module(resource_map)
-      auto = Ops.get_string(resource_map, "X-SuSE-YaST-AutoInstClient", "")
+    def read_module(description)
+      auto = description.client_name
 
       # Do not read settings from system in first stage, autoyast profile
       # should contain only proposed and user modified values.
@@ -128,6 +117,10 @@ module Yast
           ["software_auto", "storage_auto"].include?(auto)
         Call.Function(auto, ["Read"])
       end
+    end
+
+    def registry
+      Y2Autoinstallation::Entries::Registry.instance
     end
   end
 

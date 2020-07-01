@@ -81,9 +81,6 @@ module Yast
       # The Complete current Profile
       @current = {}
 
-      # defined in Y2ModuleConfig
-      @ModuleMap = {}
-
       @changed = false
 
       @prepare = true
@@ -721,7 +718,6 @@ module Yast
     # @!attribute current
     #   @return [Hash<String, Object>] current working profile
     publish variable: :current, type: "map <string, any>"
-    publish variable: :ModuleMap, type: "map <string, map>"
     publish variable: :changed, type: "boolean"
     publish variable: :prepare, type: "boolean"
     publish function: :Import, type: "void (map <string, any>)"
@@ -773,16 +769,16 @@ module Yast
 
     # Edits profile for given modules. If nil is passed, it used GetModfied method.
     def edit_profile(modules = nil)
-      @ModuleMap.each_pair do |name, module_map|
+      registry = Y2Autoinstallation::Entries::Registry.instance
+      registry.descriptions.each do |description|
         #
         # Set resource name, if not using default value
         #
-        resource = module_map["X-SuSE-YaST-AutoInstResource"] || name
-        tomerge = module_map["X-SuSE-YaST-AutoInstMerge"] || ""
-        # TODO: is none valid or better use exception?
-        module_auto = module_map["X-SuSE-YaST-AutoInstClient"] || "none"
+        resource = description.resource_name
+        tomerge = description.managed_keys
+        module_auto = description.client_name
         export = if modules
-          modules.include?(resource) || modules.include?(name)
+          modules.include?(resource) || modules.include?(description.name)
         else
           WFM.CallFunction(module_auto, ["GetModified"])
         end
@@ -790,7 +786,7 @@ module Yast
 
         resource_data = WFM.CallFunction(module_auto, ["Export"])
 
-        if tomerge == ""
+        if tomerge.size < 2
           s = (resource_data || {}).size
           if s > 0
             @current[resource] = resource_data
@@ -798,7 +794,7 @@ module Yast
             @current.delete(resource)
           end
         else
-          tomerge.split(",").each_with_index do |res, _i|
+          tomerge.each do |res|
             value = resource_data[res]
             if !value
               log.warn "key #{res} expected to be exported from #{resource}"
