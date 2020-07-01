@@ -43,6 +43,14 @@ module Y2Autoinstallation
         @descriptions
       end
 
+      def configurable_descriptions
+        descriptions.select { |d| ["all", "configure"].include?(d.mode) }
+      end
+
+      def writable_descriptions
+        descriptions.select { |d| ["all", "write"].include?(d.mode) }
+      end
+
       def groups
         read unless @read
 

@@ -5,6 +5,7 @@
 # $Id$
 
 require "autoinstall/entries/importer"
+require "autoinstall/entries/registry"
 
 module Yast
   module AutoinstallConftreeInclude
@@ -57,19 +58,20 @@ module Yast
     # @return The newly created `SelectionBox widget.
     def groups(selectedGroup)
       itemList = []
-      sortedGroups = Builtins.maplist(Y2ModuleConfig.GroupMap) { |k, _v| k } # keys()
+      registry = Y2Autoinstallation::Entries::Registry.instance
+      sortedGroups = Builtins.maplist(registry.groups) { |k, _v| k } # keys()
       sortedGroups = Builtins.sort(sortedGroups) do |a, b|
         aa = Builtins.tointeger(
-          Ops.get_string(Y2ModuleConfig.GroupMap, [a, "SortKey"], "500")
+          Ops.get_string(registry.groups, [a, "SortKey"], "500")
         )
         bb = Builtins.tointeger(
-          Ops.get_string(Y2ModuleConfig.GroupMap, [b, "SortKey"], "500")
+          Ops.get_string(registry.groups, [b, "SortKey"], "500")
         )
         (aa != bb) ? Ops.less_than(aa, bb) : Ops.less_than(a, b) # by "SortKey" or alphabetical
       end
 
       Builtins.foreach(sortedGroups) do |k|
-        v = Ops.get(Y2ModuleConfig.GroupMap, k, {})
+        v = Ops.get(registry.groups, k, {})
         desktop_file = Builtins.substring(
           Ops.get_string(v, "X-SuSE-DocTeamID", ""),
           4
@@ -104,50 +106,25 @@ module Yast
     # The specified YaST module is selected.
     #
     # @param [String] group_name YaST group of modules to display.
-    # @param [String] selectedModule Module to preselect.
-    def modules(group_name, selectedModule)
+    # @param [String] selected_module Module to preselect.
+    def modules(group_name, selected_module)
       Builtins.y2milestone("group_name: %1", group_name)
-      itemList = []
-      Builtins.foreach(Y2ModuleConfig.ModuleMap) do |k, v|
+      registry = Y2Autoinstallation::Entries::Registry.instance
+      items = []
+      registry.configurable_descriptions.each do |description|
         # bnc #887115 comment #9: Desktop file is "hidden" and should not be shown at all
-        next if v["Hidden"] == "true"
+        next if description.hidden?
+        next if description.group != group_name
 
-        if Ops.get_string(v, "X-SuSE-YaST-Group", "") == group_name
-          desktop_file = Builtins.substring(
-            Ops.get_string(v, "X-SuSE-DocTeamID", ""),
-            4
-          )
-          translation = Builtins.dpgettext(
-            "desktop_translations",
-            "/usr/share/locale/",
-            Ops.add(
-              Ops.add(Ops.add("Name(", desktop_file), ".desktop): "),
-              Ops.get_string(v, "Name", "")
-            )
-          )
-          if translation ==
-              Ops.add(
-                Ops.add(Ops.add("Name(", desktop_file), ".desktop): "),
-                Ops.get_string(v, "Name", "")
-              )
-            translation = Ops.get_string(v, "Name", "")
-          end
-          item = Item(
-            Id(k),
-            term(:icon, Ops.get_string(v, "Icon", "")),
-            translation,
-            k == selectedModule
-          )
-          itemList = Builtins.add(itemList, item)
-        end
-      end
-      if 0 == Builtins.size(itemList)
-        itemList = Builtins.add(
-          itemList,
-          Item(Id("none"), _("No modules available"))
+        items << Item(
+          Id(description.resource_name),
+          term(:icon, description.icon),
+          description.translated_name,
+          description.resource_name == selected_module
         )
       end
-      SelectionBox(Id(:modules), Opt(:notify), _("Modules"), itemList)
+      items << Item(Id("none"), _("No modules available")) if items.empty?
+      SelectionBox(Id(:modules), Opt(:notify), _("Modules"), items)
     end
 
     # Creates an `HBox containing the buttons to be displayed below the summary column
@@ -177,14 +154,10 @@ module Yast
     # @param [String] module_name The module to summarize.
     # @return The `VBox widget.
     def details(module_name)
-      resourceMap = Ops.get(Y2ModuleConfig.ModuleMap, module_name, {})
-      module_auto = Ops.get_string(
-        resourceMap,
-        "X-SuSE-YaST-AutoInstClient",
-        "none"
-      )
-      summary = Convert.to_string(WFM.CallFunction(module_auto, ["Summary"]))
-      summary = "" if nil == summary
+      registry = Y2Autoinstallation::Entries::Registry.instance
+      description = registry.configurable_descriptions.find { |d| d.resource_name == module_name }
+      summary = WFM.CallFunction(description.client_name, ["Summary"]) if description
+      summary ||= ""
       VBox(Left(Label(_("Details"))), RichText(summary), buttons)
     end
 
@@ -234,8 +207,6 @@ module Yast
       Convert.to_string(UI.QueryWidget(Id(:modules), :CurrentItem))
     end
 
-    ALWAYS_CLONABLE_MODULES = ["software", "partitioning", "bootloader"].freeze
-
     # Updates the action button activation status. (Some modules are not
     # clonable, some are not writeable).
     #
@@ -251,11 +222,9 @@ module Yast
       end
 
       # set read button status
-      resourceMap = Y2ModuleConfig.ModuleMap.fetch(selectedModule, {})
-      clonable = resourceMap["X-SuSE-YaST-AutoInstClonable"] == "true"
-
-      clone_button_status = clonable || ALWAYS_CLONABLE_MODULES.include?(selectedModule)
-      UI.ChangeWidget(Id(:read), :Enabled, clone_button_status)
+      registry = Y2Autoinstallation::Entries::Registry.instance
+      description = registry.descriptions.find { |d| d.resource_name == selectedModule }
+      UI.ChangeWidget(Id(:read), :Enabled, description.clonable?)
 
       nil
     end
@@ -265,9 +234,10 @@ module Yast
     #
     # @param [String] module_name The module to select.
     def setModule(module_name)
-      resourceMap = Ops.get(Y2ModuleConfig.ModuleMap, module_name, {})
-      if {} != resourceMap
-        group = Ops.get_string(resourceMap, "X-SuSE-YaST-Group", "")
+      registry = Y2Autoinstallation::Entries::Registry.instance
+      description = registry.descriptions.find { |d| d.resource_name == module_name }
+      if description
+        group = description.group
         setGroup(group) if "" != group
         UI.ChangeWidget(Id(:modules), :CurrentItem, module_name)
         updateDetails
@@ -303,16 +273,12 @@ module Yast
     # @return [Object]
     def resetModule(resource)
       Builtins.y2debug("resource: %1", resource)
-      resourceMap = Ops.get(Y2ModuleConfig.ModuleMap, resource, {})
-      module_auto = Ops.get_string(
-        resourceMap,
-        "X-SuSE-YaST-AutoInstClient",
-        "none"
-      )
+      registry = Y2Autoinstallation::Entries::Registry.instance
+      description = registry.descriptions.find { |d| d.resource_name == resource }
       if Builtins.haskey(Profile.current, resource)
         Profile.current = Builtins.remove(Profile.current, resource)
       end
-      WFM.CallFunction(module_auto, ["Reset"])
+      WFM.CallFunction(description.client_name, ["Reset"])
 
       :next
     end
@@ -321,10 +287,10 @@ module Yast
     #
     # @param [String] module_name The module to read in.
     def readModule(module_name)
-      resourceMap = Ops.get(Y2ModuleConfig.ModuleMap, module_name, {})
-      auto = Ops.get_string(resourceMap, "X-SuSE-YaST-AutoInstClient", "")
-      Call.Function(auto, ["Read"])
-      Call.Function(auto, ["SetModified"])
+      registry = Y2Autoinstallation::Entries::Registry.instance
+      description = registry.descriptions.find { |d| d.resource_name == module_name }
+      Call.Function(description.client_name, ["Read"])
+      Call.Function(description.client_name, ["SetModified"])
       Profile.prepare = true
       Profile.changed = true
       true
@@ -334,37 +300,31 @@ module Yast
     # @param [String] resource Module/Resource to configure
     # @return [Object]
     def configureModule(resource)
-      resourceMap = Ops.get(Y2ModuleConfig.ModuleMap, resource, {})
-
-      module_auto = Ops.get_string(
-        resourceMap,
-        "X-SuSE-YaST-AutoInstClient",
-        "none"
-      )
-      Builtins.y2debug("module_auto: %1", module_auto)
+      registry = Y2Autoinstallation::Entries::Registry.instance
+      description = registry.descriptions.find { |d| d.resource_name == resource }
 
       Builtins.y2milestone("Mode::mode %1", Mode.mode)
-      original_settings = WFM.CallFunction(module_auto, ["Export"])
-      seq = WFM.CallFunction(module_auto, ["Change"])
+      original_settings = WFM.CallFunction(description.client_name, ["Export"])
+      seq = WFM.CallFunction(description.client_name, ["Change"])
       Builtins.y2milestone("Change response: %1", seq)
       if seq == :accept || seq == :next || seq == :finish
-        new_settings = WFM.CallFunction(module_auto, ["Export"])
+        new_settings = WFM.CallFunction(description.client_name, ["Export"])
         if new_settings.nil?
           Builtins.y2milestone("Importing original settings.")
           Popup.Error(_("The module returned invalid data."))
-          WFM.CallFunction(module_auto, ["Import", original_settings])
+          WFM.CallFunction(description.client_name, ["Import", original_settings])
           return :abort
         else
           Builtins.y2milestone("original=%1", original_settings)
           Builtins.y2milestone("new=%1", new_settings)
           if original_settings != new_settings
-            WFM.CallFunction(module_auto, ["SetModified"])
+            WFM.CallFunction(description.client_name, ["SetModified"])
             Profile.changed = true
             Profile.prepare = true
           end
         end
       else
-        WFM.CallFunction(module_auto, ["Import", original_settings])
+        WFM.CallFunction(description.client_name, ["Import", original_settings])
       end
       deep_copy(seq)
     end
@@ -535,16 +495,8 @@ module Yast
         elsif ret == :writeNow
           modulename = getModule
           if modulename != ""
-            d = Ops.get(Y2ModuleConfig.ModuleMap, modulename, {})
-            module_auto = if Builtins.haskey(d, "X-SuSE-YaST-AutoInstClient")
-              Ops.get_string(
-                d,
-                "X-SuSE-YaST-AutoInstClient",
-                "none"
-              )
-            else
-              Builtins.sformat("%1_auto", modulename)
-            end
+            registry = Y2Autoinstallation::Entries::Registry.instance
+            description = registry.descriptions.find { |d| d.resource_name == module_name }
             if Popup.YesNo(
               Builtins.sformat(
                 _(
@@ -559,7 +511,7 @@ module Yast
               # So we are switching to "normal" mode. (bnc#909223)
               Mode.SetMode("normal")
 
-              Call.Function(module_auto, ["Write"])
+              Call.Function(description.client_name, ["Write"])
               Mode.SetMode(oldMode)
             end
           end

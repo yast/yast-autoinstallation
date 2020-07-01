@@ -33,7 +33,10 @@ module Y2Autoinstallation
         "X-SuSE-YaST-AutoInstClonable",
         "X-SuSE-YaST-AutoInstClient",
         "X-SuSE-YaST-AutoInst",
+        "X-SuSE-DocTeamID",
+        "X-SuSE-YaST-Group",
         "Hidden",
+        "Icon",
         "Name"
       ].freeze
 
@@ -87,6 +90,26 @@ module Y2Autoinstallation
 
       def hidden?
         values["Hidden"] == "true"
+      end
+
+      def group
+        values["X-SuSE-YaST-Group"]
+      end
+
+      def icon
+        values["Icon"]
+      end
+
+      def translated_name
+        desktop_file = (values["X-SuSE-DocTeamID"] || "")[4, -1] || ""
+        string_to_translate = "Name(#{desktop_file}.desktop): #{name}"
+        # TODO: it is builtins but we do not have alternative for such call.
+        # Maybe having it in Yast::I18n directly?
+        result = Yast::Builtins.dpgettext(
+          "desktop_translations", "/usr/share/locale", string_to_translate
+        )
+        result = name if result == string_to_translate
+        result
       end
 
     private
