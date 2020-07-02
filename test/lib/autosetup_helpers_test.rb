@@ -335,4 +335,73 @@ describe Y2Autoinstallation::AutosetupHelpers do
       end
     end
   end
+
+  describe "#autosetup_country" do
+    let(:profile) { language_section.merge(timezone_section).merge(keyboard_section) }
+    let(:language_section) { { "language" => { "language" => "de_DE", "languages" => "es_ES" } } }
+    let(:timezone_section) { {} }
+    let(:keyboard_section) { {} }
+    let(:use_english) { false }
+    let(:language) { double("Yast::Language", Import: true, SwitchToEnglishIfNeeded: use_english) }
+
+    before do
+      Yast::Profile.current = profile
+      allow(Yast::Installation).to receive(:encoding=)
+      allow(Yast::Profile).to receive(:remove_sections)
+    end
+
+    it "sets the language config based on the profile" do
+      expect(Yast::Language).to receive(:Import).with(language_section["language"])
+      client.autosetup_country
+    end
+
+    it "sets the installation console font" do
+      expect(Yast::Installation).to receive(:encoding=).with("UTF-8")
+      client.autosetup_country
+    end
+
+    context "when the timezone section is declared" do
+      let(:timezone_section) { { "timezone" => { "timezone" => "Europe/Berlin" } } }
+
+      it "imports the timezone configuration" do
+        expect(Yast::Timezone).to receive(:Import).with(timezone_section["timezone"])
+        client.autosetup_country
+      end
+
+      it "removes the timezone section from the profile" do
+        expect(Yast::Profile).to receive(:remove_sections).with("timezone")
+        client.autosetup_country
+      end
+    end
+
+    context "when the keyboard section is declared" do
+      let(:keyboard_section) { { "keyboard" => { "mapping" => "spanish" } } }
+
+      it "imports the keyboard configuration" do
+        expect(Yast::Keyboard).to receive(:Import).with(keyboard_section["keyboard"], :keyboard)
+        client.autosetup_country
+      end
+
+      it "removes the keyboard section" do
+        expect(Yast::Profile).to receive(:remove_sections).with("keyboard")
+        client.autosetup_country
+      end
+    end
+
+    context "when the keyboard section is not declared" do
+      context "but the language section is" do
+        it "imports the language section from the keyboard module to infer the keyboard mapping" do
+          expect(Yast::Keyboard).to receive(:Import).with(language_section["language"], :language)
+          client.autosetup_country
+        end
+      end
+    end
+
+    context "when the language section is declared" do
+      it "removes the section when all country settings have been already imported" do
+        expect(Yast::Profile).to receive(:remove_sections).with("language")
+        client.autosetup_country
+      end
+    end
+  end
 end

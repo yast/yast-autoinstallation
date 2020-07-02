@@ -21,7 +21,12 @@ require "y2storage"
 require "autoinstall/activate_callbacks"
 require "autoinstall/xml_checks"
 
+Yast.import "Console"
+Yast.import "Installation"
 Yast.import "Profile"
+Yast.import "Timezone"
+Yast.import "Keyboard"
+Yast.import "Language"
 
 module Y2Autoinstallation
   # This module defines some methods that are used in {Yast::InstAutosetupClient}
@@ -163,7 +168,41 @@ module Y2Autoinstallation
       @network_before_proposal = networking_section.fetch("setup_before_proposal", false)
     end
 
+    # Import and configure country specific data (timezone, language and
+    # keyboard)
+    def autosetup_country
+      Yast::Language.Import(Yast::Profile.current["language"] || {})
+
+      # Set Console font
+      Yast::Installation.encoding = Yast::Console.SelectFont(Yast::Language.language)
+      Yast::Installation.encoding = "UTF-8" if utf8_supported?
+
+      unless Yast::Language.SwitchToEnglishIfNeeded(true)
+        Yast::UI.SetLanguage(Yast::Language.language, Yast::Installation.encoding)
+        Yast::WFM.SetLanguage(Yast::Language.language, "UTF-8")
+      end
+
+      if Yast::Profile.current.key?("timezone")
+        Yast::Timezone.Import(Yast::Profile.current["timezone"] || {})
+        Yast::Profile.remove_sections("timezone")
+      end
+
+      # bnc#891808: infer keyboard from language if needed
+      if Yast::Profile.current.key?("keyboard")
+        Yast::Keyboard.Import(Yast::Profile.current["keyboard"] || {}, :keyboard)
+        Yast::Profile.remove_sections("keyboard")
+      elsif Yast::Profile.current.key?("language")
+        Yast::Keyboard.Import(Yast::Profile.current["language"] || {}, :language)
+      end
+
+      Yast::Profile.remove_sections("language") if Yast::Profile.current.key?("language")
+    end
+
   private
+
+    def utf8_supported?
+      (Yast::UI.GetDisplayInfo || {}).fetch("HasFullUtf8Support", true)
+    end
 
     # Backup AutoYaST profile
     #
