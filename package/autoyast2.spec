@@ -280,6 +280,9 @@ done
 %dir %{yast_libdir}/autoinstall/clients
 %{yast_libdir}/autoinstall/clients/*.rb
 
+%dir %{yast_libdir}/autoinstall/entries
+%{yast_libdir}/autoinstall/entries/*.rb
+
 # scripts
 %{yast_ybindir}/fetch_image.sh
 %{yast_ybindir}/autoyast-initscripts.sh
