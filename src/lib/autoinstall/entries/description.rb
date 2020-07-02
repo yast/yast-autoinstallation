@@ -32,6 +32,7 @@ module Y2Autoinstallation
         "X-SuSE-YaST-AutoInstMerge",
         "X-SuSE-YaST-AutoInstClonable",
         "X-SuSE-YaST-AutoInstClient",
+        "X-SuSE-YaST-AutoInstRequires",
         "X-SuSE-YaST-AutoInst",
         "X-SuSE-DocTeamID",
         "X-SuSE-YaST-Group",
@@ -105,6 +106,12 @@ module Y2Autoinstallation
 
       def icon
         values["Icon"]
+      end
+
+      # @return [Array<String>] list of description {#module_name} which needs
+      #   to run before this description
+      def required_modules
+        (values["X-SuSE-YaST-AutoInstRequires"] || "").split(",").map(&:strip)
       end
 
       def translated_name
