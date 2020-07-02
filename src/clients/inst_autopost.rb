@@ -50,7 +50,7 @@ module Yast
       )
       @progress_stages = [_("Install required packages")]
 
-      registry = Y2Installation::Entries::Registry.instance
+      registry = Y2Autoinstallation::Entries::Registry.instance
       modules_to_write = registry.writable_descriptions.select do |description|
         description.managed_keys.any? { |k| Profile.current[k] }
       end
