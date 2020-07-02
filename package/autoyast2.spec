@@ -236,7 +236,6 @@ done
 %{yast_moduledir}/AutoinstScripts.rb
 %{yast_moduledir}/AutoinstGeneral.rb
 %{yast_moduledir}/AutoinstImage.rb
-%{yast_moduledir}/Y2ModuleConfig.rb
 %{yast_moduledir}/Profile.rb
 %{yast_moduledir}/AutoinstFile.rb
 %{yast_moduledir}/AutoinstConfig.rb
