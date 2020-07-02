@@ -73,6 +73,8 @@ module Y2Autoinstallation
 
   private
 
+    attr_reader :sections
+
     # Returns package name of a given schema.
     # This information is stored in /usr/share/YaST2/schema/autoyast/rnc/includes.rnc
     # which will be provided by the yast2-schema package.
