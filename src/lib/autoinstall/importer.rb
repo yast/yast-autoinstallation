@@ -20,7 +20,7 @@
 require "autoinstall/entries/registry"
 
 module Y2Autoinstallation
-  # Worker class that handles importing of profile section using info from {Description}.
+  # Worker class that handles importing of profile section using info from {Entries::Description}.
   # Its ability is beside calling import on auto client also detecting unhandled
   # or obsolete sections.
   class Importer
@@ -83,12 +83,12 @@ module Y2Autoinstallation
     end
 
     # Import just keys for given entry
-    # @param entry [String | Description] to import
+    # @param entry [String | Entries::Description] to import
     # @return [Array<String>] keys that are imported
     def import_entry(entry)
       res = []
 
-      description = if entry.is_a?(Description)
+      description = if entry.is_a?(Entries::Description)
         entry
       else
         registry.descriptions.find { |d| d.resource_name == entry }
