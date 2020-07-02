@@ -55,8 +55,14 @@ module Y2Autoinstallation
         values["X-SuSE-YaST-AutoInst"]
       end
 
+      # section name for single section entries
       def resource_name
-        values["X-SuSE-YaST-AutoInstResource"] || @fallback_name
+        values["X-SuSE-YaST-AutoInstResource"] || module_name
+      end
+
+      # module name used e.g. in desktop file name
+      def module_name
+        @fallback_name
       end
 
       def aliases
