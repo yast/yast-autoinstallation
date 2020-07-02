@@ -224,7 +224,7 @@ module Yast
       # set read button status
       registry = Y2Autoinstallation::Entries::Registry.instance
       description = registry.descriptions.find { |d| d.resource_name == selectedModule }
-      UI.ChangeWidget(Id(:read), :Enabled, description.clonable?)
+      UI.ChangeWidget(Id(:read), :Enabled, description ? description.clonable? : false)
 
       nil
     end
