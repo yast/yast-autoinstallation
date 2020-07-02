@@ -31,10 +31,10 @@ module Y2Autoinstallation
       # @return [Array<Description>] sorted module names. It should be written
       #   from first to the last.
       def sort
-        each_node = lambda {|&b| @descriptions_map.each_key(&b) }
-        each_child = lambda {|n, &b| @descriptions_map[n].required_modules.each(&b) }
+        each_node = ->(&b) { @descriptions_map.each_key(&b) }
+        each_child = ->(n, &b) { @descriptions_map[n].required_modules.each(&b) }
 
-        TSort.tsort(each_node, each_child).map {|mn| @descriptions_map[mn] }
+        TSort.tsort(each_node, each_child).map { |mn| @descriptions_map[mn] }
       end
     end
   end

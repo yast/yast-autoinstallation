@@ -27,20 +27,20 @@ describe Y2Autoinstallation::Entries::DescriptionSorter do
   let(:descriptions) { [] }
   let(:description1) do
     Y2Autoinstallation::Entries::Description.new(
-      {"X-SuSE-YaST-AutoInstRequires" => ""}, "description1"
+      { "X-SuSE-YaST-AutoInstRequires" => "" }, "description1"
     )
   end
   let(:description2) { Y2Autoinstallation::Entries::Description.new({}, "description2") }
-  let(:description3) {
+  let(:description3) do
     Y2Autoinstallation::Entries::Description.new(
-      {"X-SuSE-YaST-AutoInstRequires" => "description1"}, "description3"
+      { "X-SuSE-YaST-AutoInstRequires" => "description1" }, "description3"
     )
-  }
-  let(:description4) {
+  end
+  let(:description4) do
     Y2Autoinstallation::Entries::Description.new(
-      {"X-SuSE-YaST-AutoInstRequires" => "description1, description3"}, "description4"
+      { "X-SuSE-YaST-AutoInstRequires" => "description1, description3" }, "description4"
     )
-  }
+  end
 
   describe "#sort" do
     context "there are no descriptions" do

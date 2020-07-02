@@ -54,7 +54,8 @@ module Yast
         Profile.current, ["general", "mode", "final_restart_services"], true
       )
       registry = Y2Autoinstallation::Entries::Registry.instance
-      @max_steps = registry.writable_descriptions.size + 3 # additional for scripting and finished message
+      # additional for scripting and finished message
+      @max_steps = registry.writable_descriptions.size + 3
       @max_steps = Ops.add(@max_steps, 1) if @need_systemd_isolate
       @max_steps += 1 if final_restart_services
       Builtins.y2milestone(

@@ -20,7 +20,6 @@
 require_relative "../test_helper"
 
 require "yast"
-Yast.import "Y2ModuleConfig"
 
 describe "Yast::AutoinstallConfTreeInclude" do
   class DummyClient < Yast::Client
@@ -58,7 +57,10 @@ describe "Yast::AutoinstallConfTreeInclude" do
     end
 
     before do
-      allow(Yast::Y2ModuleConfig).to receive(:ModuleMap).and_return(module_map)
+      # reset singleton
+      allow(Yast::Desktop).to receive(:Modules)
+        .and_return(module_map)
+      Singleton.__init__(Y2Autoinstallation::Entries::Registry)
       allow(Yast::WFM).to receive(:CallFunction).once.with("report_auto", ["Export"])
         .and_return(original_settings, changed_settings)
 
