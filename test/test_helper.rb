@@ -62,11 +62,19 @@ module Yast
     def dummy
       true
     end
+
+    def Import(*_args)
+      true
+    end
   end
   Keyboard = KeyboardClass.new
 
   class TimezoneClass
     def dummy
+      true
+    end
+
+    def Import(*_args)
       true
     end
   end

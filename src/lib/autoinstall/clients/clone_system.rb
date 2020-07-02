@@ -94,9 +94,17 @@ module Y2Autoinstallation
               "filename" => {
                 "type" => "string",
                 "help" => "filename=OUTPUT_FILE"
+              },
+              "target"   => {
+                "type"     => "enum",
+                "typespec" => ["default", "compact"],
+                "help"     => _(
+                  "How much information to include in the profile. When it is set to 'compact',\n" \
+                  "it omits some configuration details in order to reduce the size of the profile."
+                )
               }
             },
-            "mappings" => { "modules" => ["clone", "filename"] }
+            "mappings" => { "modules" => ["clone", "filename", "target"] }
           }
 
           Yast::CommandLine.Run(cmdline)
@@ -111,8 +119,12 @@ module Y2Autoinstallation
       # Clone the system
       #
       # @param options [Hash] Action options
+      # @option options [String] filename Path to write the profile to
+      # @option options [String] clone Comma separated list of sections to include
+      # @option options [String] target How much information to include in the profile
       def clone_system(options)
-        filename = options["filename"] || DEFAULT_FILENAME
+        filename = options.fetch("filename", DEFAULT_FILENAME)
+        target = options.fetch("target", :default).to_sym
 
         # Autoyast overwriting an already existing config file.
         # The warning is only needed while calling "yast clone_system". It is not
@@ -139,7 +151,7 @@ module Y2Autoinstallation
             # always clone general
             Yast::ProductControl.clone_modules + ["general"]
           end
-        Yast::AutoinstClone.Process
+        Yast::AutoinstClone.Process(target: target)
         Yast::XML.YCPToXMLFile(:profile, Yast::Profile.current, filename)
         Yast::Popup.ClearFeedback
         true

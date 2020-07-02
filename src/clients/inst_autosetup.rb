@@ -52,12 +52,8 @@ module Yast
       Yast.import "AutoinstSoftware"
       Yast.import "Popup"
       Yast.import "Arch"
-      Yast.import "Timezone"
-      Yast.import "Keyboard"
       Yast.import "Call"
       Yast.import "ProductControl"
-      Yast.import "Language"
-      Yast.import "Console"
       Yast.import "ServicesManager"
       Yast.import "AutoinstFunctions"
       Yast.import "Wizard"
@@ -187,41 +183,13 @@ module Yast
         AutoinstGeneral.SetRebootAfterFirstStage
       end
 
-      @use_utf8 = true # utf8 is default
-
-      @displayinfo = UI.GetDisplayInfo
-      if !Ops.get_boolean(@displayinfo, "HasFullUtf8Support", true)
-        @use_utf8 = false # fallback to ascii
-      end
-
       #
       # Set it in the Language module.
       #
       Progress.NextStage
       Progress.Title(_("Configuring language..."))
-      Language.Import(Ops.get_map(Profile.current, "language", {}))
 
-      #
-      # Set Console font
-      #
-      Installation.encoding = Console.SelectFont(Language.language)
-
-      Installation.encoding = "UTF-8" if Ops.get_boolean(@displayinfo, "HasFullUtf8Support", true)
-
-      unless Language.SwitchToEnglishIfNeeded(true)
-        UI.SetLanguage(Language.language, Installation.encoding)
-        WFM.SetLanguage(Language.language, "UTF-8")
-      end
-
-      if Builtins.haskey(Profile.current, "timezone")
-        Timezone.Import(Ops.get_map(Profile.current, "timezone", {}))
-      end
-      # bnc#891808: infer keyboard from language if needed
-      if Profile.current.key?("keyboard")
-        Keyboard.Import(Profile.current["keyboard"] || {}, :keyboard)
-      elsif Profile.current.key?("language")
-        Keyboard.Import(Profile.current["language"] || {}, :language)
-      end
+      autosetup_country
 
       # one can override the <confirm> option by the commandline parameter y2confirm
       @tmp = Convert.to_string(

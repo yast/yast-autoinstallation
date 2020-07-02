@@ -52,10 +52,12 @@ module Yast
 
     # Builds the profile
     #
+    # @param target [Symbol] How much information to include in the profile (:default, :compact)
     # @return [void] returns void and sets profile in ProfileClass.current
     # @see ProfileClass.create
     # @see ProfileClass.current for result
-    def Process
+    # @see ProfileClass.Prepare
+    def Process(target: :default)
       log.info "Additional resources: #{@additional}"
       Mode.SetMode("autoinst_config")
 
@@ -70,7 +72,7 @@ module Yast
 
       Call.Function("general_auto", ["Import", General()]) if @additional.include?("general")
 
-      Profile.create(@additional)
+      Profile.create(@additional, target: target)
       nil
     end
 

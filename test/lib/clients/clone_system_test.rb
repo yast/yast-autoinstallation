@@ -139,6 +139,16 @@ describe Y2Autoinstallation::Clients::CloneSystem do
           client.main
         end
       end
+
+      context "when a target is given" do
+        let(:args) { ["modules", "target=compact"] }
+
+        it "sets the target when cloning the system" do
+          expect(Yast::AutoinstClone).to receive(:Process)
+            .with(target: :compact)
+          client.main
+        end
+      end
     end
   end
 end
