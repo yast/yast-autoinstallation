@@ -25,7 +25,7 @@
 #
 # $Id$
 require "autoinstall/autosetup_helpers"
-require "autoinstall/entries/importer"
+require "autoinstall/importer"
 
 module Yast
   import "AutoinstConfig"
@@ -457,7 +457,7 @@ module Yast
     end
 
     def importer
-      @importer ||= Y2Autoinstallation::Entries::Importer.new(Profile.current)
+      @importer ||= Y2Autoinstallation::Importer.new(Profile.current)
     end
   end
 end

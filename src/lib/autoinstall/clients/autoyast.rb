@@ -19,8 +19,8 @@
 
 require "yast"
 require "autoinstall/auto_sequence"
-require "autoinstall/entries/importer"
 require "autoinstall/entries/registry"
+require "autoinstall/importer"
 
 Yast.import "Pkg"
 Yast.import "Wizard"
@@ -156,7 +156,7 @@ module Y2Autoinstallation
           _("Reading configuration data"),
           _("This may take a while")
         )
-        Y2Autoinstallation::Entries::Importer.new(Profile.current).import_sections
+        Y2Autoinstallation::Importer.new(Profile.current).import_sections
         Yast::Popup.ClearFeedback
       end
 

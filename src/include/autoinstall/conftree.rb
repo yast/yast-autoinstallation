@@ -4,7 +4,7 @@
 #
 # $Id$
 
-require "autoinstall/entries/importer"
+require "autoinstall/importer"
 require "autoinstall/entries/registry"
 
 module Yast
@@ -549,7 +549,7 @@ module Yast
                 _("Reading configuration data"),
                 _("This may take a while")
               )
-              Y2Autoinstallation::Entries::Importer.new(Profile.current).import_sections
+              Y2Autoinstallation::Importer.new(Profile.current).import_sections
               Popup.ClearFeedback
               Wizard.DeleteMenus # FIXME: sucks sucks sucks sucks sucks
               menus

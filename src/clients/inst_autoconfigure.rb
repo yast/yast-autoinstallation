@@ -8,9 +8,9 @@
 
 require "yast2/system_time"
 
-require "autoinstall/entries/importer"
 require "autoinstall/entries/description_sorter"
 require "autoinstall/entries/registry"
+require "autoinstall/importer"
 require "autoinstall/package_searcher"
 
 module Yast
@@ -86,7 +86,7 @@ module Yast
 
       # Report only those that are 'not unsupported', these were already reported
       # Unsupported sections have already been reported in the first stage
-      importer = Y2Autoinstallation::Entries::Importer.new(Profile.current)
+      importer = Y2Autoinstallation::Importer.new(Profile.current)
       unsupported_sections = importer.obsolete_sections
       unknown_sections = importer.unhandled_sections - unsupported_sections
       if unknown_sections.any?

@@ -7,6 +7,7 @@
 # $Id$
 
 require "autoinstall/entries/registry"
+require "autoinstall/importer"
 
 module Yast
   class InstAutopostClient < Client
@@ -76,7 +77,7 @@ module Yast
 
       Builtins.y2milestone("Steps: %1", steps)
 
-      importer = Y2Autoinstallation::Entries::Importer.new(Profile.current)
+      importer = Y2Autoinstallation::Importer.new(Profile.current)
       modules_to_write.each do |description|
         Builtins.y2milestone("current resource: %1", description.resource_name)
 
