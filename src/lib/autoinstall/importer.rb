@@ -82,16 +82,16 @@ module Y2Autoinstallation
       end
     end
 
-    # Import just keys for given entry
+    # Import just sections for given entry
     # @param entry [String | Entries::Description] to import
-    # @return [Array<String>] keys that are imported
+    # @return [Array<String>] sections that are imported
     def import_entry(entry)
       res = []
 
       description = if entry.is_a?(Entries::Description)
         entry
       else
-        registry.descriptions.find { |d| d.resource_name == entry }
+        registry.descriptions.find { |d| [d.module_name, d.resource_name].include?(entry) }
       end
 
       if description

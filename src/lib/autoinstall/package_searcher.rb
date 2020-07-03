@@ -26,12 +26,12 @@ module Y2Autoinstallation
   class PackagerSearcher
     include Yast::Logger
 
-    # @param sections [Array<String>] section for which packages are required
+    # @param sections [Array<String>] sections for which packages are required
     def initialize(sections)
       @sections = sections
     end
 
-    # Process given list of sections
+    # Gets packages that needs to be installed
     # @return [Hash<String, Array<String>>] Required packages of a section. Return only
     #   packages that are not already installed.
     def evaluate
