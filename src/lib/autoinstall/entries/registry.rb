@@ -56,12 +56,6 @@ module Y2Autoinstallation
 
         @groups
       end
-
-      # returns description for given alias or nil if argument is not alias
-      # @return [Description, nil]
-      def description_for_alias(alias_)
-        descriptions.find { |d| d.aliases.include?(alias_) }
-      end
     end
   end
 end
