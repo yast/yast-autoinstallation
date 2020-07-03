@@ -21,7 +21,6 @@ require_relative "../../test_helper"
 require "autoinstall/clients/autoyast"
 
 Yast.import "AutoinstConfig"
-Yast.import "Y2ModuleConfig"
 Yast.import "Profile"
 
 describe Y2Autoinstallation::Clients::Autoyast do
@@ -32,13 +31,29 @@ describe Y2Autoinstallation::Clients::Autoyast do
       instance_double(Y2Autoinstallation::AutoSequence, run: :next)
     end
 
+    let(:module_map) do
+      {
+        "language" => {
+          "Name"                         => "Language",
+          "Icon"                         => "yast-language",
+          "X-SuSE-YaST-AutoInst"         => "all",
+          "X-SuSE-YaST-AutoInstResource" => "language",
+          "X-SuSE-YaST-Group"            => "System",
+          "X-SuSE-YaST-AutoInstClient"   => "language_auto"
+        }
+      }
+    end
+
     before do
+      # reset singleton
+      allow(Yast::Desktop).to receive(:Modules)
+        .and_return(module_map)
+      reset_singleton(Y2Autoinstallation::Entries::Registry)
       allow(Yast::WFM).to receive(:Args).and_return(args)
       allow(Yast::WFM).to receive(:CallFunction)
       allow(Y2Autoinstallation::AutoSequence).to receive(:new).and_return(auto_sequence)
       # It is changed by other modules which causes this test to fail.
       Yast::Stage.Set("normal")
-      Yast::Y2ModuleConfig.main
     end
 
     describe "'ui' command" do
@@ -79,7 +94,10 @@ describe Y2Autoinstallation::Clients::Autoyast do
 
       context "when was not possible to load the modules configuration" do
         before do
-          allow(Yast::Y2ModuleConfig).to receive(:GroupMap).and_return({})
+          # reset singleton
+          allow(Yast::Desktop).to receive(:Groups)
+            .and_return({})
+          reset_singleton(Y2Autoinstallation::Entries::Registry)
         end
 
         it "displays an error" do
@@ -93,9 +111,12 @@ describe Y2Autoinstallation::Clients::Autoyast do
       let(:args) { ["list-modules"] }
 
       it "displays the list of supported modules" do
+        reset_singleton(Y2Autoinstallation::Entries::Registry)
         expect(Yast::CommandLine).to receive(:PrintTable) do |_header, items|
-          expect(items.size).to eq(Yast::Y2ModuleConfig.ModuleMap.size)
-          name = Yast::Profile.ModuleMap["lan"]["Name"]
+          registry = Y2Autoinstallation::Entries::Registry.instance
+          expect(items.size).to eq(registry.configurable_descriptions.size)
+          name = registry.configurable_descriptions
+            .find { |d| d.resource_name == "language" }.name
           expect(items.to_s).to include(name)
         end
         client.main

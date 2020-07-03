@@ -7,42 +7,11 @@
 require "yast"
 require "yast2/popup"
 
+require "autoinstall/entries/registry"
+
 module Yast
   class ProfileClass < Module
     include Yast::Logger
-
-    # All these sections are handled by AutoYaST (or Installer) itself,
-    # it doesn't use any external AutoYaST client for them
-    GENERIC_PROFILE_SECTIONS = [
-      # AutoYaST has its own partitioning
-      "partitioning",
-      "partitioning_advanced",
-      # AutoYaST has its Preboot Execution Environment configuration
-      "pxe",
-      # Flags for setting the solver while the upgrade process with AutoYaST
-      "upgrade",
-      # Flags for controlling the update backups (see Installation module)
-      "backup",
-      # init section used by Kickstart and to pass additional arguments
-      # to Linuxrc (bsc#962526)
-      "init"
-    ].freeze
-
-    # Dropped YaST modules that used to provide AutoYaST functionality
-    # bsc#925381
-    OBSOLETE_PROFILE_SECTIONS = [
-      # FATE#316185: Drop YaST AutoFS module
-      "autofs",
-      # FATE#308682: Drop yast2-backup and yast2-restore modules
-      "restore",
-      "sshd",
-      # Defined in SUSE Manager but will not be used anymore. (bnc#955878)
-      "cobbler",
-      # FATE#323373 drop xinetd from distro and yast2-inetd
-      "inetd",
-      # FATE#319119 drop yast2-ca-manament
-      "ca_mgm"
-    ].freeze
 
     # Sections that are handled by AutoYaST clients included in autoyast2 package.
     AUTOYAST_CLIENTS = [
@@ -78,9 +47,6 @@ module Yast
 
       # The Complete current Profile
       @current = {}
-
-      # defined in Y2ModuleConfig
-      @ModuleMap = {}
 
       @changed = false
 
@@ -722,7 +688,6 @@ module Yast
     # @!attribute current
     #   @return [Hash<String, Object>] current working profile
     publish variable: :current, type: "map <string, any>"
-    publish variable: :ModuleMap, type: "map <string, map>"
     publish variable: :changed, type: "boolean"
     publish variable: :prepare, type: "boolean"
     publish function: :Import, type: "void (map <string, any>)"
@@ -760,7 +725,11 @@ module Yast
     #
     # @see merge_aliases_map
     def merge_resource_aliases!
-      resource_aliases_map.each do |alias_name, resource_name|
+      reg = Y2Autoinstallation::Entries::Registry.instance
+      alias_map = reg.descriptions.each_with_object({}) do |d, r|
+        d.aliases.each { |a| r[a] = d.resource_name || d.name }
+      end
+      alias_map.each do |alias_name, resource_name|
         aliased_config = current.delete(alias_name)
         next if aliased_config.nil? || current.key?(resource_name)
 
@@ -768,33 +737,18 @@ module Yast
       end
     end
 
-    # Module aliases map
-    #
-    # This method delegates on Y2ModuleConfig#resource_aliases_map
-    # and exists just to avoid a circular dependency between
-    # Y2ModuleConfig and Profile (as the former depends on the latter).
-    #
-    # @return [Hash] Map of resource aliases where the key is the alias and the
-    #                value is the resource.
-    #
-    # @see Y2ModuleConfigClass#resource_aliases_map
-    def resource_aliases_map
-      Yast.import "Y2ModuleConfig"
-      Y2ModuleConfig.resource_aliases_map
-    end
-
     # Edits profile for given modules. If nil is passed, it used GetModfied method.
     def edit_profile(modules = nil, target: :default)
-      @ModuleMap.each_pair do |name, module_map|
+      registry = Y2Autoinstallation::Entries::Registry.instance
+      registry.descriptions.each do |description|
         #
         # Set resource name, if not using default value
         #
-        resource = module_map["X-SuSE-YaST-AutoInstResource"] || name
-        tomerge = module_map["X-SuSE-YaST-AutoInstMerge"] || ""
-        # TODO: is none valid or better use exception?
-        module_auto = module_map["X-SuSE-YaST-AutoInstClient"] || "none"
+        resource = description.resource_name
+        tomerge = description.managed_keys
+        module_auto = description.client_name
         export = if modules
-          modules.include?(resource) || modules.include?(name)
+          modules.include?(resource) || modules.include?(description.name)
         else
           WFM.CallFunction(module_auto, ["GetModified"])
         end
@@ -802,7 +756,7 @@ module Yast
 
         resource_data = WFM.CallFunction(module_auto, ["Export", "target" => target.to_s])
 
-        if tomerge == ""
+        if tomerge.size < 2
           s = (resource_data || {}).size
           if s > 0
             @current[resource] = resource_data
@@ -810,7 +764,7 @@ module Yast
             @current.delete(resource)
           end
         else
-          tomerge.split(",").each_with_index do |res, _i|
+          tomerge.each do |res|
             value = resource_data[res]
             if !value
               log.warn "key #{res} expected to be exported from #{resource}"

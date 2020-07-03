@@ -9,6 +9,8 @@ require "yast"
 require "y2storage"
 require "y2packager/product"
 require "y2packager/resolvable"
+require "autoinstall/package_searcher"
+require "autoinstall/entries/registry"
 
 module Yast
   class AutoinstSoftwareClass < Module
@@ -41,7 +43,6 @@ module Yast
       Yast.import "Mode"
       Yast.import "Misc"
       Yast.import "Directory"
-      Yast.import "Y2ModuleConfig"
       Yast.import "PackageSystem"
       Yast.import "ProductFeatures"
       Yast.import "WorkflowManager"
@@ -191,13 +192,10 @@ module Yast
       Builtins.y2milestone("AddYdepsFromProfile entries %1", entries)
       pkglist = []
       entries.each do |e|
-        yast_module, _entry = Y2ModuleConfig.ModuleMap.find do |module_name, entry|
-          module_name == e ||
-            entry["X-SuSE-YaST-AutoInstResource"] == e ||
-            (entry["X-SuSE-YaST-AutoInstMerge"]&.split(",")&.include?(e))
-        end
+        registry = Y2Autoinstallation::Entries::Registry.instance
+        description = registry.descriptions.find { |d| d.managed_keys.include?(e) }
         # if needed taking default because no entry has been defined in the *.desktop file
-        yast_module ||= e
+        yast_module = description ? description.module_name : e
         # FIXME: Does not work see below
         #
         # This does currently not work at all as the packages provide this
@@ -217,7 +215,7 @@ module Yast
 
         packages = Pkg.PkgQueryProvides(provide)
         if packages.empty?
-          packs = Y2ModuleConfig.required_packages([e])[e]
+          packs = Y2Autoinstallation::PackagerSearcher.new([e]).evaluate[e]
           if packs.nil? || packs.empty?
             log.info "No package provides: #{provide}"
           else

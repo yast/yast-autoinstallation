@@ -22,7 +22,7 @@
 %endif
 
 Name:           autoyast2
-Version:        4.3.20
+Version:        4.3.21
 Release:        0
 Summary:        YaST2 - Automated Installation
 License:        GPL-2.0-only
@@ -236,7 +236,6 @@ done
 %{yast_moduledir}/AutoinstScripts.rb
 %{yast_moduledir}/AutoinstGeneral.rb
 %{yast_moduledir}/AutoinstImage.rb
-%{yast_moduledir}/Y2ModuleConfig.rb
 %{yast_moduledir}/Profile.rb
 %{yast_moduledir}/AutoinstFile.rb
 %{yast_moduledir}/AutoinstConfig.rb
@@ -280,6 +279,9 @@ done
 
 %dir %{yast_libdir}/autoinstall/clients
 %{yast_libdir}/autoinstall/clients/*.rb
+
+%dir %{yast_libdir}/autoinstall/entries
+%{yast_libdir}/autoinstall/entries/*.rb
 
 # scripts
 %{yast_ybindir}/fetch_image.sh

@@ -19,13 +19,14 @@
 
 require "yast"
 require "autoinstall/auto_sequence"
+require "autoinstall/entries/registry"
+require "autoinstall/importer"
 
 Yast.import "Pkg"
 Yast.import "Wizard"
 Yast.import "Mode"
 Yast.import "Profile"
 Yast.import "AutoinstConfig"
-Yast.import "Y2ModuleConfig"
 Yast.import "Popup"
 Yast.import "AddOnProduct"
 Yast.import "CommandLine"
@@ -48,7 +49,8 @@ module Y2Autoinstallation
       end
 
       def main
-        if Yast::Y2ModuleConfig.GroupMap.empty?
+        registry = Y2Autoinstallation::Entries::Registry.instance
+        if registry.groups.empty?
           Yast::Wizard.CreateDialog
           Yast::Popup.Error(_("Error while reading configuration data."))
           Yast::Wizard.CloseDialog
@@ -125,8 +127,9 @@ module Y2Autoinstallation
       #
       # @param _options [Hash] Command line options
       def list_modules(_options)
-        items = Yast::Y2ModuleConfig.ModuleMap.reduce([]) do |all, (name, mod)|
-          all << Item(name, mod["Name"])
+        registry = Y2Autoinstallation::Entries::Registry.instance
+        items = registry.configurable_descriptions.reduce([]) do |all, description|
+          all << Item(description.resource_name, description.name)
         end
         Yast::CommandLine.PrintTable(
           Header(_("Module"), _("Description")),
@@ -153,14 +156,7 @@ module Y2Autoinstallation
           _("Reading configuration data"),
           _("This may take a while")
         )
-        Yast::Profile.ModuleMap.each do |name, values|
-          # Set resource name, if not using default value
-          resource = values.fetch("X-SuSE-YaST-AutoInstResource", name)
-          log.debug("resource: #{resource}")
-          module_auto = values.fetch("X-SuSE-YaST-AutoInstClient", "none")
-          rd = Yast::Y2ModuleConfig.getResourceData(values, resource)
-          Yast::WFM.CallFunction(module_auto, ["Import", rd]) unless rd.nil?
-        end
+        Y2Autoinstallation::Importer.new(Profile.current).import_sections
         Yast::Popup.ClearFeedback
       end
 

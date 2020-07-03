@@ -89,7 +89,10 @@ describe Yast::AutoinstClone do
   let(:storage_scenario) { "autoyast_drive_examples.yml" }
 
   before do
-    allow(Yast::Y2ModuleConfig).to receive(:ModuleMap).and_return(module_map)
+    # reset singleton
+    allow(Yast::Desktop).to receive(:Modules)
+      .and_return(module_map)
+    reset_singleton(Y2Autoinstallation::Entries::Registry)
     fake_storage_scenario(storage_scenario)
     subject.additional = ["add-on"]
   end

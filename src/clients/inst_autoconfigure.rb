@@ -8,6 +8,11 @@
 
 require "yast2/system_time"
 
+require "autoinstall/entries/description_sorter"
+require "autoinstall/entries/registry"
+require "autoinstall/importer"
+require "autoinstall/package_searcher"
+
 module Yast
   class InstAutoconfigureClient < Client
     include Yast::Logger
@@ -22,7 +27,6 @@ module Yast
       Yast.import "Popup"
       Yast.import "Wizard"
       Yast.import "Call"
-      Yast.import "Y2ModuleConfig"
       Yast.import "Label"
       Yast.import "Mode"
       Yast.import "Report"
@@ -49,7 +53,9 @@ module Yast
       final_restart_services = Ops.get_boolean(
         Profile.current, ["general", "mode", "final_restart_services"], true
       )
-      @max_steps = Y2ModuleConfig.ModuleMap.size + 3 # additional for scripting and finished message
+      registry = Y2Autoinstallation::Entries::Registry.instance
+      # additional for scripting and finished message
+      @max_steps = registry.writable_descriptions.size + 3
       @max_steps = Ops.add(@max_steps, 1) if @need_systemd_isolate
       @max_steps += 1 if final_restart_services
       Builtins.y2milestone(
@@ -78,16 +84,14 @@ module Yast
 
       Wizard.DisableAbortButton
 
-      Builtins.y2debug("Module map: %1", Y2ModuleConfig.ModuleMap)
-      Builtins.y2debug("Current profile: %1", Profile.current)
-
       # Report only those that are 'not unsupported', these were already reported
       # Unsupported sections have already been reported in the first stage
-      unsupported_sections = Y2ModuleConfig.unsupported_profile_sections
-      unknown_sections = Y2ModuleConfig.unhandled_profile_sections - unsupported_sections
+      importer = Y2Autoinstallation::Importer.new(Profile.current)
+      unsupported_sections = importer.obsolete_sections
+      unknown_sections = importer.unhandled_sections - unsupported_sections
       if unknown_sections.any?
         log.error "Could not process these unknown profile sections: #{unknown_sections}"
-        needed_packages = Y2ModuleConfig.required_packages(unknown_sections)
+        needed_packages = Y2Autoinstallation::PackagerSearcher.new(unknown_sections).evaluate
         schema_package_list = if needed_packages.empty?
           unknown_sections.map { |section| "&lt;#{section}/&gt;" }
         else
@@ -122,147 +126,27 @@ module Yast
         )
       end
 
-      @deps = Y2ModuleConfig.Deps
+      descriptions = registry.writable_descriptions
+      descriptions = Y2Autoinstallation::Entries::DescriptionSorter.new(descriptions).sort
 
-      Builtins.y2milestone("Order: %1", Builtins.maplist(@deps) do |d|
-        Ops.get_string(d, "res", "")
-      end)
+      log.info "Order: #{descriptions.inspect}"
 
-      Builtins.foreach(@deps) do |r|
-        p = Ops.get_string(r, "res", "")
-        d = Ops.get_map(r, "data", {})
-        if Ops.get_string(d, "X-SuSE-YaST-AutoInst", "") == "all" ||
-            Ops.get_string(d, "X-SuSE-YaST-AutoInst", "") == "write"
-          @resource = if Builtins.haskey(d, Yast::Y2ModuleConfigClass::RESOURCE_NAME_KEY) &&
-              Ops.get_string(d, Yast::Y2ModuleConfigClass::RESOURCE_NAME_KEY, "") != ""
-            Ops.get_string(
-              d,
-              Yast::Y2ModuleConfigClass::RESOURCE_NAME_KEY,
-              "unknown"
-            )
-          else
-            p
-          end
-          Builtins.y2milestone("current resource: %1", @resource)
+      descriptions.each do |description|
+        log.info "Processing #{description.inspect}"
 
-          # determine name of client, if not use default name
-          @module_auto = if Builtins.haskey(d, "X-SuSE-YaST-AutoInstClient")
-            Ops.get_string(
-              d,
-              "X-SuSE-YaST-AutoInstClient",
-              "none"
-            )
-          else
-            Builtins.sformat("%1_auto", p)
-          end
+        processWait(description.module_name, "pre-modules")
 
-          result = {}
-          if Builtins.haskey(Profile.current, @resource)
-            Builtins.y2milestone("Writing configuration for %1", p)
-            tomerge = Ops.get_string(d, "X-SuSE-YaST-AutoInstMerge", "")
-            tomergetypes = Ops.get_string(
-              d,
-              "X-SuSE-YaST-AutoInstMergeTypes",
-              ""
-            )
-            _MergeTypes = Builtins.splitstring(tomergetypes, ",")
+        result = importer.import_entry(description)
+        log.info "Imported #{result.inspect}"
 
-            if Ops.greater_than(Builtins.size(tomerge), 0)
-              i = 0
-              Builtins.foreach(Builtins.splitstring(tomerge, ",")) do |res|
-                if Ops.get_string(_MergeTypes, i, "map") == "map"
-                  Ops.set(result, res, Ops.get_map(Profile.current, res, {}))
-                else
-                  Ops.set(result, res, Ops.get_list(Profile.current, res, []))
-                end
-                i = Ops.add(i, 1)
-              end
-              if Ops.get_string(d, "X-SuSE-YaST-AutoLogResource", "true") == "true"
-                Builtins.y2milestone("Calling auto client with: %1", result)
-              else
-                Builtins.y2milestone(
-                  "logging for resource %1 turned off",
-                  @resource
-                )
-                Builtins.y2debug("Calling auto client with: %1", result)
-              end
-              if Ops.greater_than(Builtins.size(result), 0)
-                logStep(Builtins.sformat(_("Configuring %1"), p))
-              else
-                logStep(Builtins.sformat(_("Not Configuring %1"), p))
-              end
+        Call.Function(description.client_name, ["Write"]) unless result.empty?
 
-              processWait(p, "pre-modules")
-              Call.Function(@module_auto, ["Import", Builtins.eval(result)])
-              Call.Function(@module_auto, ["Write"])
-              processWait(p, "post-modules")
-            elsif Ops.get_string(d, "X-SuSE-YaST-AutoInstDataType", "map") == "map"
-              if Ops.get_string(d, "X-SuSE-YaST-AutoLogResource", "true") == "true"
-                Builtins.y2milestone(
-                  "Calling auto client with: %1",
-                  Builtins.eval(Ops.get_map(Profile.current, @resource, {}))
-                )
-              else
-                Builtins.y2milestone(
-                  "logging for resource %1 turned off",
-                  @resource
-                )
-                Builtins.y2debug(
-                  "Calling auto client with: %1",
-                  Builtins.eval(Ops.get_map(Profile.current, @resource, {}))
-                )
-              end
-              if Ops.greater_than(
-                Builtins.size(Ops.get_map(Profile.current, @resource, {})),
-                0
-              )
-                logStep(Builtins.sformat(_("Configuring %1"), p))
-              else
-                logStep(Builtins.sformat(_("Not Configuring %1"), p))
-              end
-              # Call::Function(module_auto, ["Import", eval(Profile::current[resource]:$[])   ]);
-              processWait(@resource, "pre-modules")
-              Call.Function(@module_auto, ["Write"])
-              processWait(@resource, "post-modules")
-            else
-              if Ops.greater_than(
-                Builtins.size(Ops.get_list(Profile.current, @resource, [])),
-                0
-              )
-                logStep(Builtins.sformat(_("Configuring %1"), p))
-              else
-                logStep(Builtins.sformat(_("Not Configuring %1"), p))
-              end
-              if Ops.get_string(d, "X-SuSE-YaST-AutoLogResource", "true") == "true"
-                Builtins.y2milestone(
-                  "Calling auto client with: %1",
-                  Builtins.eval(Ops.get_list(Profile.current, @resource, []))
-                )
-              else
-                Builtins.y2milestone(
-                  "logging for resource %1 turned off",
-                  @resource
-                )
-                Builtins.y2debug(
-                  "Calling auto client with: %1",
-                  Builtins.eval(Ops.get_list(Profile.current, @resource, []))
-                )
-              end
-              # Call::Function(module_auto, ["Import",  eval(Profile::current[resource]:[]) ]);
-              processWait(@resource, "pre-modules")
-              Call.Function(@module_auto, ["Write"])
-              processWait(@resource, "post-modules")
-            end
-          else
-            @current_step = Ops.add(@current_step, 1)
-            UI.ChangeWidget(Id(:progress), :Value, @current_step)
-          end
-        else
-          @current_step = Ops.add(@current_step, 1)
-          UI.ChangeWidget(Id(:progress), :Value, @current_step)
-        end
+        processWait(description.module_name, "post-modules")
+
+        @current_step = Ops.add(@current_step, 1)
+        UI.ChangeWidget(Id(:progress), :Value, @current_step)
+
       end
-
       # Initialize scripts stack
       AutoinstScripts.Import(Profile.current.fetch("scripts", {}))
 

@@ -19,9 +19,29 @@
 
 require_relative "../test_helper"
 require "autoinstall/auto_sequence"
+require "autoinstall/entries/registry"
 
 describe Y2Autoinstallation::AutoSequence do
   let(:sequence) { described_class.new }
+
+  let(:module_map) do
+    path = File.expand_path("../fixtures/desktop_files/desktops.yml", __dir__)
+    YAML.safe_load(File.read(path))
+  end
+
+  let(:groups) do
+    path = File.expand_path("../fixtures/desktop_files/groups.yml", __dir__)
+    YAML.safe_load(File.read(path))
+  end
+
+  before do
+    # reset singleton
+    allow(Yast::Desktop).to receive(:Modules)
+      .and_return(module_map)
+    allow(Yast::Desktop).to receive(:Groups)
+      .and_return(module_map)
+    reset_singleton(Y2Autoinstallation::Entries::Registry)
+  end
 
   describe "#run" do
     it "opens the main dialog" do

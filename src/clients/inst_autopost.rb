@@ -5,6 +5,10 @@
 #    the system as described in the profile file.
 #
 # $Id$
+
+require "autoinstall/entries/registry"
+require "autoinstall/importer"
+
 module Yast
   class InstAutopostClient < Client
     def main
@@ -14,7 +18,6 @@ module Yast
       Yast.import "AutoInstall"
       Yast.import "AutoinstGeneral"
       Yast.import "Call"
-      Yast.import "Y2ModuleConfig"
       Yast.import "AutoinstSoftware"
       Yast.import "AutoinstScripts"
       Yast.import "Report"
@@ -47,21 +50,18 @@ module Yast
       )
       @progress_stages = [_("Install required packages")]
 
-      @steps = Builtins.size(Builtins.filter(Y2ModuleConfig.ModuleMap) do |p, d|
-        (Ops.get_string(d, "X-SuSE-YaST-AutoInst", "") == "all" ||
-          Ops.get_string(d, "X-SuSE-YaST-AutoInst", "") == "write") &&
-          Builtins.haskey(
-            Profile.current,
-            Ops.get_string(d, "X-SuSE-YaST-AutoInstResource", p)
-          )
-      end)
+      registry = Y2Autoinstallation::Entries::Registry.instance
+      modules_to_write = registry.writable_descriptions.select do |description|
+        description.managed_keys.any? { |k| Profile.current[k] }
+      end
+      steps = modules_to_write.size
 
-      @steps = Ops.add(@steps, 3)
+      steps += 3
 
       Progress.New(
         _("Preparing System for Automatic Installation"),
         "", # progress_title
-        @steps, # progress bar length
+        steps, # progress bar length
         @progress_stages,
         [],
         @help_text
@@ -75,132 +75,17 @@ module Yast
       #     AutoinstGeneral::Import(Profile::current["general"]:$[]);
       # AutoinstGeneral::SetSignatureHandling();
 
-      Builtins.y2milestone("Steps: %1", @steps)
+      Builtins.y2milestone("Steps: %1", steps)
 
-      Builtins.foreach(Y2ModuleConfig.ModuleMap) do |p, d|
-        if Ops.get_string(d, "X-SuSE-YaST-AutoInst", "") == "all" ||
-            Ops.get_string(d, "X-SuSE-YaST-AutoInst", "") == "write"
-          @resource = if Builtins.haskey(d, "X-SuSE-YaST-AutoInstResource") &&
-              Ops.get_string(d, "X-SuSE-YaST-AutoInstResource", "") != ""
-            Ops.get_string(
-              d,
-              "X-SuSE-YaST-AutoInstResource",
-              "unknown"
-            )
-          else
-            p
-          end
+      importer = Y2Autoinstallation::Importer.new(Profile.current)
+      modules_to_write.each do |description|
+        Builtins.y2milestone("current resource: %1", description.resource_name)
 
-          Builtins.y2milestone("current resource: %1", @resource)
-
-          # determine name of client, if not use default name
-          @module_auto = if Builtins.haskey(d, "X-SuSE-YaST-AutoInstClient")
-            Ops.get_string(
-              d,
-              "X-SuSE-YaST-AutoInstClient",
-              "none"
-            )
-          else
-            Builtins.sformat("%1_auto", p)
-          end
-
-          result = {}
-
-          if Builtins.haskey(Profile.current, @resource)
-            Builtins.y2milestone("Importing configuration for %1", p)
-            tomerge = Ops.get_string(d, "X-SuSE-YaST-AutoInstMerge", "")
-            tomergetypes = Ops.get_string(
-              d,
-              "X-SuSE-YaST-AutoInstMergeTypes",
-              ""
-            )
-            _MergeTypes = Builtins.splitstring(tomergetypes, ",")
-
-            if Ops.greater_than(Builtins.size(tomerge), 0)
-              i = 0
-              Builtins.foreach(Builtins.splitstring(tomerge, ",")) do |res|
-                if Ops.get_string(_MergeTypes, i, "map") == "map"
-                  Ops.set(result, res, Ops.get_map(Profile.current, res, {}))
-                else
-                  Ops.set(result, res, Ops.get_list(Profile.current, res, []))
-                end
-                i = Ops.add(i, 1)
-              end
-              if Ops.get_string(d, "X-SuSE-YaST-AutoLogResource", "true") == "true"
-                Builtins.y2milestone("Calling auto client with: %1", result)
-              else
-                Builtins.y2milestone(
-                  "logging for resource %1 turned off",
-                  @resource
-                )
-                Builtins.y2debug("Calling auto client with: %1", result)
-              end
-              if Ops.greater_than(Builtins.size(result), 0)
-                Step(p)
-                Call.Function(@module_auto, ["Import", Builtins.eval(result)])
-                out = Convert.to_map(Call.Function(@module_auto, ["Packages"]))
-                @packages = Convert.convert(
-                  Builtins.union(@packages, Ops.get_list(out, "install", [])),
-                  from: "list",
-                  to:   "list <string>"
-                )
-              end
-            elsif Ops.get_string(d, "X-SuSE-YaST-AutoInstDataType", "map") == "map"
-              if Ops.get_string(d, "X-SuSE-YaST-AutoLogResource", "true") == "true"
-                Builtins.y2milestone(
-                  "Calling auto client with: %1",
-                  Builtins.eval(Ops.get_map(Profile.current, @resource, {}))
-                )
-              else
-                Builtins.y2milestone(
-                  "logging for resource %1 turned off",
-                  @resource
-                )
-                Builtins.y2debug(
-                  "Calling auto client with: %1",
-                  Builtins.eval(Ops.get_map(Profile.current, @resource, {}))
-                )
-              end
-              if Ops.greater_than(
-                Builtins.size(Ops.get_map(Profile.current, @resource, {})),
-                0
-              )
-                Step(p)
-                Call.Function(
-                  @module_auto,
-                  [
-                    "Import",
-                    Builtins.eval(Ops.get_map(Profile.current, @resource, {}))
-                  ]
-                )
-                out = Convert.to_map(Call.Function(@module_auto, ["Packages"]))
-                @packages = Convert.convert(
-                  Builtins.union(@packages, Ops.get_list(out, "install", [])),
-                  from: "list",
-                  to:   "list <string>"
-                )
-              end
-            elsif Ops.greater_than(
-              Builtins.size(Ops.get_list(Profile.current, @resource, [])),
-              0
-            )
-              Step(p)
-              Call.Function(
-                @module_auto,
-                [
-                  "Import",
-                  Builtins.eval(Ops.get_list(Profile.current, @resource, []))
-                ]
-              )
-              out = Convert.to_map(Call.Function(@module_auto, ["Packages"]))
-              @packages = Convert.convert(
-                Builtins.union(@packages, Ops.get_list(out, "install", [])),
-                from: "list",
-                to:   "list <string>"
-              )
-            end
-          end
-        end
+        # determine name of client, if not use default name
+        module_auto = description.client_name
+        importer.import_entry(description)
+        out = Call.Function(module_auto, ["Packages"])
+        @packages.concat(out["install"] || [])
       end
 
       # Checking result of semantic checks of imported values.
