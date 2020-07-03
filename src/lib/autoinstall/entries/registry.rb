@@ -28,6 +28,37 @@ module Y2Autoinstallation
     class Registry
       include Singleton
 
+      # Gets list of all known descriptions
+      # @return [Description]
+      def descriptions
+        read unless @read
+
+        @descriptions
+      end
+
+      # Gets list of all descriptions that can be configured
+      # @return [Description]
+      def configurable_descriptions
+        descriptions.select { |d| ["all", "configure"].include?(d.mode) }
+      end
+
+      # Gets list of all descriptions that can be written
+      # @return [Description]
+      def writable_descriptions
+        descriptions.select { |d| ["all", "write"].include?(d.mode) }
+      end
+
+      # Gets map of groups
+      # @see Yast::Desktop.Groups for details
+      # @return [Hash<String, Hash>] map of groups with names as keys and attributes as values
+      def groups
+        read unless @read
+
+        @groups
+      end
+
+    private
+
       def read
         Yast::Desktop.AgentPath = Yast::Path.new(".autoyast2.desktop")
         Yast::Desktop.Read(Description::USED_VALUES)
@@ -35,26 +66,6 @@ module Y2Autoinstallation
         @groups = Yast::Desktop.Groups
 
         @read = true
-      end
-
-      def descriptions
-        read unless @read
-
-        @descriptions
-      end
-
-      def configurable_descriptions
-        descriptions.select { |d| ["all", "configure"].include?(d.mode) }
-      end
-
-      def writable_descriptions
-        descriptions.select { |d| ["all", "write"].include?(d.mode) }
-      end
-
-      def groups
-        read unless @read
-
-        @groups
       end
     end
   end

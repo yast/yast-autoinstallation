@@ -115,7 +115,7 @@ module Y2Autoinstallation
       end
 
       def translated_name
-        desktop_file = (values["X-SuSE-DocTeamID"] || "")[4, -1] || ""
+        desktop_file = (values["X-SuSE-DocTeamID"] || "")[4..-1] || ""
         string_to_translate = "Name(#{desktop_file}.desktop): #{name}"
         # TODO: it is builtins but we do not have alternative for such call.
         # Maybe having it in Yast::I18n directly?
