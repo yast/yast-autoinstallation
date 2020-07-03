@@ -13,39 +13,6 @@ module Yast
   class ProfileClass < Module
     include Yast::Logger
 
-    # All these sections are handled by AutoYaST (or Installer) itself,
-    # it doesn't use any external AutoYaST client for them
-    GENERIC_PROFILE_SECTIONS = [
-      # AutoYaST has its own partitioning
-      "partitioning",
-      "partitioning_advanced",
-      # AutoYaST has its Preboot Execution Environment configuration
-      "pxe",
-      # Flags for setting the solver while the upgrade process with AutoYaST
-      "upgrade",
-      # Flags for controlling the update backups (see Installation module)
-      "backup",
-      # init section used by Kickstart and to pass additional arguments
-      # to Linuxrc (bsc#962526)
-      "init"
-    ].freeze
-
-    # Dropped YaST modules that used to provide AutoYaST functionality
-    # bsc#925381
-    OBSOLETE_PROFILE_SECTIONS = [
-      # FATE#316185: Drop YaST AutoFS module
-      "autofs",
-      # FATE#308682: Drop yast2-backup and yast2-restore modules
-      "restore",
-      "sshd",
-      # Defined in SUSE Manager but will not be used anymore. (bnc#955878)
-      "cobbler",
-      # FATE#323373 drop xinetd from distro and yast2-inetd
-      "inetd",
-      # FATE#319119 drop yast2-ca-manament
-      "ca_mgm"
-    ].freeze
-
     # Sections that are handled by AutoYaST clients included in autoyast2 package.
     AUTOYAST_CLIENTS = [
       "files",

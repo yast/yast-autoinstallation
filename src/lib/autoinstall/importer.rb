@@ -17,6 +17,7 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
+require "yast"
 require "autoinstall/entries/registry"
 
 module Y2Autoinstallation
@@ -42,13 +43,13 @@ module Y2Autoinstallation
           false
         # Generic sections are handled by AutoYast itself and not mentioned
         # in any desktop or clients/*_auto.rb file.
-        elsif Yast::ProfileClass::GENERIC_PROFILE_SECTIONS.include?(name)
+        elsif GENERIC_PROFILE_SECTIONS.include?(name)
           false
         else
           # Sections which are not handled in any desktop file but the
           # corresponding clients/*_auto.rb file is available.
           # e.g. user_defaults, report, general, files, scripts
-          Yast::WFM.ClientExists("#{name}_auto")
+          !Yast::WFM.ClientExists("#{name}_auto")
         end
       end
     end
@@ -58,7 +59,7 @@ module Y2Autoinstallation
     #
     # @return [Array<String>] of unsupported profile sections
     def obsolete_sections
-      unhandled_sections & Yast::ProfileClass::OBSOLETE_PROFILE_SECTIONS
+      unhandled_sections & OBSOLETE_PROFILE_SECTIONS
     end
 
     # Imports profile by calling respective auto clients
@@ -115,7 +116,7 @@ module Y2Autoinstallation
 
         Yast::WFM.CallFunction(description.client_name, ["Import", data]) if data
       else
-        raise "Unknown entry #{entry}" unless WFM.ClientExists("#{entry}_auto")
+        raise "Unknown entry #{entry}" unless Yast::WFM.ClientExists("#{entry}_auto")
 
         data = profile[entry]
         if data
@@ -134,5 +135,40 @@ module Y2Autoinstallation
     def registry
       Entries::Registry.instance
     end
+
+    # All these sections are handled by AutoYaST (or Installer) itself,
+    # it doesn't use any external AutoYaST client for them
+    GENERIC_PROFILE_SECTIONS = [
+      # AutoYaST has its own partitioning
+      "partitioning",
+      "partitioning_advanced",
+      # AutoYaST has its Preboot Execution Environment configuration
+      "pxe",
+      # Flags for setting the solver while the upgrade process with AutoYaST
+      "upgrade",
+      # Flags for controlling the update backups (see Installation module)
+      "backup",
+      # init section used by Kickstart and to pass additional arguments
+      # to Linuxrc (bsc#962526)
+      "init"
+    ].freeze
+    private_constant :GENERIC_PROFILE_SECTIONS
+
+    # Dropped YaST modules that used to provide AutoYaST functionality
+    # bsc#925381
+    OBSOLETE_PROFILE_SECTIONS = [
+      # FATE#316185: Drop YaST AutoFS module
+      "autofs",
+      # FATE#308682: Drop yast2-backup and yast2-restore modules
+      "restore",
+      "sshd",
+      # Defined in SUSE Manager but will not be used anymore. (bnc#955878)
+      "cobbler",
+      # FATE#323373 drop xinetd from distro and yast2-inetd
+      "inetd",
+      # FATE#319119 drop yast2-ca-manament
+      "ca_mgm"
+    ].freeze
+    private_constant :OBSOLETE_PROFILE_SECTIONS
   end
 end
