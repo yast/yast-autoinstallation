@@ -42,7 +42,7 @@ describe Y2Autoinstallation::Importer do
       .and_return(module_map)
     allow(Yast::Desktop).to receive(:Groups)
       .and_return(module_map)
-    Singleton.__init__(Y2Autoinstallation::Entries::Registry)
+    reset_singleton(Y2Autoinstallation::Entries::Registry)
   end
 
   describe "#unhandled_sections" do

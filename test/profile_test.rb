@@ -196,7 +196,7 @@ describe Yast::Profile do
         # reset singleton
         allow(Yast::Desktop).to receive(:Modules)
           .and_return("custom" => custom_module)
-        Singleton.__init__(Y2Autoinstallation::Entries::Registry)
+        reset_singleton(Y2Autoinstallation::Entries::Registry)
       end
 
       context "and configuration for the resource is missing" do
@@ -292,7 +292,7 @@ describe Yast::Profile do
       # reset singleton
       allow(Yast::Desktop).to receive(:Modules)
         .and_return(module_map)
-      Singleton.__init__(Y2Autoinstallation::Entries::Registry)
+      reset_singleton(Y2Autoinstallation::Entries::Registry)
       allow(Yast::WFM).to receive(:CallFunction).and_call_original
       allow(Yast::WFM).to receive(:CallFunction)
         .with("custom_auto", ["GetModified"]).and_return(true)
@@ -413,7 +413,7 @@ describe Yast::Profile do
       # reset singleton
       allow(Yast::Desktop).to receive(:Modules)
         .and_return(module_map)
-      Singleton.__init__(Y2Autoinstallation::Entries::Registry)
+      reset_singleton(Y2Autoinstallation::Entries::Registry)
       allow(Yast::WFM).to receive(:CallFunction).and_call_original
       allow(Yast::WFM).to receive(:CallFunction)
         .with("custom_auto", ["Export", "target" => "default"]).and_return(custom_export)

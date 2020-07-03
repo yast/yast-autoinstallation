@@ -60,7 +60,7 @@ describe "Yast::AutoinstallConfTreeInclude" do
       # reset singleton
       allow(Yast::Desktop).to receive(:Modules)
         .and_return(module_map)
-      Singleton.__init__(Y2Autoinstallation::Entries::Registry)
+      reset_singleton(Y2Autoinstallation::Entries::Registry)
       allow(Yast::WFM).to receive(:CallFunction).once.with("report_auto", ["Export"])
         .and_return(original_settings, changed_settings)
 

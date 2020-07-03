@@ -84,6 +84,10 @@ end
 require "y2packager/medium_type"
 require_relative "support/storage_helpers"
 
+def reset_singleton(klass)
+  Singleton.__init__(klass)
+end
+
 RSpec.configure do |c|
   c.include Y2Autoinstall::RSpec::StorageHelpers
 

@@ -48,7 +48,7 @@ describe Y2Autoinstallation::Clients::Autoyast do
       # reset singleton
       allow(Yast::Desktop).to receive(:Modules)
         .and_return(module_map)
-      Singleton.__init__(Y2Autoinstallation::Entries::Registry)
+      reset_singleton(Y2Autoinstallation::Entries::Registry)
       allow(Yast::WFM).to receive(:Args).and_return(args)
       allow(Yast::WFM).to receive(:CallFunction)
       allow(Y2Autoinstallation::AutoSequence).to receive(:new).and_return(auto_sequence)
@@ -97,7 +97,7 @@ describe Y2Autoinstallation::Clients::Autoyast do
           # reset singleton
           allow(Yast::Desktop).to receive(:Groups)
             .and_return({})
-          Singleton.__init__(Y2Autoinstallation::Entries::Registry)
+          reset_singleton(Y2Autoinstallation::Entries::Registry)
         end
 
         it "displays an error" do
@@ -111,7 +111,7 @@ describe Y2Autoinstallation::Clients::Autoyast do
       let(:args) { ["list-modules"] }
 
       it "displays the list of supported modules" do
-        Singleton.__init__(Y2Autoinstallation::Entries::Registry)
+        reset_singleton(Y2Autoinstallation::Entries::Registry)
         expect(Yast::CommandLine).to receive(:PrintTable) do |_header, items|
           registry = Y2Autoinstallation::Entries::Registry.instance
           expect(items.size).to eq(registry.configurable_descriptions.size)

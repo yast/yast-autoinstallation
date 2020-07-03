@@ -41,7 +41,6 @@ module Yast
     # @return [Array<Yast::Term>] list to be used in widgets (sorted by its label)
     def createClonableList
       clonable_items = registry.descriptions.each_with_object([]) do |description, items|
-        log.debug "r: #{description.inspect}"
         next unless description.clonable?
 
         items << Item(Id(description.resource_name), description.translated_name)

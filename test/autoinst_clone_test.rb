@@ -92,7 +92,7 @@ describe Yast::AutoinstClone do
     # reset singleton
     allow(Yast::Desktop).to receive(:Modules)
       .and_return(module_map)
-    Singleton.__init__(Y2Autoinstallation::Entries::Registry)
+    reset_singleton(Y2Autoinstallation::Entries::Registry)
     fake_storage_scenario(storage_scenario)
     subject.additional = ["add-on"]
   end
