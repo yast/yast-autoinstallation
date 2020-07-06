@@ -7,9 +7,13 @@
 #
 # $Id$
 #
+require "autoinstall/autosetup_helpers"
+
 module Yast
   class InstAutoinitClient < Client
     include Yast::Logger
+    include Y2Autoinstallation::AutosetupHelpers
+
     def main
       Yast.import "UI"
 
@@ -20,6 +24,7 @@ module Yast
       Yast.import "AutoinstConfig"
       Yast.import "AutoinstFunctions"
       Yast.import "AutoinstGeneral"
+      Yast.import "AutoinstScripts"
       Yast.import "ProfileLocation"
       Yast.import "AutoInstallRules"
       Yast.import "Progress"
@@ -33,6 +38,7 @@ module Yast
       Yast.import "Popup"
 
       Yast.include self, "autoinstall/autoinst_dialogs.rb"
+      Yast.include self, "autoinstall/ask.rb"
 
       Console.Init
 
@@ -44,6 +50,7 @@ module Yast
         _("Retrieve & Read Control File"),
         _("Parse control file"),
         _("Initial Configuration"),
+        _("Execute pre-install user scripts")
       ]
       @profileFetched = false
 
@@ -83,6 +90,13 @@ module Yast
         @ret = processProfile
         return @ret if @ret != :ok
       end
+
+      Yast::Progress.NextStage
+      Yast::Progress.Title(_("Executing pre-install user scripts..."))
+      log.info("Executing pre-scripts")
+
+      @ret = autoinit_scripts
+      return @ret if @ret != :ok
 
       Progress.Finish
 
@@ -126,6 +140,36 @@ module Yast
     end
 
   private
+
+    def autoinit_scripts
+      # Pre-Scripts
+      AutoinstScripts.Import(Profile.current["scripts"] || {})
+      AutoinstScripts.Write("pre-scripts", false)
+
+      # Reread Profile in case it was modified in pre-script
+      # User has to create the new profile in a pre-defined
+      # location for easy processing in pre-script.
+
+      return :abort if readModified == :abort
+
+      return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
+
+      loop do
+        askDialog
+        # Pre-Scripts
+        AutoinstScripts.Import(Ops.get_map(Profile.current, "scripts", {}))
+        AutoinstScripts.Write("pre-scripts", false)
+        ret = readModified
+        return :abort if ret == :abort
+
+        return :restart_yast if File.exist?("/var/lib/YaST2/restart_yast")
+        break if ret == :not_found
+      end
+
+      # reimport scripts, for the case <ask> has changed them
+      AutoinstScripts.Import(Ops.get_map(Profile.current, "scripts", {}))
+      :ok
+    end
 
     # Checking profile for unsupported sections.
     def check_unsupported_profile_sections
