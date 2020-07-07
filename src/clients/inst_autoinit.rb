@@ -91,6 +91,8 @@ module Yast
         return @ret if @ret != :ok
       end
 
+      # Run pre-scripts as soon as possible as we could modify the profile by
+      # them or by the ask dialog (bsc#1114013)
       Yast::Progress.NextStage
       Yast::Progress.Title(_("Executing pre-install user scripts..."))
       log.info("Executing pre-scripts")
@@ -141,6 +143,9 @@ module Yast
 
   private
 
+    # Import and write the profile pre-scripts running then the ask dialog when
+    # an ask-list is declared redoing the import and write of the pre-scripts as
+    # many times as needed.
     def autoinit_scripts
       # Pre-Scripts
       AutoinstScripts.Import(Profile.current["scripts"] || {})
