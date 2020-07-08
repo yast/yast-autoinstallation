@@ -47,7 +47,6 @@ module Yast
       )
       @progress_stages = [
         _("Configure General Settings "),
-        _("Execute pre-install user scripts"),
         _("Set up language"),
         _("Registration"),
         _("Configure Software selections"),
@@ -57,7 +56,6 @@ module Yast
 
       @progress_descriptions = [
         _("Configuring general settings..."),
-        _("Executing pre-install user scripts..."),
         _("Setting up language..."),
         _("Registering the system..."),
         _("Configuring Software selections..."),
@@ -75,47 +73,12 @@ module Yast
       )
 
 
-      return :abort if Popup.ConfirmAbort(:painless) if UI.PollInput == :abort
-      Progress.NextStage
-
-
       # configure general settings
 
-
-
-
-
       return :abort if Popup.ConfirmAbort(:painless) if UI.PollInput == :abort
 
       Progress.NextStage
 
-      # Pre-Scripts
-      AutoinstScripts.Import(Ops.get_map(Profile.current, "scripts", {}))
-      AutoinstScripts.Write("pre-scripts", false)
-
-      # Reread Profile in case it was modified in pre-script
-      # User has to create the new profile in a pre-defined
-      # location for easy processing in pre-script.
-
-      return :abort if readModified == :abort
-
-      #
-      # Partitioning and Storage
-      #//////////////////////////////////////////////////////////////////////
-
-      @modified = true
-      begin
-        askDialog
-        # Pre-Scripts
-        AutoinstScripts.Import(Ops.get_map(Profile.current, "scripts", {}))
-        AutoinstScripts.Write("pre-scripts", false)
-        @ret2 = readModified
-        return :abort if @ret2 == :abort
-        @modified = false if @ret2 == :not_found
-      end while @modified == true
-
-      # reimport scripts, for the case <ask> has changed them
-      AutoinstScripts.Import(Ops.get_map(Profile.current, "scripts", {}))
       #
       # Set workflow variables
       #
