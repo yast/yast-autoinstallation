@@ -6,6 +6,7 @@ Yast.import "AutoInstallRules"
 Yast.import "AutoinstConfig"
 Yast.import "AutoinstFunctions"
 Yast.import "AutoinstGeneral"
+Yast.import "AutoinstScripts"
 Yast.import "Call"
 Yast.import "Console"
 Yast.import "InstURL"
@@ -24,6 +25,7 @@ Yast.import "Y2ModuleConfig"
 module Y2Autoinstallation
   module Clients
     class InstAutoinit
+      include Yast
       include Y2Autoinstallation::AutosetupHelpers
       include Yast::Logger
       include Yast::UIShortcuts
@@ -36,6 +38,8 @@ module Y2Autoinstallation
 
       def initialize
         textdomain "autoinst"
+
+        Yast.include self, "autoinstall/ask.rb"
       end
 
       def run
@@ -48,7 +52,8 @@ module Y2Autoinstallation
           _("Probe hardware"),
           _("Retrieve & Read Control File"),
           _("Parse control file"),
-          _("Initial Configuration")
+          _("Initial Configuration"),
+          _("Execute pre-install user scripts")
         ]
 
         Yast::Progress.New(
@@ -72,6 +77,15 @@ module Y2Autoinstallation
         autoupgrade_profile
 
         ret = processProfile
+        return ret if ret != :ok
+
+        # Run pre-scripts as soon as possible as we could modify the profile by
+        # them or by the ask dialog (bsc#1114013)
+        Yast::Progress.NextStage
+        Yast::Progress.Title(_("Executing pre-install user scripts..."))
+        log.info("Executing pre-scripts")
+
+        ret = autoinit_scripts
         return ret if ret != :ok
 
         Yast::Progress.Finish
@@ -131,6 +145,39 @@ module Y2Autoinstallation
       end
 
     private
+
+      # Import and write the profile pre-scripts running then the ask dialog when
+      # an ask-list is declared redoing the import and write of the pre-scripts as
+      # many times as needed.
+      def autoinit_scripts
+        # Pre-Scripts
+        Yast::AutoinstScripts.Import(Yast::Profile.current["scripts"] || {})
+        Yast::AutoinstScripts.Write("pre-scripts", false)
+
+        # Reread Profile in case it was modified in pre-script
+        # User has to create the new profile in a pre-defined
+        # location for easy processing in pre-script.
+
+        return :abort if readModified == :abort
+
+        return :abort if Yast::UI.PollInput == :abort && Yast::Popup.ConfirmAbort(:painless)
+
+        loop do
+          askDialog
+          # Pre-Scripts
+          Yast::AutoinstScripts.Import(Yast::Profile.current["scripts"] || {})
+          Yast::AutoinstScripts.Write("pre-scripts", false)
+          ret = readModified
+          return :abort if ret == :abort
+
+          return :restart_yast if File.exist?("/var/lib/YaST2/restart_yast")
+          break if ret == :not_found
+        end
+
+        # reimport scripts, for the case <ask> has changed them
+        Yast::AutoinstScripts.Import(Yast::Profile.current["scripts"] || {})
+        :ok
+      end
 
       # Checking profile for unsupported sections.
       def check_unsupported_profile_sections
