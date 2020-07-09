@@ -53,6 +53,9 @@ module Yast
       # S390
       @cio_ignore = true
 
+      @self_update = true
+      @minimal_configuration = false
+
       # default value of settings modified
       @modified = false
       AutoinstGeneral()
@@ -173,6 +176,9 @@ module Yast
       @askList = settings.fetch("ask-list", [])
       @proposals = settings.fetch("proposals", [])
       AutoinstStorage.import_general_settings(settings["storage"])
+      @minimal_configuration = settings.fetch("minimal_configuration", false)
+      @self_update = settings["self_update"] # no default as we want to know if it is explicit
+      @self_update_url = settings["self_update_url"]
 
       SetSignatureHandling()
 
@@ -471,6 +477,16 @@ module Yast
         !mode["forceboot"]
       )
     end
+
+    def minimal_configuration?
+      @minimal_configuration
+    end
+
+    def self_update?
+      @self_update
+    end
+
+    attr_reader :self_update_url
 
     publish variable: :second_stage, type: "boolean"
     publish variable: :mode, type: "map"
