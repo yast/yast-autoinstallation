@@ -29,7 +29,7 @@ Yast.import "Keyboard"
 Yast.import "Language"
 
 module Y2Autoinstallation
-  # This module defines some methods that are used in {Yast::InstAutosetupClient}
+  # This module defines some methods that are used in {Y2Autoinstallation::Clients::InstAutosetup}
   # and {Y2Autoinstallation::Clients::InstAutosetupUpgrade} clients. These clients need to be
   # rewritten but, for the time being, this is the easiest way to share code between them.
   module AutosetupHelpers
