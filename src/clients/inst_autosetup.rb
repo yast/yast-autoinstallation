@@ -63,13 +63,10 @@ module Yast
       Yast.import "AutoinstFunctions"
       Yast.import "Wizard"
 
-      Yast.include self, "autoinstall/ask.rb"
-
       @help_text = _(
         "<P>Please wait while the system is prepared for autoinstallation.</P>"
       )
       @progress_stages = [
-        _("Execute pre-install user scripts"),
         _("Configure General Settings "),
         _("Set up language"),
         _("Configure security settings"),
@@ -84,7 +81,6 @@ module Yast
       ]
 
       @progress_descriptions = [
-        _("Executing pre-install user scripts..."),
         _("Configuring general settings..."),
         _("Setting up language..."),
         _("Configuring security settings"),
@@ -109,44 +105,6 @@ module Yast
 
       return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
 
-      Progress.NextStage
-
-      # Pre-Scripts
-      AutoinstScripts.Import(Ops.get_map(Profile.current, "scripts", {}))
-      AutoinstScripts.Write("pre-scripts", false)
-
-      # Reread Profile in case it was modified in pre-script
-      # User has to create the new profile in a pre-defined
-      # location for easy processing in pre-script.
-
-      return :abort if readModified == :abort
-
-      return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
-
-      #
-      # Partitioning and Storage
-      # //////////////////////////////////////////////////////////////////////
-
-      @modified = true
-      begin
-        askDialog
-        # Pre-Scripts
-        AutoinstScripts.Import(Ops.get_map(Profile.current, "scripts", {}))
-        AutoinstScripts.Write("pre-scripts", false)
-        @ret2 = readModified
-        return :abort if @ret2 == :abort
-
-        @modified = false if @ret2 == :not_found
-        if Ops.greater_or_equal(
-          SCR.Read(path(".target.size"), "/var/lib/YaST2/restart_yast"),
-          0
-        )
-          return :restart_yast
-        end
-      end while @modified == true
-
-      # reimport scripts, for the case <ask> has changed them
-      AutoinstScripts.Import(Ops.get_map(Profile.current, "scripts", {}))
       #
       # Set workflow variables
       #
@@ -297,6 +255,10 @@ module Yast
       # Importing security settings
       autosetup_security
       return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
+
+      #
+      # Partitioning and Storage
+      # //////////////////////////////////////////////////////////////////////
 
       Progress.NextStage
 
