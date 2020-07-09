@@ -24,372 +24,373 @@
 #          Uwe Gansert <ug@suse.de>
 #
 # $Id$
+
+require "yast"
 require "autoinstall/autosetup_helpers"
 require "autoinstall/importer"
 
-module Yast
-  import "AutoinstConfig"
+Yast.import "Pkg"
+Yast.import "UI"
+Yast.import "AutoinstConfig"
+Yast.import "AutoInstall"
+Yast.import "Installation"
+Yast.import "Profile"
+Yast.import "Progress"
+Yast.import "Report"
+Yast.import "AutoinstStorage"
+Yast.import "AutoinstScripts"
+Yast.import "AutoinstGeneral"
+Yast.import "AutoinstSoftware"
+Yast.import "Popup"
+Yast.import "Arch"
+Yast.import "Call"
+Yast.import "ProductControl"
+Yast.import "ServicesManager"
+Yast.import "AutoinstFunctions"
+Yast.import "Wizard"
 
-  class InstAutosetupClient < Client
-    include Yast::Logger
-    include Y2Autoinstallation::AutosetupHelpers
+module Y2Autoinstallation
+  module Clients
+    class InstAutosetup < Yast::Client
+      include Yast::Logger
+      include Y2Autoinstallation::AutosetupHelpers
 
-    Target = AutoinstConfigClass::Target
+      Target = AutoinstConfigClass::Target
 
-    def main
-      Yast.import "Pkg"
-      Yast.import "UI"
-      textdomain "autoinst"
+      def main
+        textdomain "autoinst"
 
-      Yast.import "AutoInstall"
-      Yast.import "Installation"
-      Yast.import "Profile"
-      Yast.import "Progress"
-      Yast.import "Report"
-      Yast.import "AutoinstStorage"
-      Yast.import "AutoinstScripts"
-      Yast.import "AutoinstGeneral"
-      Yast.import "AutoinstSoftware"
-      Yast.import "Popup"
-      Yast.import "Arch"
-      Yast.import "Call"
-      Yast.import "ProductControl"
-      Yast.import "ServicesManager"
-      Yast.import "AutoinstFunctions"
-      Yast.import "Wizard"
+        @help_text = _(
+          "<P>Please wait while the system is prepared for autoinstallation.</P>"
+        )
+        @progress_stages = [
+          _("Configure General Settings "),
+          _("Set up language"),
+          _("Configure security settings"),
+          _("Create partition plans"),
+          _("Configure Bootloader"),
+          _("Registration"),
+          _("Configure Software selections"),
+          _("Configure Systemd Default Target"),
+          _("Configure users and groups"),
+          _("Import SSH keys/settings"),
+          _("Confirm License")
+        ]
 
-      @help_text = _(
-        "<P>Please wait while the system is prepared for autoinstallation.</P>"
-      )
-      @progress_stages = [
-        _("Configure General Settings "),
-        _("Set up language"),
-        _("Configure security settings"),
-        _("Create partition plans"),
-        _("Configure Bootloader"),
-        _("Registration"),
-        _("Configure Software selections"),
-        _("Configure Systemd Default Target"),
-        _("Configure users and groups"),
-        _("Import SSH keys/settings"),
-        _("Confirm License")
-      ]
+        @progress_descriptions = [
+          _("Configuring general settings..."),
+          _("Setting up language..."),
+          _("Configuring security settings"),
+          _("Creating partition plans..."),
+          _("Configuring Bootloader..."),
+          _("Registering the system..."),
+          _("Configuring Software selections..."),
+          _("Configuring Systemd Default Target..."),
+          _("Importing users and groups configuration..."),
+          _("Importing SSH keys/settings..."),
+          _("Confirming License...")
+        ]
 
-      @progress_descriptions = [
-        _("Configuring general settings..."),
-        _("Setting up language..."),
-        _("Configuring security settings"),
-        _("Creating partition plans..."),
-        _("Configuring Bootloader..."),
-        _("Registering the system..."),
-        _("Configuring Software selections..."),
-        _("Configuring Systemd Default Target..."),
-        _("Importing users and groups configuration..."),
-        _("Importing SSH keys/settings..."),
-        _("Confirming License...")
-      ]
-
-      Progress.New(
-        _("Preparing System for Automated Installation"),
-        "", # progress_title
-        Builtins.size(@progress_stages), # progress bar length
-        @progress_stages,
-        @progress_descriptions,
-        @help_text
-      )
-
-      return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
-
-      #
-      # Set workflow variables
-      #
-      Progress.NextStage
-
-      # Ensure that we clean product cache to avoid product from control (bsc#1156058)
-      AutoinstFunctions.reset_product
-      # Merging selected product
-      AutoinstSoftware.merge_product(AutoinstFunctions.selected_product)
-
-      # configure general settings
-      general_section = Profile.current["general"] || {}
-      AutoinstGeneral.Import(general_section)
-      log.info("general: #{general_section}")
-      AutoinstGeneral.Write
-
-      autosetup_network
-
-      if Builtins.haskey(Profile.current, "add-on")
-        Progress.Title(_("Handling Add-On Products..."))
-        unless Call.Function(
-          "add-on_auto",
-          ["Import", Ops.get_map(Profile.current, "add-on", {})]
+        Progress.New(
+          _("Preparing System for Automated Installation"),
+          "", # progress_title
+          Builtins.size(@progress_stages), # progress bar length
+          @progress_stages,
+          @progress_descriptions,
+          @help_text
         )
 
-          log.warn("User has aborted the installation.")
+        return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
+
+        #
+        # Set workflow variables
+        #
+        Progress.NextStage
+
+        # Ensure that we clean product cache to avoid product from control (bsc#1156058)
+        AutoinstFunctions.reset_product
+        # Merging selected product
+        AutoinstSoftware.merge_product(AutoinstFunctions.selected_product)
+
+        # configure general settings
+        general_section = Profile.current["general"] || {}
+        AutoinstGeneral.Import(general_section)
+        log.info("general: #{general_section}")
+        AutoinstGeneral.Write
+
+        autosetup_network
+
+        if Builtins.haskey(Profile.current, "add-on")
+          Progress.Title(_("Handling Add-On Products..."))
+          unless Call.Function(
+            "add-on_auto",
+            ["Import", Ops.get_map(Profile.current, "add-on", {})]
+          )
+
+            log.warn("User has aborted the installation.")
+            return :abort
+          end
+          Call.Function("add-on_auto", ["Write"])
+
+          # Recover partitioning settings that were removed by the add-on_auto client (bsc#1073548)
+          Yast::AutoinstStorage.import_general_settings(general_section["storage"])
+
+          # The entry "kexec_reboot" in the Product description can be set
+          # by the AutoYaST configuration setting (general/forceboot) and should
+          # not be reset by any other Product description file.
+          # So we set it here again.
+          # bnc#981434
+          AutoinstGeneral.SetRebootAfterFirstStage
+        end
+
+        #
+        # Set it in the Language module.
+        #
+        Progress.NextStage
+        Progress.Title(_("Configuring language..."))
+
+        autosetup_country
+
+        # one can override the <confirm> option by the commandline parameter y2confirm
+        @tmp = Convert.to_string(
+          SCR.Read(path(".target.string"), "/proc/cmdline")
+        )
+        if !@tmp.nil? &&
+            Builtins.contains(Builtins.splitstring(@tmp, " \n"), "y2confirm")
+          AutoinstConfig.Confirm = true
+          Builtins.y2milestone("y2confirm found and confirm turned on")
+        end
+
+        return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
+
+        # moved here from autoinit for fate #301193
+        # needs testing
+        if Arch.s390
+          if Builtins.haskey(Profile.current, "dasd")
+            Builtins.y2milestone("dasd found")
+            if Call.Function("dasd_auto", ["Import", Ops.get_map(Profile.current, "dasd", {})])
+              Call.Function("dasd_auto", ["Write"])
+            end
+          end
+          if Builtins.haskey(Profile.current, "zfcp")
+            Builtins.y2milestone("zfcp found")
+            if Call.Function("zfcp_auto", ["Import", Ops.get_map(Profile.current, "zfcp", {})])
+              Call.Function("zfcp_auto", ["Write"])
+            end
+          end
+        end
+
+        Progress.NextStage
+
+        # Importing security settings
+        autosetup_security
+        return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
+
+        #
+        # Partitioning and Storage
+        # //////////////////////////////////////////////////////////////////////
+
+        Progress.NextStage
+
+        # Pre-scripts can modify the AutoYaST profile. Even more, a pre-script could change
+        # the initial disks layout/configuration (e.g., by creating a new partition).
+        # It is difficult to evaluate whether a pre-script has modified something related
+        # to storage devices, so a re-probing is always performed here (related to bsc#1133045).
+        probe_storage
+
+        write_storage = if Profile.current["partitioning_advanced"] &&
+            !Profile.current["partitioning_advanced"].empty?
+          AutoinstStorage.ImportAdvanced(Profile.current["partitioning_advanced"])
+        else
+          AutoinstStorage.Import(Profile.current["partitioning"])
+        end
+
+        return :abort unless write_storage
+
+        semiauto_partitions = general_section["semi-automatic"]&.include?("partitioning")
+
+        if semiauto_partitions
+          Builtins.y2milestone("Partitioning manual setup")
+          # Yes, do not set Storage testsuite here as we want really GUI with proposal
+          Call.Function("inst_disk_proposal", ["enable_next" => true])
+          write_storage = true
+        end
+
+        if write_storage &&
+            !AutoinstStorage.Write
+          Report.Error(_("Error while configuring partitions.\nTry again.\n"))
+          Builtins.y2error("Aborting...")
           return :abort
         end
-        Call.Function("add-on_auto", ["Write"])
 
-        # Recover partitioning settings that were removed by the add-on_auto client (bsc#1073548)
-        Yast::AutoinstStorage.import_general_settings(general_section["storage"])
+        # Bootloader
+        # The bootloader has to be called before software selection.
+        # So the software selection is aware and can manage packages
+        # needed by the bootloader (bnc#876161)
 
-        # The entry "kexec_reboot" in the Product description can be set
-        # by the AutoYaST configuration setting (general/forceboot) and should
-        # not be reset by any other Product description file.
-        # So we set it here again.
-        # bnc#981434
-        AutoinstGeneral.SetRebootAfterFirstStage
-      end
+        return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
 
-      #
-      # Set it in the Language module.
-      #
-      Progress.NextStage
-      Progress.Title(_("Configuring language..."))
+        Progress.NextStage
 
-      autosetup_country
-
-      # one can override the <confirm> option by the commandline parameter y2confirm
-      @tmp = Convert.to_string(
-        SCR.Read(path(".target.string"), "/proc/cmdline")
-      )
-      if !@tmp.nil? &&
-          Builtins.contains(Builtins.splitstring(@tmp, " \n"), "y2confirm")
-        AutoinstConfig.Confirm = true
-        Builtins.y2milestone("y2confirm found and confirm turned on")
-      end
-
-      return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
-
-      # moved here from autoinit for fate #301193
-      # needs testing
-      if Arch.s390
-        if Builtins.haskey(Profile.current, "dasd")
-          Builtins.y2milestone("dasd found")
-          if Call.Function("dasd_auto", ["Import", Ops.get_map(Profile.current, "dasd", {})])
-            Call.Function("dasd_auto", ["Write"])
-          end
-        end
-        if Builtins.haskey(Profile.current, "zfcp")
-          Builtins.y2milestone("zfcp found")
-          if Call.Function("zfcp_auto", ["Import", Ops.get_map(Profile.current, "zfcp", {})])
-            Call.Function("zfcp_auto", ["Write"])
-          end
-        end
-      end
-
-      Progress.NextStage
-
-      # Importing security settings
-      autosetup_security
-      return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
-
-      #
-      # Partitioning and Storage
-      # //////////////////////////////////////////////////////////////////////
-
-      Progress.NextStage
-
-      # Pre-scripts can modify the AutoYaST profile. Even more, a pre-script could change
-      # the initial disks layout/configuration (e.g., by creating a new partition).
-      # It is difficult to evaluate whether a pre-script has modified something related
-      # to storage devices, so a re-probing is always performed here (related to bsc#1133045).
-      probe_storage
-
-      write_storage = if Profile.current["partitioning_advanced"] &&
-          !Profile.current["partitioning_advanced"].empty?
-        AutoinstStorage.ImportAdvanced(Profile.current["partitioning_advanced"])
-      else
-        AutoinstStorage.Import(Profile.current["partitioning"])
-      end
-
-      return :abort unless write_storage
-
-      semiauto_partitions = general_section["semi-automatic"]&.include?("partitioning")
-
-      if semiauto_partitions
-        Builtins.y2milestone("Partitioning manual setup")
-        # Yes, do not set Storage testsuite here as we want really GUI with proposal
-        Call.Function("inst_disk_proposal", ["enable_next" => true])
-        write_storage = true
-      end
-
-      if write_storage &&
-          !AutoinstStorage.Write
-        Report.Error(_("Error while configuring partitions.\nTry again.\n"))
-        Builtins.y2error("Aborting...")
-        return :abort
-      end
-
-      # Bootloader
-      # The bootloader has to be called before software selection.
-      # So the software selection is aware and can manage packages
-      # needed by the bootloader (bnc#876161)
-
-      return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
-
-      Progress.NextStage
-
-      return :abort unless WFM.CallFunction(
-        "bootloader_auto",
-        ["Import", Ops.get_map(Profile.current, "bootloader", {})]
-      )
-
-      # Registration
-      # FIXME: There is a lot of duplicate code with inst_autoupgrade.
-
-      return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
-
-      Progress.NextStage
-
-      # The configuration_management has to be called before software selection.
-      # So the software selection is aware and can manage packages
-      # needed by the configuration_management.
-      if Profile.current["configuration_management"]
         return :abort unless WFM.CallFunction(
-          "configuration_management_auto",
-          ["Import", Profile.current["configuration_management"]]
+          "bootloader_auto",
+          ["Import", Ops.get_map(Profile.current, "bootloader", {})]
         )
 
-        # Do not start it in second installation stage again.
-        # Provisioning will already be called in the first stage.
-        Profile.remove_sections("configuration_management")
-      end
+        # Registration
+        # FIXME: There is a lot of duplicate code with inst_autoupgrade.
 
-      # Register system
-      return :abort unless suse_register
+        return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
 
-      # SLES only. Have to be run before software to add required packages to enable kdump
-      if Builtins.haskey(Profile.current, "kdump")
+        Progress.NextStage
+
+        # The configuration_management has to be called before software selection.
+        # So the software selection is aware and can manage packages
+        # needed by the configuration_management.
+        if Profile.current["configuration_management"]
+          return :abort unless WFM.CallFunction(
+            "configuration_management_auto",
+            ["Import", Profile.current["configuration_management"]]
+          )
+
+          # Do not start it in second installation stage again.
+          # Provisioning will already be called in the first stage.
+          Profile.remove_sections("configuration_management")
+        end
+
+        # Register system
+        return :abort unless suse_register
+
+        # SLES only. Have to be run before software to add required packages to enable kdump
+        if Builtins.haskey(Profile.current, "kdump")
+          Call.Function(
+            "kdump_auto",
+            ["Import", Ops.get_map(Profile.current, "kdump", {})]
+          )
+          # Don't run it again in 2nd installation stage
+          Profile.remove_sections("kdump")
+        end
+
+        # Software
+
+        return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
+
+        Progress.NextStage
+
+        # Evaluating package and patterns selection.
+        # Selection will be stored in PackageAI.
+        AutoinstSoftware.Import(Ops.get_map(Profile.current, "software", {}))
+
+        # Add additional packages in order to run YAST modules which
+        # have been defined in the AutoYaST configuration file.
+        # Selection will be stored in PackageAI.
+        add_yast2_dependencies if AutoinstFunctions.second_stage_required?
+
+        # Adding selections (defined in PackageAI) to libzypp and solving
+        # package dependencies.
+        if !AutoinstSoftware.Write
+          Report.Error(
+            _("Error while configuring software selections.\nTry again.\n")
+          )
+          Builtins.y2error("Aborting...")
+          return :abort
+        end
+        # fate #301321 - AutoYaST imaging support
+        # no generic images, just the ones the manual installation would use too, to speed up
+        # installation
+        #
+        # no check if section is available makes product default possible
         Call.Function(
-          "kdump_auto",
-          ["Import", Ops.get_map(Profile.current, "kdump", {})]
+          "deploy_image_auto",
+          ["Import", Ops.get_map(Profile.current, "deploy_image", {})]
         )
-        # Don't run it again in 2nd installation stage
-        Profile.remove_sections("kdump")
+        Call.Function("deploy_image_auto", ["Write"])
+
+        Progress.NextStage
+
+        if Profile.current.key?("runlevel")
+          # still supporting old format "runlevel"
+          ServicesManager.import(Profile.current["runlevel"])
+          # Do not start it in second installation stage again.
+          # Writing will be called in inst_finish.
+          Profile.remove_sections("runlevel")
+        elsif Profile.current.key? "services-manager"
+          ServicesManager.import(Profile.current["services-manager"])
+          # Do not start it in second installation stage again.
+          # Writing will be called in inst_finish.
+          Profile.remove_sections("services-manager")
+        else
+          # We will have to set default entries which are defined
+          # in the import call of ServicesManager
+          ServicesManager.import({})
+        end
+
+        #
+        # Import users configuration from the profile
+        #
+        Progress.NextStage
+        autosetup_users
+
+        #
+        # Import profile settings for copying SSH keys from a
+        # previous installation
+        #
+        Progress.NextStage
+        if Profile.current["ssh_import"]
+          config = Profile.current["ssh_import"]
+          Profile.remove_sections("ssh_import")
+          return :abort unless WFM.CallFunction(
+            "ssh_import_auto",
+            ["Import", config]
+          )
+        end
+
+        #
+        # Checking Base Product licenses
+        #
+        Progress.NextStage
+        if general_section["mode"]&.fetch("confirm_base_product_license", false)
+          result = nil
+          while result != :next
+            result = WFM.CallFunction("inst_product_license", [{ "enable_back"=>false }])
+            return :abort if result == :abort && Yast::Popup.ConfirmAbort(:painless)
+          end
+        end
+
+        # Results of imported values semantic check.
+        return :abort unless AutoInstall.valid_imported_values
+
+        Progress.Finish
+
+        @ret = ProductControl.RunFrom(ProductControl.CurrentStep + 1, true)
+
+        return :finish if @ret == :next
+
+        @ret
       end
 
-      # Software
-
-      return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
-
-      Progress.NextStage
-
-      # Evaluating package and patterns selection.
-      # Selection will be stored in PackageAI.
-      AutoinstSoftware.Import(Ops.get_map(Profile.current, "software", {}))
-
-      # Add additional packages in order to run YAST modules which
-      # have been defined in the AutoYaST configuration file.
-      # Selection will be stored in PackageAI.
-      add_yast2_dependencies if AutoinstFunctions.second_stage_required?
-
-      # Adding selections (defined in PackageAI) to libzypp and solving
-      # package dependencies.
-      if !AutoinstSoftware.Write
-        Report.Error(
-          _("Error while configuring software selections.\nTry again.\n")
-        )
-        Builtins.y2error("Aborting...")
-        return :abort
-      end
-      # fate #301321 - AutoYaST imaging support
-      # no generic images, just the ones the manual installation would use too, to speed up
-      # installation
-      #
-      # no check if section is available makes product default possible
-      Call.Function(
-        "deploy_image_auto",
-        ["Import", Ops.get_map(Profile.current, "deploy_image", {})]
-      )
-      Call.Function("deploy_image_auto", ["Write"])
-
-      Progress.NextStage
-
-      if Profile.current.key?("runlevel")
-        # still supporting old format "runlevel"
-        ServicesManager.import(Profile.current["runlevel"])
-        # Do not start it in second installation stage again.
-        # Writing will be called in inst_finish.
-        Profile.remove_sections("runlevel")
-      elsif Profile.current.key? "services-manager"
-        ServicesManager.import(Profile.current["services-manager"])
-        # Do not start it in second installation stage again.
-        # Writing will be called in inst_finish.
-        Profile.remove_sections("services-manager")
-      else
-        # We will have to set default entries which are defined
-        # in the import call of ServicesManager
-        ServicesManager.import({})
-      end
-
-      #
-      # Import users configuration from the profile
-      #
-      Progress.NextStage
-      autosetup_users
-
-      #
-      # Import profile settings for copying SSH keys from a
-      # previous installation
-      #
-      Progress.NextStage
-      if Profile.current["ssh_import"]
-        config = Profile.current["ssh_import"]
-        Profile.remove_sections("ssh_import")
-        return :abort unless WFM.CallFunction(
-          "ssh_import_auto",
-          ["Import", config]
-        )
-      end
-
-      #
-      # Checking Base Product licenses
-      #
-      Progress.NextStage
-      if general_section["mode"]&.fetch("confirm_base_product_license", false)
-        result = nil
-        while result != :next
-          result = WFM.CallFunction("inst_product_license", [{ "enable_back"=>false }])
-          return :abort if result == :abort && Yast::Popup.ConfirmAbort(:painless)
+      # Import Users configuration from profile
+      def autosetup_users
+        importer.import_entry("users").each do |e|
+          Profile.remove_sections(e)
         end
       end
 
-      # Results of imported values semantic check.
-      return :abort unless AutoInstall.valid_imported_values
-
-      Progress.Finish
-
-      @ret = ProductControl.RunFrom(ProductControl.CurrentStep + 1, true)
-
-      return :finish if @ret == :next
-
-      @ret
-    end
-
-    # Import Users configuration from profile
-    def autosetup_users
-      importer.import_entry("users").each do |e|
-        Profile.remove_sections(e)
+      # Import security settings from profile
+      def autosetup_security
+        importer.import_entry("security").each do |e|
+          Profile.remove_sections(e)
+        end
       end
-    end
 
-    # Import security settings from profile
-    def autosetup_security
-      importer.import_entry("security").each do |e|
-        Profile.remove_sections(e)
+      # Add YaST2 packages dependencies
+      def add_yast2_dependencies
+        AutoinstSoftware.AddYdepsFromProfile(Profile.current.keys)
       end
-    end
 
-    # Add YaST2 packages dependencies
-    def add_yast2_dependencies
-      AutoinstSoftware.AddYdepsFromProfile(Profile.current.keys)
-    end
-
-    def importer
-      @importer ||= Y2Autoinstallation::Importer.new(Profile.current)
+      def importer
+        @importer ||= Y2Autoinstallation::Importer.new(Profile.current)
+      end
     end
   end
 end
-
-Yast::InstAutosetupClient.new.main
