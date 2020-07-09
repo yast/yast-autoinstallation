@@ -58,37 +58,6 @@ module Y2Autoinstallation
 
         # configure general settings
 
-        return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
-
-        Progress.NextStage
-
-        # Pre-Scripts
-        AutoinstScripts.Import(Ops.get_map(Profile.current, "scripts", {}))
-        AutoinstScripts.Write("pre-scripts", false)
-
-        # Reread Profile in case it was modified in pre-script
-        # User has to create the new profile in a pre-defined
-        # location for easy processing in pre-script.
-
-        return :abort if readModified == :abort
-
-        #
-        # Partitioning and Storage
-        # //////////////////////////////////////////////////////////////////////
-
-        loop do
-          askDialog
-          # Pre-Scripts
-          AutoinstScripts.Import(Ops.get_map(Profile.current, "scripts", {}))
-          AutoinstScripts.Write("pre-scripts", false)
-          ret2 = readModified
-          return :abort if ret2 == :abort
-
-          break if ret2 == :not_found
-        end
-
-        # reimport scripts, for the case <ask> has changed them
-        AutoinstScripts.Import(Ops.get_map(Profile.current, "scripts", {}))
         #
         # Set workflow variables
         #
@@ -294,7 +263,6 @@ module Y2Autoinstallation
       def progress_stages
         [
           _("Configure General Settings "),
-          _("Execute pre-install user scripts"),
           _("Set up language"),
           _("Registration"),
           _("Configure Software selections"),
@@ -306,7 +274,6 @@ module Y2Autoinstallation
       def progress_descriptions
         [
           _("Configuring general settings..."),
-          _("Executing pre-install user scripts..."),
           _("Setting up language..."),
           _("Registering the system..."),
           _("Configuring Software selections..."),
