@@ -16,6 +16,8 @@ module Yast
     YAST_SCHEMA_DIR = "/usr/share/YaST2/schema/autoyast/rng/*.rng".freeze
     SCHEMA_PACKAGE_FILE = "/usr/share/YaST2/schema/autoyast/rnc/includes.rnc".freeze
 
+    ALWAYS_CLONABLE_MODULES ||= ["software", "partitioning", "bootloader"].freeze
+
     include Yast::Logger
 
     def main
@@ -429,6 +431,12 @@ module Yast
       package_names
     end
 
+    def clonable_modules
+      ModuleMap().select do |name, resource_map|
+        clonable = resource_map["X-SuSE-YaST-AutoInstClonable"] == "true"
+        clonable || ALWAYS_CLONABLE_MODULES.include?(name)
+      end
+    end
     publish variable: :GroupMap, type: "map <string, map>"
     publish variable: :ModuleMap, type: "map <string, map>"
     publish variable: :MenuTreeData, type: "list <map>"
