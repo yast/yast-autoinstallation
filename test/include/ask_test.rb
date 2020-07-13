@@ -4,6 +4,7 @@ require_relative "../test_helper"
 
 require "yast"
 
+Yast.import "AutoinstGeneral"
 Yast.import "Profile"
 Yast.import "Stage"
 Yast.import "UI"
@@ -38,6 +39,7 @@ describe "Yast::AutoinstallAskInclude" do
       allow(Yast::Profile).to receive(:current).and_return(profile)
       allow(Yast::Stage).to receive(:initial).and_return(true)
       allow(Yast::UI).to receive(:UserInput).and_return(pressed_button)
+      Yast::AutoinstGeneral.Import(profile["general"])
     end
 
     context "when ask-list is empty" do
