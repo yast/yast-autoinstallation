@@ -85,7 +85,7 @@ module Yast
         module_auto = description.client_name
         importer.import_entry(description)
         out = Call.Function(module_auto, ["Packages"])
-        @packages.concat(out["install"] || [])
+        @packages.concat(out["install"] || []) if out
       end
 
       # Checking result of semantic checks of imported values.
