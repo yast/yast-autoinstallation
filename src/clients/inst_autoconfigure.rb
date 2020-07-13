@@ -21,15 +21,16 @@ module Yast
       Yast.import "UI"
       textdomain "autoinst"
 
-      Yast.import "Profile"
-      Yast.import "AutoinstScripts"
       Yast.import "AutoinstConfig"
-      Yast.import "Popup"
-      Yast.import "Wizard"
+      Yast.import "AutoinstGeneral"
+      Yast.import "AutoinstScripts"
       Yast.import "Call"
       Yast.import "Label"
       Yast.import "Mode"
+      Yast.import "Popup"
+      Yast.import "Profile"
       Yast.import "Report"
+      Yast.import "Wizard"
 
       @current_step = 0 # Required by logStep()
 
@@ -43,25 +44,18 @@ module Yast
           "</p>"
       )
 
-      Builtins.y2milestone(
-        "Profile general,mode:%1",
-        Ops.get_map(Profile.current, ["general", "mode"], {})
-      )
-      @need_systemd_isolate = Ops.get_boolean(
-        Profile.current, ["general", "mode", "activate_systemd_default_target"], true
-      )
-      final_restart_services = Ops.get_boolean(
-        Profile.current, ["general", "mode", "final_restart_services"], true
-      )
+      log.info "Profile general,mode:#{AutoinstGeneral.mode.inspect}"
+      need_systemd_isolate = AutoinstGeneral.mode.fetch("activate_systemd_default_target", true)
+      final_restart_services = AutoinstGeneral.mode.fetch("final_restart_services", true)
       registry = Y2Autoinstallation::Entries::Registry.instance
       # additional for scripting and finished message
       @max_steps = registry.writable_descriptions.size + 3
-      @max_steps = Ops.add(@max_steps, 1) if @need_systemd_isolate
+      @max_steps = Ops.add(@max_steps, 1) if need_systemd_isolate
       @max_steps += 1 if final_restart_services
       Builtins.y2milestone(
         "max steps: %1 need_isolate:%2",
         @max_steps,
-        @need_systemd_isolate
+        need_systemd_isolate
       )
       @contents = VBox(
         LogView(Id(:log), "", 10, 0),
@@ -175,11 +169,7 @@ module Yast
       logStep(_("Writing Init-Scripts"))
       AutoinstScripts.Write("init-scripts", false)
 
-      @max_wait = Ops.get_integer(
-        Profile.current,
-        ["general", "mode", "max_systemd_wait"],
-        30
-      )
+      max_wait = AutoinstGeneral.mode.fetch("max_systemd_wait", 30)
 
       @ser_ignore = [
         "YaST2-Second-Stage.service",
@@ -213,18 +203,18 @@ module Yast
         Builtins.y2milestone("before calling \"%1\"", @cmd)
         @out = Convert.to_map(SCR.Execute(path(".target.bash_output"), @cmd))
         Builtins.y2milestone("after  calling \"%1\"", @cmd)
-        wait_systemd_finished(@max_wait, @ser_ignore)
+        wait_systemd_finished(max_wait, @ser_ignore)
       else
         Builtins.y2milestone("Do not restart all services (defined in autoyast.xml)")
       end
-      if @need_systemd_isolate
+      if need_systemd_isolate
         logStep(_("Activating systemd default target"))
         @cmd = "systemctl --no-block --ignore-dependencies isolate default.target"
         Builtins.y2milestone("before calling \"%1\"", @cmd)
         @out = Convert.to_map(SCR.Execute(path(".target.bash_output"), @cmd))
         Builtins.y2milestone("after  calling \"%1\"", @cmd)
         Builtins.y2milestone("ret=%1", @out)
-        wait_systemd_finished(@max_wait, @ser_ignore)
+        wait_systemd_finished(max_wait, @ser_ignore)
       else
         Builtins.y2milestone("Do not activate systemd default target (defined in autoyast.xml)")
       end
@@ -286,48 +276,45 @@ module Yast
     end
 
     def processWait(resource, stage)
-      Builtins.foreach(
-        Ops.get_list(Profile.current, ["general", "wait", stage], [])
-      ) do |process|
-        if Ops.get_string(process, "name", "") == resource
-          if Builtins.haskey(process, "sleep")
-            if Ops.get_boolean(process, ["sleep", "feedback"], false) == true
-              Popup.ShowFeedback(
-                "",
-                Builtins.sformat(_("Processing resource %1"), resource)
-              )
-            end
-            Builtins.sleep(
-              Ops.multiply(1000, Ops.get_integer(process, ["sleep", "time"], 0))
+      AutoinstGeneral.processes_to_wait(stage).each do
+        next if Ops.get_string(process, "name", "") != resource
+        if Builtins.haskey(process, "sleep")
+          if Ops.get_boolean(process, ["sleep", "feedback"], false) == true
+            Popup.ShowFeedback(
+              "",
+              Builtins.sformat(_("Processing resource %1"), resource)
             )
-            Popup.ClearFeedback if Ops.get_boolean(process, ["sleep", "feedback"], false) == true
           end
-          if Builtins.haskey(process, "script")
-            debug = Ops.get_boolean(process, ["script", "debug"], true) ? "-x" : ""
-            scriptName = Builtins.sformat("%1-%2", stage, resource)
-            scriptPath = Builtins.sformat(
-              "%1/%2",
-              AutoinstConfig.scripts_dir,
-              scriptName
+          Builtins.sleep(
+            Ops.multiply(1000, Ops.get_integer(process, ["sleep", "time"], 0))
+          )
+          Popup.ClearFeedback if Ops.get_boolean(process, ["sleep", "feedback"], false) == true
+        end
+        if Builtins.haskey(process, "script")
+          debug = Ops.get_boolean(process, ["script", "debug"], true) ? "-x" : ""
+          scriptName = Builtins.sformat("%1-%2", stage, resource)
+          scriptPath = Builtins.sformat(
+            "%1/%2",
+            AutoinstConfig.scripts_dir,
+            scriptName
+          )
+          SCR.Write(
+            path(".target.string"),
+            scriptPath,
+            Ops.get_string(
+              process,
+              ["script", "source"],
+              "echo Empty script!"
             )
-            SCR.Write(
-              path(".target.string"),
-              scriptPath,
-              Ops.get_string(
-                process,
-                ["script", "source"],
-                "echo Empty script!"
-              )
-            )
-            executionString = Builtins.sformat(
-              "/bin/sh %1 %2 2&> %3/%4.log ",
-              debug,
-              scriptPath,
-              AutoinstConfig.logs_dir,
-              scriptName
-            )
-            SCR.Execute(path(".target.bash"), executionString)
-          end
+          )
+          executionString = Builtins.sformat(
+            "/bin/sh %1 %2 2&> %3/%4.log ",
+            debug,
+            scriptPath,
+            AutoinstConfig.logs_dir,
+            scriptName
+          )
+          SCR.Execute(path(".target.bash"), executionString)
         end
       end
       nil

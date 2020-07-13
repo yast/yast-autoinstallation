@@ -179,6 +179,7 @@ module Yast
       @minimal_configuration = settings.fetch("minimal_configuration", false)
       @self_update = settings["self_update"] # no default as we want to know if it is explicit
       @self_update_url = settings["self_update_url"]
+      @wait = settings.fetch("wait", {})
 
       SetSignatureHandling()
 
@@ -487,6 +488,13 @@ module Yast
     end
 
     attr_reader :self_update_url
+
+    # list of processes for which wait in given stage
+    # @return [Array<Hash>] list of processes definition.
+    # @see https://doc.opensuse.org/projects/autoyast/#CreateProfile-General-wait for hash keys
+    def processes_to_wait(stage)
+      @wait[stage] || []
+    end
 
     publish variable: :second_stage, type: "boolean"
     publish variable: :mode, type: "map"
