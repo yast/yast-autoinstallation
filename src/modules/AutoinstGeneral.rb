@@ -479,14 +479,18 @@ module Yast
       )
     end
 
+    # Gets if minimal configuration option is set to true.
+    # @rerurn [true,false] returns false if not defined in profile
     def minimal_configuration?
       @minimal_configuration
     end
 
-    def self_update?
-      @self_update
-    end
+    # returns if self update is explcitelly enabled
+    # @return [true,false,nil] returns specified value or nil if not defined
+    attr_reader :self_update
 
+    # returns self update url
+    # @return [String,nil] returns url to self update or nil if not defined
     attr_reader :self_update_url
 
     # list of processes for which wait in given stage

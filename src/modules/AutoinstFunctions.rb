@@ -81,7 +81,8 @@ module Yast
     # 2) impllicitly according to software selection
     # 3) if not set explicitly and just one product is available on media - use it
     #
-    # @return [Y2Packager::Product] a base product or nil
+    # @return [Y2Packager::Product|Y2Packager::ProductLocation] a base product or nil
+    # returned class depends on phase of installation and type of installation medium
     def selected_product
       return @selected_product if @selected_product
 
