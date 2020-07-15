@@ -276,7 +276,7 @@ module Yast
     end
 
     def processWait(resource, stage)
-      AutoinstGeneral.processes_to_wait(stage).each do
+      AutoinstGeneral.processes_to_wait(stage).each do |process|
         next if Ops.get_string(process, "name", "") != resource
         if Builtins.haskey(process, "sleep")
           if Ops.get_boolean(process, ["sleep", "feedback"], false) == true
