@@ -485,7 +485,7 @@ module Yast
       @minimal_configuration
     end
 
-    # returns if self update is explcitelly enabled
+    # returns if self update is explicitly enabled
     # @return [true,false,nil] returns specified value or nil if not defined
     attr_reader :self_update
 
