@@ -252,7 +252,6 @@ done
 #clients
 %{yast_clientdir}/inst_autoinit.rb
 %{yast_clientdir}/inst_autoimage.rb
-%{yast_clientdir}/inst_autosetup.rb
 %{yast_clientdir}/inst_autoconfigure.rb
 %{yast_clientdir}/inst_autopost.rb
 %{yast_clientdir}/files_auto.rb
@@ -263,6 +262,7 @@ done
 %{yast_clientdir}/ayast_probe.rb
 %{yast_clientdir}/inst_autosetup.rb
 %{yast_clientdir}/inst_autosetup_upgrade.rb
+%{yast_clientdir}/autoinst_files_finish.rb
 %{yast_clientdir}/inst_store_upgrade_software.rb
 %{yast_clientdir}/clone_system.rb
 
