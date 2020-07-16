@@ -89,7 +89,7 @@ module Y2Autoinstallation
           _("Configuring Systemd Default Target..."),
           _("Importing users and groups configuration..."),
           _("Importing SSH keys/settings..."),
-          _("Writing configuration files..."),          
+          _("Writing configuration files..."),
           _("Confirming License...")
         ]
 

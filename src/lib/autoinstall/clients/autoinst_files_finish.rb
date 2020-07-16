@@ -11,7 +11,7 @@ module Y2Autoinstallation
       end
 
       def write
-        ::Yast::AutoinstFile.Write        
+        ::Yast::AutoinstFile.Write
       end
     end
   end

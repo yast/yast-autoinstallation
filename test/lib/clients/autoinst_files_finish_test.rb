@@ -8,4 +8,4 @@ describe Y2Autoinstallation::Clients::AutoinstFilesFinish do
       subject.write
     end
   end
-end  
+end
