@@ -66,6 +66,11 @@ describe Y2Autoinstallation::Clients::InstAutosetup do
       subject.main
     end
 
+    it "sets up additional configuration files" do
+      expect(subject).to receive(:autosetup_files)
+      subject.main
+    end    
+
     it "sets up the country configuration" do
       expect(subject).to receive(:autosetup_country)
       subject.main
