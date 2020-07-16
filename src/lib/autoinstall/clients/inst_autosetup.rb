@@ -74,6 +74,7 @@ module Y2Autoinstallation
           _("Configure Systemd Default Target"),
           _("Configure users and groups"),
           _("Import SSH keys/settings"),
+          _("Set up user defined configuration files"),
           _("Confirm License")
         ]
 
@@ -88,6 +89,7 @@ module Y2Autoinstallation
           _("Configuring Systemd Default Target..."),
           _("Importing users and groups configuration..."),
           _("Importing SSH keys/settings..."),
+          _("Setting up user defined configuration files..."),
           _("Confirming License...")
         ]
 
@@ -346,6 +348,12 @@ module Y2Autoinstallation
         end
 
         #
+        # Import profile settings for creating configuration files.
+        #
+        Progress.NextStage
+        autosetup_files
+
+        #
         # Checking Base Product licenses
         #
         Progress.NextStage
@@ -367,6 +375,13 @@ module Y2Autoinstallation
         return :finish if @ret == :next
 
         @ret
+      end
+
+      # Import Files section from profile
+      def autosetup_files
+        importer.import_entry("files").each do |e|
+          Profile.remove_sections(e)
+        end
       end
 
       # Import Users configuration from profile
