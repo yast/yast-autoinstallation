@@ -53,6 +53,9 @@ module Yast
       # S390
       @cio_ignore = true
 
+      @self_update = true
+      @minimal_configuration = false
+
       # default value of settings modified
       @modified = false
       AutoinstGeneral()
@@ -173,6 +176,10 @@ module Yast
       @askList = settings.fetch("ask-list", [])
       @proposals = settings.fetch("proposals", [])
       AutoinstStorage.import_general_settings(settings["storage"])
+      @minimal_configuration = settings.fetch("minimal_configuration", false)
+      @self_update = settings["self_update"] # no default as we want to know if it is explicit
+      @self_update_url = settings["self_update_url"]
+      @wait = settings.fetch("wait", {})
 
       SetSignatureHandling()
 
@@ -470,6 +477,27 @@ module Yast
         "kexec_reboot",
         !mode["forceboot"]
       )
+    end
+
+    # Gets if minimal configuration option is set to true.
+    # @return [true,false] returns false if not defined in profile
+    def minimal_configuration?
+      @minimal_configuration
+    end
+
+    # returns if self update is explicitly enabled
+    # @return [true,false,nil] returns specified value or nil if not defined
+    attr_reader :self_update
+
+    # returns self update url
+    # @return [String,nil] returns url to self update or nil if not defined
+    attr_reader :self_update_url
+
+    # list of processes for which wait in given stage
+    # @return [Array<Hash>] list of processes definition.
+    # @see https://doc.opensuse.org/projects/autoyast/#CreateProfile-General-wait for hash keys
+    def processes_to_wait(stage)
+      @wait[stage] || []
     end
 
     publish variable: :second_stage, type: "boolean"
