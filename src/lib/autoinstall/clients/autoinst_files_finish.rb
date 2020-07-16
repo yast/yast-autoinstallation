@@ -1,7 +1,6 @@
 require "installation/finish_client"
 
 Yast.import "AutoinstFile"
-Yast.import "Mode"
 
 module Y2Autoinstallation
   module Clients
@@ -11,8 +10,12 @@ module Y2Autoinstallation
         _("Writing configuration files ...")
       end
 
+      def modes
+        [:autoinst]
+      end
+
       def write
-        ::Yast::AutoinstFile.Write if Mode.auto
+        ::Yast::AutoinstFile.Write
       end
     end
   end
