@@ -12,11 +12,12 @@ module Yast
     def initialize_autoinstall_ask(_include_target)
       textdomain "autoinst"
 
-      Yast.import "Profile"
-      Yast.import "UI"
+      Yast.import "AutoinstGeneral"
       Yast.import "Label"
-      Yast.import "Stage"
       Yast.import "Popup"
+      Yast.import "Profile"
+      Yast.import "Stage"
+      Yast.import "UI"
     end
 
     def path2pos(pa)
@@ -87,9 +88,7 @@ module Yast
       history = []
 
       Builtins.foreach(
-        Builtins.sort(
-          Ops.get_list(Profile.current, ["general", "ask-list"], [])
-        ) do |x, y|
+        Builtins.sort(AutoinstGeneral.askList) do |x, y|
           Ops.less_than(
             Ops.get_integer(x, "element", 0),
             Ops.get_integer(y, "element", 0)
