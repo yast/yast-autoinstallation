@@ -94,7 +94,10 @@ y2_partition =
   | bcache_caching_for
   | btrfs_name
 
-partition = element partition { y2_partition* }
+partition = element partition {
+  MAP,
+  y2_partition*
+}
 part_create =
   element create { BOOLEAN }
 part_crypt = element crypt { STRING }
