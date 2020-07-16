@@ -278,6 +278,7 @@ module Yast
     def processWait(resource, stage)
       AutoinstGeneral.processes_to_wait(stage).each do |process|
         next if Ops.get_string(process, "name", "") != resource
+
         if Builtins.haskey(process, "sleep")
           if Ops.get_boolean(process, ["sleep", "feedback"], false) == true
             Popup.ShowFeedback(
@@ -290,32 +291,32 @@ module Yast
           )
           Popup.ClearFeedback if Ops.get_boolean(process, ["sleep", "feedback"], false) == true
         end
-        if Builtins.haskey(process, "script")
-          debug = Ops.get_boolean(process, ["script", "debug"], true) ? "-x" : ""
-          scriptName = Builtins.sformat("%1-%2", stage, resource)
-          scriptPath = Builtins.sformat(
-            "%1/%2",
-            AutoinstConfig.scripts_dir,
-            scriptName
+        next unless Builtins.haskey(process, "script")
+
+        debug = Ops.get_boolean(process, ["script", "debug"], true) ? "-x" : ""
+        scriptName = Builtins.sformat("%1-%2", stage, resource)
+        scriptPath = Builtins.sformat(
+          "%1/%2",
+          AutoinstConfig.scripts_dir,
+          scriptName
+        )
+        SCR.Write(
+          path(".target.string"),
+          scriptPath,
+          Ops.get_string(
+            process,
+            ["script", "source"],
+            "echo Empty script!"
           )
-          SCR.Write(
-            path(".target.string"),
-            scriptPath,
-            Ops.get_string(
-              process,
-              ["script", "source"],
-              "echo Empty script!"
-            )
-          )
-          executionString = Builtins.sformat(
-            "/bin/sh %1 %2 2&> %3/%4.log ",
-            debug,
-            scriptPath,
-            AutoinstConfig.logs_dir,
-            scriptName
-          )
-          SCR.Execute(path(".target.bash"), executionString)
-        end
+        )
+        executionString = Builtins.sformat(
+          "/bin/sh %1 %2 2&> %3/%4.log ",
+          debug,
+          scriptPath,
+          AutoinstConfig.logs_dir,
+          scriptName
+        )
+        SCR.Execute(path(".target.bash"), executionString)
       end
       nil
     end
