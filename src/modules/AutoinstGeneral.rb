@@ -480,7 +480,7 @@ module Yast
     end
 
     # Gets if minimal configuration option is set to true.
-    # @rerurn [true,false] returns false if not defined in profile
+    # @return [true,false] returns false if not defined in profile
     def minimal_configuration?
       @minimal_configuration
     end
