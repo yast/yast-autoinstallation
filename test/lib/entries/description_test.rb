@@ -102,7 +102,7 @@ describe Y2Autoinstallation::Entries::Description do
     end
 
     context "X-SuSE-YaST-AutoInstClient is not defined" do
-      let(:values) { {} }
+      let(:values) { { "X-SuSE-YaST-AutoInstResource" => "fancy" } }
 
       it "returns #module_name with _auto suffix" do
         expect(subject.client_name).to eq "moduleA_auto"

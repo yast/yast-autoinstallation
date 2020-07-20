@@ -93,7 +93,7 @@ module Y2Autoinstallation
       end
 
       def client_name
-        values["X-SuSE-YaST-AutoInstClient"] || (resource_name + "_auto")
+        values["X-SuSE-YaST-AutoInstClient"] || (module_name + "_auto")
       end
 
       def hidden?
