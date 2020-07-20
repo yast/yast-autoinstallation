@@ -56,6 +56,8 @@ module Yast
       @self_update = true
       @minimal_configuration = false
 
+      @wait = {}
+
       # default value of settings modified
       @modified = false
       AutoinstGeneral()
