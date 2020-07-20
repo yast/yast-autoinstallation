@@ -395,4 +395,19 @@ describe "Yast::AutoinstGeneral" do
       end
     end
   end
+
+  describe "#processes_to_wait" do
+    it "returns array" do
+      subject.Import({})
+
+      expect(subject.processes_to_wait("test")).to be_a(::Array)
+    end
+
+    it "does not crash if import is not called" do
+      subject = Yast::AutoinstGeneralClass.new
+      subject.main
+
+      expect(subject.processes_to_wait("Test")).to be_a(::Array)
+    end
+  end
 end
