@@ -197,6 +197,14 @@ module Y2Autoinstallation
       Y2Autoinstallation::XmlChecks.instance
     end
 
+    # Invokes autoyast setup for firewall
+    def autosetup_firewall
+      return if !Yast::Profile.current["firewall"]
+
+      log.info("Importing Firewall settings from AY profile")
+      Yast::WFM.CallFunction("firewall_auto", ["Import", Yast::Profile.current["firewall"]])
+    end
+
   private
 
     def utf8_supported?
