@@ -431,7 +431,16 @@ module Yast
     # Show Source
     def ShowSource
       Profile.Prepare
-      source = XML.YCPToXMLString(:profile, Profile.current)
+      begin
+        source = XML.YCPToXMLString(:profile, Profile.current)
+      rescue XMLSerializationError => e
+        Builtins.y2error "Creation of XML failed with #{e.inspect}"
+        Popup.Error(
+          _("An error occurred while creating XML Sources.")
+        )
+        source = ""
+      end
+
       sourceView = RichText(Id(:class_source), Opt(:plainText), source)
 
       Wizard.SetTitleIcon("autoyast")

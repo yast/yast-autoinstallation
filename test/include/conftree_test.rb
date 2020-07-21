@@ -20,6 +20,9 @@
 require_relative "../test_helper"
 
 require "yast"
+require "autoinstall/entries/registry"
+
+Yast.import "Profile"
 
 describe "Yast::AutoinstallConfTreeInclude" do
   class DummyClient < Yast::Client
@@ -31,6 +34,27 @@ describe "Yast::AutoinstallConfTreeInclude" do
   end
 
   let(:subject) { DummyClient.new.tap(&:main) }
+
+  describe "#ShowSource" do
+    it "shows xml with current profile serialized to XML" do
+      allow(Yast::Profile).to receive(:Prepare)
+      allow(Yast::Profile).to receive(:current).and_return("test" => {})
+      allow(Yast::Wizard).to receive(:SetTitleIcon)
+      expect(Yast::Wizard).to receive(:SetContents)
+      expect(Yast::Popup).to_not receive(:Error)
+
+      subject.ShowSource
+    end
+
+    it "shows error popup when profile serialization failed" do
+      allow(Yast::Profile).to receive(:Prepare)
+      allow(Yast::Profile).to receive(:current).and_return("test" => nil)
+      expect(Yast::Popup).to receive(:Error)
+
+      subject.ShowSource
+
+    end
+  end
 
   describe "#configureModule" do
     let(:module_map) do
