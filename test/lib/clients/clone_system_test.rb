@@ -121,6 +121,14 @@ describe Y2Autoinstallation::Clients::CloneSystem do
         client.main
       end
 
+      it "shows error popup if invalid object is found during serialization" do
+        allow(Yast::Profile).to receive(:current).and_return("test" => nil)
+        expect(Yast::Popup).to receive(:Error)
+        allow(Yast::XML).to receive(:YCPToXMLFile).and_call_original
+
+        client.main
+      end
+
       context "when a filename is given" do
         let(:args) { ["modules", "filename=/tmp/autoinst.xml"] }
 
