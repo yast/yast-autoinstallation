@@ -241,7 +241,7 @@ describe Y2Autoinstallation::AutosetupHelpers do
 
   end
 
-  describe "#network_autosetup" do
+  describe "#autosetup_network" do
     let(:profile) { networking_section }
     let(:networking_section) { { "networking" => { "setup_before_proposal" => true } } }
     let(:host_section) { { "host" => { "hosts" => [] } } }
@@ -299,18 +299,30 @@ describe Y2Autoinstallation::AutosetupHelpers do
       end
 
       it "sets the network config to be written before the proposal" do
-        expect { client.autosetup_network }
-          .to change { client.network_before_proposal? }
-          .from(false).to(true)
+        allow(Yast::WFM).to receive(:CallFunction).with("inst_lan", anything)
+        expect(Yast::WFM).to receive(:CallFunction).with("lan_auto", ["Write"])
+
+        client.autosetup_network
       end
     end
 
-    context "in case it was definitely se to be configured before the proposal" do
-      before do
-        allow(client).to receive(:network_before_proposal?).and_return(true)
+    context "in case it was definitely set to be configured before the proposal" do
+      let(:networking_section) do
+        { "networking" => { "setup_before_proposal" => true } }
       end
+
       it "writes the network configuration calling the auto client" do
         expect(Yast::WFM).to receive(:CallFunction).with("lan_auto", ["Write"])
+
+        client.autosetup_network
+      end
+    end
+
+    context "when no network configuration is given" do
+      let(:networking_section) { {} }
+
+      it "imports the empty profile" do
+        expect(Yast::WFM).to receive(:CallFunction).with("lan_auto", ["Import", {}])
 
         client.autosetup_network
       end
