@@ -426,11 +426,12 @@ module Yast
     # Read rules file
     # @return [void]
     def Read
-      @UserRules = XML.XMLToYCPFile(AutoinstConfig.local_rules_file)
-
-      if @UserRules.nil?
+      begin
+        @UserRules = XML.XMLToYCPFile(AutoinstConfig.local_rules_file)
+      rescue XMLDeserializationError => e
         message = _("Parsing the rules file failed. XML parser reports:\n")
-        Popup.Error(Ops.add(message, XML.XMLError))
+        Popup.Error(message + e.message)
+        @UserRules = nil
       end
       Builtins.y2milestone("Rules: %1", @UserRules)
 
@@ -772,12 +773,12 @@ module Yast
                   )
                 end
               end
-              Builtins.foreach(conflictsCounter) do |e, v|
+              Builtins.foreach(conflictsCounter) do |key, v|
                 if Ops.greater_than(v, 0)
-                  UI.ChangeWidget(Id(e), :Enabled, false)
-                  UI.ChangeWidget(Id(e), :Value, false)
+                  UI.ChangeWidget(Id(key), :Enabled, false)
+                  UI.ChangeWidget(Id(key), :Value, false)
                 else
-                  UI.ChangeWidget(Id(e), :Enabled, true)
+                  UI.ChangeWidget(Id(key), :Enabled, true)
                 end
               end
             end
@@ -904,13 +905,15 @@ module Yast
         end
 
         dest_profile = (iter == 0) ? base_profile : cleaned_profile
-        if !XML_cleanup(current_profile, dest_profile)
-          log.error("Error reading XML file")
+        begin
+          XML_cleanup(current_profile, dest_profile)
+        rescue XMLDeserializationError => e
+          log.error("Error reading XML file: #{e.inspect}")
           message = _(
             "The XML parser reported an error while parsing the autoyast profile. " \
               "The error message is:\n"
           )
-          message += XML.XMLError
+          message += e.message
           Yast2::Popup.show(message, headline: :error)
           error = true
         end

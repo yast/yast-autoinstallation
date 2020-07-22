@@ -115,7 +115,7 @@ describe "Yast::AutoInstallRules" do
     end
   end
 
-  describe "#Rules XML" do
+  describe "#Read" do
     it "Reading rules with -or- operator" do
       expect(Yast::XML).to receive(:XMLToYCPFile).and_return(
         "rules" => [{
@@ -171,6 +171,13 @@ describe "Yast::AutoInstallRules" do
           "( [ \"$mac\" = \"000c2903d288\" ] ); then exit 0; else exit 1; fi",
         "hostaddress" => subject.hostaddress, "mac" => subject.mac)
         .and_return("stdout" => "", "exit" => 0, "stderr" => "")
+
+      subject.Read
+    end
+
+    it "shows error Popup when xml is not valid" do
+      allow(Yast::XML).to receive(:XMLToYCPFile).and_raise(Yast::XMLDeserializationError)
+      expect(Yast::Popup).to receive(:Error)
 
       subject.Read
     end
