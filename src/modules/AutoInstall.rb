@@ -279,6 +279,17 @@ module Yast
         )
       )
 
+      # Saving postpartitioning-scripts scripts/logs
+      postpart_dir = AutoinstConfig.tmpDir + "/postpartitioning-scripts"
+      if Yast::FileUtils.Exists(postpart_dir)
+        SCR.Execute(
+          path(".target.bash"),
+          "/bin/cp #{postpart_dir}/* #{destdir}#{AutoinstConfig.scripts_dir}")
+        SCR.Execute(
+          path(".target.bash"),
+          "/bin/cp #{postpart_dir}/logs/* #{destdir}#{AutoinstConfig.logs_dir}")
+      end
+
       nil
     end
 
