@@ -271,10 +271,12 @@ module Yast
       if Yast::FileUtils.Exists(postpart_dir)
         SCR.Execute(
           path(".target.bash"),
-          "/bin/cp #{postpart_dir}/* #{destdir}#{AutoinstConfig.scripts_dir}")
+          "/bin/cp #{postpart_dir}/* #{destdir}#{AutoinstConfig.scripts_dir}"
+        )
         SCR.Execute(
           path(".target.bash"),
-          "/bin/cp #{postpart_dir}/logs/* #{destdir}#{AutoinstConfig.logs_dir}")
+          "/bin/cp #{postpart_dir}/logs/* #{destdir}#{AutoinstConfig.logs_dir}"
+        )
       end
 
       nil
