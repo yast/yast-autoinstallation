@@ -131,7 +131,7 @@ module Y2Autoinstallation
 
       # Import also the host section in order to resolve hosts only available
       # with the network configuration and the host entry
-      if Yast::Profile.current["host"] && network_before_proposal?
+      if Yast::Profile.current["host"]
         Yast::WFM.CallFunction("host_auto", ["Import", Yast::Profile.current["host"]])
       end
 
