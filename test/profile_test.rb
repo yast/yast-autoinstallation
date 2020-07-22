@@ -563,4 +563,44 @@ describe Yast::Profile do
       end
     end
   end
+
+  describe "#Save" do
+    before do
+      # TODO: test also encrypted autoyast
+      allow(Yast::AutoinstConfig).to receive(:ProfileEncrypted).and_return(false)
+    end
+
+    it "returns true if saved profile to file" do
+      expect(Yast::XML).to receive(:YCPToXMLFile).and_return(true)
+
+      expect(subject.Save("test")).to eq true
+    end
+
+    it "returns false when failed" do
+      allow(subject).to receive(:Prepare)
+      subject.current = { "test" => nil }
+
+      expect(subject.Save("Test")).to eq false
+    end
+  end
+
+  describe "#SaveSingleSections" do
+    before do
+      allow(subject).to receive(:Prepare)
+    end
+
+    it "returns list of saved sections" do
+      subject.current = { "test" => {} }
+      expect(Yast::XML).to receive(:YCPToXMLFile).and_return(true)
+
+      expect(subject.SaveSingleSections("/tmp")).to eq("test" => "/tmp/test.xml")
+    end
+
+    it "it does not return sections that failed to save" do
+      allow(subject).to receive(:Prepare)
+      subject.current = { "test" => nil }
+
+      expect(subject.SaveSingleSections("/tmp")).to eq({})
+    end
+  end
 end
