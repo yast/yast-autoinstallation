@@ -7,7 +7,6 @@
 #
 # $Id$
 require "yast"
-require "yast2/execute"
 require "autoinstall/pkg_gpg_check_handler"
 require "autoinstall/autoinst_issues"
 require "autoinstall/autoinst_issues_presenter"
