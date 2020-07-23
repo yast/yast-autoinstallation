@@ -157,7 +157,7 @@ module Y2Autoinstallation
         rescue Yast::XMLSerializationError => e
           log.error "Creation of XML failed with #{e.inspect}"
           Yast::Popup.Error(
-            _("Invalid object found when creating XML. Please report a bug.")
+            _("Could not create the XML file. Please, report a bug.")
           )
         end
         Yast::Popup.ClearFeedback
