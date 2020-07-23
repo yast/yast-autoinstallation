@@ -53,10 +53,13 @@ module Yast
     def Read
       if SCR.Read(path(".target.size"), @classPath) != -1 &&
           Y2Autoinstallation::XmlChecks.valid_classes?(@classPath)
-
-        # TODO: use XML module
-        classes_map = Convert.to_map(SCR.Read(path(".xml"), @classPath))
-        @Classes = (classes_map && classes_map["classes"]) || []
+        begin
+          classes_map = XML.XMLToYCPFile(@classPath)
+          @Classes = (classes_map && classes_map["classes"]) || []
+        rescue XMLDeserializationError => e
+          log.error "failed to parse classes xml file #{e.inspect}"
+          @Classes = []
+        end
       else
         @Classes = []
       end
@@ -74,6 +77,8 @@ module Yast
         XML.YCPToXMLFile(:class, new_classes_map, @classPath)
       end
       nil
+    rescue XMLSerializationError => e
+      log.error "Failed to compact object #{e.inspect}"
     end
 
     # Changes the directory and reads the class definitions
@@ -164,6 +169,9 @@ module Yast
       tmp = { "classes" => @Classes }
       log.debug "saving classes: #{@classPath}"
       XML.YCPToXMLFile(:class, tmp, @classPath)
+    rescue XMLSerializationError => e
+      log.error "Failed to save object #{e.inspect}"
+      false
     end
 
     # Imports configuration

@@ -152,7 +152,14 @@ module Y2Autoinstallation
             Yast::ProductControl.clone_modules + ["general"]
           end
         Yast::AutoinstClone.Process(target: target)
-        Yast::XML.YCPToXMLFile(:profile, Yast::Profile.current, filename)
+        begin
+          Yast::XML.YCPToXMLFile(:profile, Yast::Profile.current, filename)
+        rescue Yast::XMLSerializationError => e
+          log.error "Creation of XML failed with #{e.inspect}"
+          Yast::Popup.Error(
+            _("Could not create the XML file. Please, report a bug.")
+          )
+        end
         Yast::Popup.ClearFeedback
         true
       end

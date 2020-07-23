@@ -17,6 +17,7 @@ module Yast
     # XML_cleanup()
     # @return [Boolean]
     def XML_cleanup(_in, out)
+      # Note, inputs should be already valid, so exceptions is not handled here
       ycpin = XML.XMLToYCPFile(_in)
       Builtins.y2debug("Writing clean XML file to  %1, YCP is (%2)", out, ycpin)
       XML.YCPToXMLFile(:profile, ycpin, out)
