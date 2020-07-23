@@ -126,23 +126,13 @@ module Y2Autoinstallation
       # Prevent to be called twice in case of already configured
       return if @network_configured
 
-      if Yast::Profile.current["networking"]
-        if network_before_proposal?
-          log.info("Networking setup before the proposal")
-        else
-          log.info("Networking setup at the end of first installation stage")
-        end
+      networking_section = Yast::Profile.current.fetch("networking", {})
+      Yast::WFM.CallFunction("lan_auto", ["Import", networking_section])
 
-        log.info("Importing Network settings from configuration file")
-        Yast::WFM.CallFunction("lan_auto", ["Import", Yast::Profile.current["networking"]])
-        Yast::Profile.remove_sections("networking")
-
-        # Import also the host section in order to resolve hosts only available
-        # with the network configuration and the host entry
-        if Yast::Profile.current["host"] && network_before_proposal?
-          Yast::WFM.CallFunction("host_auto", ["Import", Yast::Profile.current["host"]])
-          Yast::Profile.remove_sections("host")
-        end
+      # Import also the host section in order to resolve hosts only available
+      # with the network configuration and the host entry
+      if Yast::Profile.current["host"]
+        Yast::WFM.CallFunction("host_auto", ["Import", Yast::Profile.current["host"]])
       end
 
       if semi_auto?("networking")
@@ -151,7 +141,12 @@ module Y2Autoinstallation
         @network_before_proposal = true
       end
 
+      log.info("Networking setup before the proposal: #{network_before_proposal?}")
       Yast::WFM.CallFunction("lan_auto", ["Write"]) if network_before_proposal?
+
+      # Clean-up the profile
+      Yast::Profile.remove_sections(["networking", "host"])
+
       @network_configured = true
     end
 
