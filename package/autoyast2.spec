@@ -235,7 +235,6 @@ done
 %{yast_moduledir}/AutoInstall.rb
 %{yast_moduledir}/AutoinstScripts.rb
 %{yast_moduledir}/AutoinstGeneral.rb
-%{yast_moduledir}/AutoinstImage.rb
 %{yast_moduledir}/Profile.rb
 %{yast_moduledir}/AutoinstFile.rb
 %{yast_moduledir}/AutoinstConfig.rb
@@ -251,7 +250,6 @@ done
 
 #clients
 %{yast_clientdir}/inst_autoinit.rb
-%{yast_clientdir}/inst_autoimage.rb
 %{yast_clientdir}/inst_autoconfigure.rb
 %{yast_clientdir}/inst_autopost.rb
 %{yast_clientdir}/files_auto.rb
@@ -285,7 +283,6 @@ done
 %{yast_libdir}/autoinstall/entries/*.rb
 
 # scripts
-%{yast_ybindir}/fetch_image.sh
 %{yast_ybindir}/autoyast-initscripts.sh
 
 %license COPYING

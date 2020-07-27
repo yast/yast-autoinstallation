@@ -52,27 +52,15 @@ module Yast
 
       # All shared data are in yast2.rpm to break cyclic dependencies
       Yast.import "AutoinstData"
-
       Yast.import "PackageAI"
 
       @Software = {}
-
-      @image = {}
-      @image_arch = ""
 
       # patterns
       @patterns = []
 
       # Kernel, force type of kernel to be installed
       @kernel = ""
-
-      # Packages that should be installed in continue mode
-      # AutoinstData::post_packages = [];
-
-      @ft_module = ""
-
-      # Enable Imaging
-      @imaging = false
 
       # default value of settings modified
       @modified = false
@@ -83,7 +71,6 @@ module Yast
       @patternsAvailable = []
 
       @instsource = ""
-      @isolinuxcfg = ""
       AutoinstSoftware()
     end
 
@@ -171,20 +158,6 @@ module Yast
       AutoinstData.post_patterns = settings.fetch("post-patterns", [])
       PackageAI.toremove = settings.fetch("remove-packages", [])
 
-      # Imaging
-      # map<string, any> image = settings["system_images"]:$[];
-      # imaging = image["enable_multicast_images"]:false;
-      # ft_module = image["module_name"]:"";
-      # if (settings == $[])
-      #     modified = false;
-      # else
-      #     modified = true;
-      @image = settings.fetch("image", {})
-
-      # image_location and image_name are not mandatory for
-      # extracting an image because it can be defined in the
-      # script too. So it will not be checked here.
-      @imaging = true if @image["script_location"] && !@image["script_location"].empty?
       true
     end
 
@@ -246,445 +219,6 @@ module Yast
       nil
     end
 
-    def GetArchOfELF(filename)
-      bash_out = Convert.to_map(
-        SCR.Execute(
-          path(".target.bash_output"),
-          Ops.add(Ops.add(Directory.ybindir, "/elf-arch "), filename)
-        )
-      )
-      return "unknown" if Ops.get_integer(bash_out, "exit", 1) != 0
-
-      Builtins.deletechars(Ops.get_string(bash_out, "stdout", "unknown"), "\n")
-    end
-
-    def createImage(targetdir)
-      rootdir = Convert.to_string(SCR.Read(path(".target.tmpdir")))
-      zypperCall = ""
-      outputRedirect = " 2>&1 >> /tmp/ay_image.log"
-      finalPopup = Builtins.size(targetdir) == 0
-      Ops.set(
-        @image,
-        "script_location",
-        Ops.get_string(
-          @image,
-          "script_location",
-          "file:///usr/lib/YaST2/bin//fetch_image.sh"
-        )
-      )
-      Ops.set(
-        @image,
-        "script_params",
-        Convert.convert(
-          Ops.get(@image, "script_params") do
-            [
-              Ops.add(
-                Ops.add(
-                  Ops.add(Ops.get_string(@image, "image_location", ""), "/"),
-                  Ops.get_string(@image, "image_name", "image")
-                ),
-                ".tar.gz"
-              )
-            ]
-          end,
-          from: "any",
-          to:   "list <string>"
-        )
-      )
-
-      SCR.Execute(path(".target.bash"), "rm -f /tmp/ay_image.log")
-
-      # bind-mount devices
-      SCR.Execute(path(".target.mkdir"), Ops.add(rootdir, "/dev"))
-      returnCode = Convert.to_integer(
-        SCR.Execute(
-          path(".target.bash"),
-          Builtins.sformat("touch /%1/dev/null %1/dev/zero", rootdir)
-        )
-      )
-      returnCode = Convert.to_integer(
-        SCR.Execute(
-          path(".target.bash"),
-          Builtins.sformat("mount -o bind /dev/zero /%1/dev/zero", rootdir)
-        )
-      )
-      returnCode = Convert.to_integer(
-        SCR.Execute(
-          path(".target.bash"),
-          Builtins.sformat("mount -o bind /dev/null /%1/dev/null", rootdir)
-        )
-      )
-
-      # Add Source:
-      # zypper --root /space/tmp/tmproot/ ar \
-      #   ftp://10.10.0.100/install/SLP/openSUSE-11.2/i386/DVD1/ main
-      zypperCall = Builtins.sformat(
-        "ZYPP_READONLY_HACK=1 zypper --root %1 " \
-          "--non-interactive ar %2 main-source %3",
-        rootdir,
-        @instsource,
-        outputRedirect
-      )
-      Builtins.y2milestone("running %1", zypperCall)
-      returnCode = Convert.to_integer(
-        SCR.Execute(path(".target.bash"), zypperCall)
-      )
-      if returnCode != 0 && returnCode != 4
-        # 4 means "already exists"
-        Popup.Error(Builtins.sformat(_("Adding repo %1 failed"), @instsource))
-      end
-
-      # Add add-ons
-      addOnExport = Convert.to_map(WFM.CallFunction("add-on_auto", ["Export"]))
-      addOns = Ops.get_list(addOnExport, "add_on_products", [])
-      Builtins.foreach(addOns) do |addOn|
-        zypperCall = Builtins.sformat(
-          "ZYPP_READONLY_HACK=1 zypper --root %1 " \
-            "--non-interactive ar %2 %3 %4",
-          rootdir,
-          Ops.get_string(addOn, "media_url", ""),
-          Ops.get_string(addOn, "product", ""),
-          outputRedirect
-        )
-        returnCode = Convert.to_integer(
-          SCR.Execute(path(".target.bash"), zypperCall)
-        )
-        if returnCode != 0 && returnCode != 4
-          Popup.Error(
-            Builtins.sformat(
-              _("Adding repo %1 failed"),
-              Ops.get_string(addOn, "product", "")
-            )
-          )
-        end
-      end
-
-      # Install
-      zypperCall = Builtins.sformat(
-        "ZYPP_READONLY_HACK=1 zypper --root %1 " \
-          "--non-interactive install --auto-agree-with-licenses ",
-        rootdir
-      )
-
-      pattern = Builtins.mergestring(@patterns, " ")
-      Popup.ShowFeedback("Creating Image - installing patterns", "")
-      Builtins.y2milestone("installing %1", pattern)
-      returnCode = Convert.to_integer(
-        SCR.Execute(
-          path(".target.bash"),
-          Ops.add(
-            Ops.add(Ops.add(zypperCall, "-t pattern "), pattern),
-            outputRedirect
-          )
-        )
-      )
-      Popup.ClearFeedback
-      if returnCode != 0
-        Popup.Error(
-          _(
-            "Image creation failed while pattern installation. Please check /tmp/ay_image.log"
-          )
-        )
-      end
-
-      if Ops.greater_than(Builtins.size(PackageAI.toinstall), 0)
-        package = Builtins.mergestring(PackageAI.toinstall, " ")
-        Popup.ShowFeedback(_("Creating Image - installing packages"), "")
-        returnCode = Convert.to_integer(
-          SCR.Execute(
-            path(".target.bash"),
-            Ops.add(Ops.add(Ops.add(zypperCall, " "), package), outputRedirect)
-          )
-        )
-        Popup.ClearFeedback
-        if returnCode != 0
-          Popup.Error(
-            _(
-              "Image creation failed while package installation. Please check /tmp/ay_image.log"
-            )
-          )
-        end
-      end
-
-      @image_arch = GetArchOfELF(Builtins.sformat("%1/bin/bash", rootdir))
-      Builtins.y2milestone("Image architecture = %1", @image_arch)
-      targetdir = UI.AskForExistingDirectory("/", _("Store image to ...")) if targetdir == ""
-
-      # umount devices
-      returnCode = Convert.to_integer(
-        SCR.Execute(
-          path(".target.bash"),
-          Builtins.sformat("umount %1/dev/null %1/dev/zero %1/proc", rootdir)
-        )
-      )
-      returnCode = Convert.to_integer(
-        SCR.Execute(
-          path(".target.bash"),
-          Builtins.sformat("rm -rf %1/dev", rootdir)
-        )
-      )
-
-      # Compress image:
-      # tar cfz /srv/www/htdocs/image.tar.gz --exclude="proc*"  .
-      tarCommand = Builtins.sformat(
-        "tar cfvz %4/%3.tar.gz --exclude=\"./proc*\" --exclude=\"/%3.tar.gz\" -C %1 . %2",
-        rootdir,
-        outputRedirect,
-        Ops.get_string(@image, "image_name", ""),
-        targetdir
-      )
-      Builtins.y2milestone("running %1", tarCommand)
-      Popup.Message(
-        Builtins.sformat(
-          _(
-            "You can do changes to the image now in %1/\n" \
-              "If you press the ok-button, the image will be compressed and " \
-              "can't be changed anymore."
-          ),
-          rootdir
-        )
-      )
-      Popup.ShowFeedback("Compressing Image ...", "")
-      returnCode = Convert.to_integer(
-        SCR.Execute(path(".target.bash"), tarCommand)
-      )
-      Popup.ClearFeedback
-      if returnCode != 0
-        Popup.Error(
-          Builtins.sformat(
-            _(
-              "Image compressing failed in '%1'. Please check /tmp/ay_image.log"
-            ),
-            rootdir
-          )
-        )
-      end
-      Popup.Message(_("Image created successfully")) if finalPopup
-
-      nil
-    end
-
-    def copyFiles4ISO(target)
-      ret = true
-      copy = Misc.SysconfigRead(
-        path(".sysconfig.autoinstall.COPY_FOR_ISO"),
-        "/,/boot/,/boot/__ARCH__/,/boot/__ARCH__/loader/,/media.1/,/suse/setup/descr/"
-      )
-      copyList = Builtins.splitstring(copy, ",")
-
-      Builtins.foreach(copyList) do |source|
-        if Builtins.issubstring(source, "__ARCH__")
-          source = Builtins.regexpsub(
-            source,
-            "(.*)__ARCH__(.*)",
-            Builtins.sformat("\\1%1\\2", @image_arch)
-          )
-        end
-        if Builtins.substring(source, Ops.subtract(Builtins.size(source), 1)) == "/"
-          # copy a directory (ends with / in directory.yast)
-          SCR.Execute(
-            path(".target.mkdir"),
-            Ops.add(Ops.add(target, "/"), source)
-          )
-          if !GetURL(
-            Ops.add(
-              Ops.add(Ops.add(@instsource, "/"), source),
-              "directory.yast"
-            ),
-            "/tmp/directory.yast"
-          )
-            Popup.Error(
-              Builtins.sformat(
-                _(
-                  "can not get the directory.yast file at `%1`.\n" \
-                    "You can create that file with 'ls -F > directory.yast' if it's missing."
-                ),
-                Ops.add(Ops.add(@instsource, "/"), source)
-              )
-            )
-            ret = false
-            raise Break
-          end
-          # directory.yast is our filelist
-          files = Convert.to_string(
-            SCR.Read(path(".target.string"), "/tmp/directory.yast")
-          )
-          filesInDir = Builtins.splitstring(files, "\n")
-          Builtins.foreach(filesInDir) do |file|
-            # don't copy subdirs. They have to be mentioned explicit. Copy only files from that dir.
-            Builtins.y2milestone(
-              "will get %1 from %2 to %3",
-              file,
-              Ops.add(Ops.add(@instsource, "/"), source),
-              target
-            )
-            if Ops.greater_than(Builtins.size(file), 0) &&
-                Builtins.substring(file, Ops.subtract(Builtins.size(file), 1)) != "/"
-              while ret &&
-                  !GetURL(
-                    Ops.add(Ops.add(Ops.add(@instsource, "/"), source), file),
-                    Ops.add(
-                      Ops.add(Ops.add(Ops.add(target, "/"), source), "/"),
-                      file
-                    )
-                  )
-                next if Popup.YesNo(
-                  Builtins.sformat(
-                    _("can not read '%1'. Try again?"),
-                    Ops.add(Ops.add(Ops.add(@instsource, "/"), source), file)
-                  )
-                )
-
-                ret = false
-              end
-            end
-            raise Break if !ret
-          end
-        # copy a file
-        elsif !GetURL(
-          Ops.add(Ops.add(@instsource, "/"), source),
-          Ops.add(Ops.add(target, "/"), source)
-        )
-          Popup.Error(
-            Builtins.sformat(
-              _("can not read '%1'. ISO creation failed"),
-              Ops.add(Ops.add(@instsource, "/"), source)
-            )
-          )
-          ret = false
-          raise Break
-        end
-      end
-      # lets always copy an optional(!) driverupdate file.
-      # It's very unlikely that it's in directory.yast
-      GetURL(
-        Ops.add(@instsource, "/driverupdate"),
-        Ops.add(target, "/driverupdate")
-      )
-      SCR.Execute(
-        path(".target.bash"),
-        Builtins.sformat("cp /usr/lib/YaST2/bin/fetch_image.sh %1/", target)
-      )
-      ret
-    end
-
-    def createISO
-      # we will have the image.tar.gz and autoinst.xml on the root of the DVD/CD
-      isodir = "/tmp/ay_iso/"
-      SCR.Execute(path(".target.bash"), Builtins.sformat("rm -rf %1", isodir))
-      SCR.Execute(path(".target.mkdir"), isodir)
-      outputRedirect = " 2>&1 >> /tmp/ay_image.log"
-      createImage(isodir)
-
-      Popup.ShowFeedback(_("Preparing ISO Filestructure ..."), "")
-      copyFiles4ISO(isodir)
-      Popup.ClearFeedback
-
-      # prepare and save autoinst.xml
-      Ops.set(@image, "image_location", "file:///")
-      Ops.set(
-        @image,
-        "script_params",
-        [
-          Ops.add(
-            Ops.add(
-              Ops.add(Ops.get_string(@image, "image_location", ""), "/"),
-              Ops.get_string(@image, "image_name", "")
-            ),
-            ".tar.gz"
-          )
-        ]
-      )
-      Ops.set(@image, "script_location", "file:///fetch_image.sh")
-      Profile.Save(Builtins.sformat("%1/autoinst.xml", isodir))
-
-      # prepare and save isolinux.cfg boot menu of the media
-      @isolinuxcfg = Convert.to_string(
-        SCR.Read(
-          path(".target.string"),
-          Builtins.sformat(
-            "%1/boot/%2/loader/isolinux.cfg",
-            isodir,
-            @image_arch
-          )
-        )
-      )
-      lines = Builtins.splitstring(@isolinuxcfg, "\n")
-      lines = Builtins.maplist(lines) do |l|
-        l = Ops.add(l, " autoyast=file:///autoinst.xml") if Builtins.issubstring(l, " append ")
-        l
-      end
-      @isolinuxcfg = Builtins.mergestring(lines, "\n")
-
-      UI.OpenDialog(
-        Opt(:decorated),
-        VBox(
-          HBox(
-            VSpacing(14),
-            MultiLineEdit(
-              Id(:isolinuxcfg),
-              _("boot config for the DVD"),
-              @isolinuxcfg
-            )
-          ),
-          PushButton(Id(:create_image), Opt(:default, :hstretch), _("Ok")),
-          Label(
-            Builtins.sformat(
-              _(
-                "You can do changes to the ISO now in %1, like adding a " \
-                  "complete different AutoYaST XML file.\n" \
-                  "If you press the ok-button, the iso will be created."
-              ),
-              isodir
-            )
-          )
-        )
-      )
-      UI.UserInput
-      @isolinuxcfg = Convert.to_string(UI.QueryWidget(:isolinuxcfg, :Value))
-      UI.CloseDialog
-      SCR.Write(
-        path(".target.string"),
-        Builtins.sformat("%1/boot/%2/loader/isolinux.cfg", isodir, @image_arch),
-        @isolinuxcfg
-      )
-
-      # create the actual ISO file
-      targetdir = UI.AskForExistingDirectory("/", _("Store ISO image to ..."))
-      Popup.ShowFeedback(_("Creating ISO File ..."), "")
-      cmd = Builtins.sformat(
-        "mkisofs -o %1/%2.iso -R -b boot/%3/loader/isolinux.bin -c boot.cat " \
-          "-no-emul-boot -boot-load-size 4 -boot-info-table %4",
-        targetdir,
-        Ops.get_string(@image, "image_name", ""),
-        @image_arch,
-        isodir
-      )
-      Builtins.y2milestone("executing %1", Ops.add(cmd, outputRedirect))
-      returnCode = Convert.to_integer(SCR.Execute(path(".target.bash"), cmd))
-      Popup.ClearFeedback
-      if returnCode != 0
-        Popup.Error(
-          Builtins.sformat(
-            "ISO creation failed in '%1'. Please check /tmp/ay_image.log",
-            isodir
-          )
-        )
-      else
-        Popup.Message(
-          Builtins.sformat(
-            _("ISO successfully created at %1"),
-            Ops.add(
-              Ops.add("/tmp/", Ops.get_string(@image, "image_name", "")),
-              ".iso"
-            )
-          )
-        )
-      end
-
-      nil
-    end
-
     # Export data
     # @return dumped settings (later acceptable by Import())
     def Export
@@ -702,7 +236,6 @@ module Yast
       s["remove-packages"] = PackageAI.toremove if !pkg_toremove.empty?
 
       s["instsource"] = @instsource
-      s["image"] = @image
 
       # In the installed system the flag solver.onlyRequires in zypp.conf is
       # set to true. This differs from the installation process. So we have
@@ -830,12 +363,6 @@ module Yast
     #
     # @return [Boolean]
     def Write
-      if @imaging
-        ProductControl.DisableModule("kickoff") if !Ops.get_boolean(@image, "run_kickoff", false)
-        ProductControl.DisableModule("rpmcopy")
-        return true
-      end
-
       ok = true
 
       Packages.Init(true)
@@ -1180,24 +707,16 @@ module Yast
 
     publish function: :merge_product, type: "void (string)"
     publish variable: :Software, type: "map"
-    publish variable: :image, type: "map <string, any>"
-    publish variable: :image_arch, type: "string"
     publish variable: :patterns, type: "list <string>"
     publish variable: :kernel, type: "string"
-    publish variable: :ft_module, type: "string"
-    publish variable: :imaging, type: "boolean"
     publish variable: :modified, type: "boolean"
     publish variable: :inst, type: "list <string>"
     publish variable: :all_xpatterns, type: "list <map <string, any>>"
     publish variable: :instsource, type: "string"
-    publish variable: :isolinuxcfg, type: "string"
     publish function: :SetModified, type: "void ()"
     publish function: :GetModified, type: "boolean ()"
     publish function: :Import, type: "boolean (map)"
     publish function: :AutoinstSoftware, type: "void ()"
-    publish function: :createImage, type: "void (string)"
-    publish function: :copyFiles4ISO, type: "boolean (string)"
-    publish function: :createISO, type: "void ()"
     publish function: :Export, type: "map ()"
     publish function: :AddModulePackages, type: "void (list <string>)"
     publish function: :AddYdepsFromProfile, type: "void (list <string>)"

@@ -17,7 +17,6 @@ software =
       remove-patterns? &
       products? &
       remove-products? &
-      image? &
       element do_online_update { BOOLEAN }? &
       element install_recommended { BOOLEAN }? &
       element instsource {STRING}?
@@ -63,21 +62,4 @@ remove-products =
   element remove-products {
     LIST,
     element (product | listentry) {STRING}+
-  }
-script_params =
-  element script_params {
-      LIST,
-      element listentry { STRING }
-  }
-
-image =
-  element image {
-    MAP,
-    (
-      element image_location  { STRING }? &
-      element image_name      { STRING }? &
-      element script_location { STRING }? &
-      script_params? &
-      element run_kickoff     { BOOLEAN }?
-    )
   }
