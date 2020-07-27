@@ -31,6 +31,20 @@ describe "Yast::AutoinstClass" do
       end
     end
 
+    context "when class definition is not valid" do
+      it "sets Classes to []" do
+        allow(Yast::XML).to receive(:XMLToYCPFile).and_raise(Yast::XMLDeserializationError)
+        subject.Read
+        expect(subject.Classes).to eq([])
+      end
+
+      it "returns nil" do
+        allow(Yast::XML).to receive(:XMLToYCPFile).and_raise(Yast::XMLDeserializationError)
+        expect(subject.Read).to be_nil
+      end
+
+    end
+
     context "when classes definition file does not exist" do
       before(:each) do
         allow(Yast::SCR).to receive(:Read).with(Yast::Path.new(".target.size"), CLASS_PATH)
@@ -374,6 +388,12 @@ describe "Yast::AutoinstClass" do
         expect(path).to eq(File.join(CLASS_DIR, "classes.xml"))
       end
       subject.Save
+    end
+
+    it "does not raise exception when serialization failed" do
+      subject.Classes = nil
+      expect { subject.Save }.to_not raise_error
+      subject.Classes = []
     end
 
     context "when classes are marked for deletion" do

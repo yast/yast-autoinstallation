@@ -357,15 +357,20 @@ module Yast
           end
         end
       else
-        ret = XML.YCPToXMLFile(:profile, @current, file)
+        XML.YCPToXMLFile(:profile, @current, file)
+        ret = true
       end
       ret
+    rescue XMLSerializationError => e
+      log.error "Failed to serialize objects: #{e.inspect}"
+      false
     end
 
     # Save sections of current profile to separate files
     #
     # @param [String] dir - directory to store section xml files in
-    # @return    - list of filenames
+    # @return [Hash<String,String>] returns map with section name and respective file where
+    #   it is serialized
     def SaveSingleSections(dir)
       Prepare()
       Builtins.y2milestone("Saving data (%1) to XML single files", @current)
@@ -376,7 +381,8 @@ module Yast
           ".xml"
         )
         tmpProfile = { sectionName => section }
-        if XML.YCPToXMLFile(:profile, tmpProfile, sectionFileName)
+        begin
+          XML.YCPToXMLFile(:profile, tmpProfile, sectionFileName)
           Builtins.y2milestone(
             "Wrote section %1 to file %2",
             sectionName,
@@ -387,14 +393,9 @@ module Yast
             sectionName,
             sectionFileName
           )
-        else
-          Builtins.y2error(
-            Builtins.sformat(
-              _("Could not write section %1 to file %2."),
-              sectionName,
-              sectionFileName
-            )
-          )
+        rescue XMLSerializationError => e
+          log.error "Could not write section #{sectionName} to file #{sectionFileName}:" \
+            "#{e.inspect}"
         end
       end
       deep_copy(sectionFiles)
