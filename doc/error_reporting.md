@@ -1,4 +1,4 @@
-# Error Reporting in AutoYaST
+# Error Reporting
 
 This document tries to summarize the error reporting mechanisms that, as a developer, you can use
 when writing code for AutoYaST. Bear in mind that both mechanisms have different purposes. On the
