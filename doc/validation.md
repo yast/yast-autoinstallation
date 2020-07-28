@@ -18,11 +18,11 @@ itself you can disable the error popup, see below.
 
 ## Manual Validation
 
-Of course, it is much easier to validate the XML files *before* using them.
-The error popup contains some example commands for validating the failed file
-manually. See the [AutoYaST documentation](
-https://doc.opensuse.org/projects/autoyast/#CreateProfile-Manual) for more
-details.
+Of course, it is much easier to validate the XML files *before* using them. The
+error popup contains some example commands for validating the failed file
+manually. See the [AutoYaST
+documentation](https://doc.opensuse.org/projects/autoyast/#CreateProfile-Manual)
+for more details.
 
 It is recommended to use `jing` for manual validation, it usually produces
 better error messages than `xmllint` (which is also internally used by AutoYaST).

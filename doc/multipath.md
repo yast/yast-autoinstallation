@@ -1,4 +1,4 @@
-# Old multipath support.
+# Old multipath support
 
 Starting on 3.3.x version, AutoYaST relies on the storage-ng library. That
 means AutoYaST itself does not contain the logic to process the `<partitioning>`

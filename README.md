@@ -79,6 +79,7 @@ To test autoupgrade run upgrade with parameters `autoupgrade=1` and profile e.g.
 for testing online and full media.
 
 Online on registered system:
+
 ```xml
 <?xml version="1.0"?>
 <!DOCTYPE profile>
@@ -87,6 +88,7 @@ Online on registered system:
 ```
 
 Full on system without registration:
+
 ```xml
 <?xml version="1.0"?>
 <!DOCTYPE profile>
@@ -114,6 +116,16 @@ Full on system without registration:
   </add-on>
 </profile>
 ```
+
+
+Additional Documentation
+========================
+
+* {file:doc/profile_handling.md Profile Handling}
+* {file:doc/validation.md Profile Validation}
+* {file:doc/error_reporting.md Error Reporting}
+* {file:doc/network_scenarios.md Network Scenarios}
+* {file:doc/multipath.md Old Multipath Support}
 
 Contact
 =======

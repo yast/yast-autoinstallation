@@ -27,7 +27,8 @@ During the autoinstallation/autoupgrade, an AutoYaST profile goes through differ
 6. (Optional) 2nd Stage Configuration: the `inst_autoconfigure` processes the sections that were
    not considered during the 1st stage.
 
-Profile validation is performed at different places. Rules and classes are validated too.
+{file:validation.md Profile validation} is performed at different places. Rules and classes are
+validated too.
 
 ## Phases
 

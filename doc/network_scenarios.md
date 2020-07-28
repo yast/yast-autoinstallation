@@ -1,5 +1,5 @@
-Introduction
-============
+Networking Scenarios
+====================
 
 This document tries to clarify some doubts and expectations related to AutoYaST network
 configuration, specially regarding the `keep_install_network` option.
