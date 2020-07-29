@@ -51,8 +51,20 @@ describe "Yast::AutoInstall" do
 
   describe "#valid_imported_values" do
     before(:each) do
-      subject.issues_list = ::Installation::AutoinstIssues::List.new
+      subject.main
+      allow(Yast::Report).to receive(:Export).and_return(report_settings)
+      allow(Test::AutoinstProfile::FirewallSection).to receive(:new_from_hashes)
+        .and_return(fw_section)
     end
+
+    let(:report_settings) do
+      {
+        "errors"   => { "log" => true, "show" => false, "timeout" => 0 },
+        "warnings" => { "log" => true, "show" => true, "timeout" => 0 }
+      }
+    end
+
+    let(:fw_section) { Test::AutoinstProfile::FirewallSection.new }
 
     context "when no issue has been found" do
       it "returns true" do
@@ -61,18 +73,24 @@ describe "Yast::AutoInstall" do
     end
 
     context "when an issue has been found" do
-      let(:fw_section) { Test::AutoinstProfile::FirewallSection.new }
-
-      before do
-        allow(Test::AutoinstProfile::FirewallSection).to receive(:new_from_hashes)
-          .and_return(fw_section)
-      end
-
       it "shows a popup" do
         subject.issues_list.add(
           ::Installation::AutoinstIssues::InvalidValue,
           fw_section, "FW_DEV_INT", "1",
           _("Is not supported anymore.")
+        )
+        expect_any_instance_of(Y2Autoinstallation::Dialogs::Question).to receive(:run)
+          .and_return(:ok)
+        expect(subject.valid_imported_values).to eq(true)
+      end
+    end
+
+    context "when a fatal issue is found" do
+      it "shows a popup even if error reporting is disabled" do
+        subject.issues_list.add(
+          ::Installation::AutoinstIssues::InvalidValue,
+          fw_section, "FW_DEV_INT", "X",
+          _("Is not supported anymore."), :fatal
         )
         expect_any_instance_of(Y2Autoinstallation::Dialogs::Question).to receive(:run)
           .and_return(:ok)
