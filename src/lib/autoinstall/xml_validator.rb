@@ -19,6 +19,7 @@
 
 require "yast"
 require "pathname"
+require "yaml"
 
 Yast.import "XML"
 
@@ -26,6 +27,8 @@ module Y2Autoinstallation
   # Validates an XML document against a given RNG schema
   class XmlValidator
     include Yast::Logger
+
+    STORE_DIR = "/var/lib/YaST2/".freeze
 
     attr_reader :xml, :schema
 
@@ -56,7 +59,28 @@ module Y2Autoinstallation
       errors.empty?
     end
 
+    # Writes the errors to a file in yaml format
+    def store_errors
+      File.write(errors_file_path, errors.to_yaml)
+    end
+
+    # Checks whether the current errors have been already stored in a file or
+    # not
+    #
+    # @return [Boolean] whether the errors have been already stored or not
+    def errors_stored?
+      File.exist?(errors_file_path)
+    end
+
   private
+
+    def id
+      Digest::MD5.hexdigest(errors.to_yaml)
+    end
+
+    def errors_file_path
+      File.join(STORE_DIR, "xml_validation_#{id}.yml")
+    end
 
     def validate
       log.info "Validating #{xml} against #{schema}..."

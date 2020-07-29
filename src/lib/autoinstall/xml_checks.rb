@@ -81,7 +81,7 @@ module Y2Autoinstallation
     # @return [Boolean] true if valid, false otherwise
     def self.check(file, schema, msg)
       validator = XmlValidator.new(file, schema)
-      return true if validator.valid?
+      return true if validator.valid? || validator.errors_stored?
 
       if ENV["YAST_SKIP_XML_VALIDATION"] == "1"
         log.warn "Skipping invalid XML!"
@@ -94,7 +94,10 @@ module Y2Autoinstallation
         buttons:  :continue_cancel,
         focus:    :cancel) == :continue
 
-      log.warn "Skipping invalid XML on user request!" if ret
+      if ret
+        log.warn "Skipping invalid XML on user request and storing validation errors!"
+        validator.store_errors
+      end
 
       ret
     end
