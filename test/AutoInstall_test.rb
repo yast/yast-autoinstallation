@@ -86,7 +86,7 @@ describe "Yast::AutoInstall" do
     end
 
     context "when a fatal issue is found" do
-      it "shows a popup eve if error reporting is disabled" do
+      it "shows a popup even if error reporting is disabled" do
         subject.issues_list.add(
           ::Installation::AutoinstIssues::InvalidValue,
           fw_section, "FW_DEV_INT", "X",
