@@ -5,9 +5,9 @@ require "autoinstall/xml_checks"
 
 describe Y2Autoinstallation::XmlChecks do
   let(:subject) { described_class.instance }
+  let(:errors_path) { File.join(FIXTURES_PATH, "xml_checks_errors") }
 
   before do
-    errors_path = File.join(FIXTURES_PATH, "xml_checks_errors")
     stub_const("Y2Autoinstallation::XmlChecks::ERRORS_PATH", errors_path)
     # mock the popup to avoid accidentally displaying a popup in tests
     allow(Yast2::Popup).to receive(:show)
@@ -52,8 +52,13 @@ describe Y2Autoinstallation::XmlChecks do
       instance_double(Y2Autoinstallation::XmlValidator, valid?: valid, errors: errors)
     end
 
+    after do
+      File.delete errors_path if File.exist?(errors_path)
+    end
+
     before do
       allow(Y2Autoinstallation::XmlValidator).to receive(:new).and_return(validator)
+      reset_singleton(Y2Autoinstallation::XmlChecks)
     end
 
     context "when the profile is a valid one" do
@@ -63,19 +68,14 @@ describe Y2Autoinstallation::XmlChecks do
     end
 
     context "when the profile is an invalid one" do
-      let(:new_errors) { false }
       let(:valid) { false }
+      let(:popup_selection) { :continue }
+
+      before do
+        allow(Yast2::Popup).to receive(:show).and_return(popup_selection)
+      end
 
       context "and it is the first time that the errors have been reported" do
-        let(:new_errors) { true }
-        let(:popup_selection) { :cancel }
-
-        before do
-          allow(Yast2::Popup).to receive(:show).and_return(popup_selection)
-          allow(subject).to receive(:new_errors?).and_return(new_errors)
-          allow(subject).to receive(:store_errors)
-        end
-
         it "returns true if the user skipped the validation" do
           allow(ENV).to receive(:"[]").with("YAST_SKIP_XML_VALIDATION").and_return("1")
 
@@ -90,12 +90,9 @@ describe Y2Autoinstallation::XmlChecks do
         end
 
         context "if the user continues with the errors reported" do
-          let(:popup_selection) { :continue }
-
           it "stores the errors reported" do
-            expect(subject).to receive(:store_errors).with(validator.errors)
-
-            subject.check(xml, schema, "title")
+            expect { subject.check(xml, schema, "title") }
+              .to change { File.exist?(errors_path) }.from(false).to(true)
           end
 
           it "returns true" do
@@ -104,6 +101,8 @@ describe Y2Autoinstallation::XmlChecks do
         end
 
         context "if the user cancel" do
+          let(:popup_selection) { :cancel }
+
           it "does not stores them" do
             expect(subject).to_not receive(:store_errors)
 
@@ -117,8 +116,18 @@ describe Y2Autoinstallation::XmlChecks do
       end
 
       context "and the same errors were already reported" do
-        it "returns true" do
+        before do
           subject.check(xml, schema, "title")
+        end
+
+        it "does not show any popup" do
+          expect(Yast2::Popup).to_not receive(:show)
+
+          subject.check(xml, schema, "title")
+        end
+
+        it "returns true" do
+          expect(subject.check(xml, schema, "title")).to eql(true)
         end
       end
     end

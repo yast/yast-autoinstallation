@@ -42,8 +42,6 @@ module Y2Autoinstallation
     CLASSES_SCHEMA = "/usr/share/YaST2/schema/autoyast/rng/classes-use.rng".freeze
 
     ERRORS_PATH = "/var/lib/YaST2/xml_checks_errors".freeze
-    # @return [Array<String>] reported errors md5
-    attr_reader :reported_errors
 
     # Constructor
     def initialize
@@ -116,26 +114,44 @@ module Y2Autoinstallation
 
   private
 
+    # Convenience method to check whether the list of validation errors have
+    # been already reported and accepted by the user or not.
+    #
+    # @param errors [Array<String>] list of validation errors
+    # @return [Boolean] whether the validation errors are new or not
     def new_errors?(errors)
       return true if (reported_errors || []).empty?
 
-      !reported_errors.include?(digest_md5(errors))
+      !reported_errors.include?(digest_hash(errors))
     end
 
+    # Convenience method to save to a file the hash sum of the already
+    # reported errors
+    #
+    # @param errors [Array<String>] list of validation errors
     def store_errors(errors)
-      reported_errors << digest_md5(errors)
+      @reported_errors << digest_hash(errors)
 
       File.write(ERRORS_PATH, reported_errors.to_yaml)
     end
 
-    def digest_md5(errors)
+    # Convenience method to obtain the digest hash for the given errors
+    #
+    # @param errors [Array<String>] list of validation errors
+    def digest_hash(errors)
       Digest::MD5.hexdigest(errors.to_yaml)
     end
 
+    # Convenience method to load the errors reported from a file
     def errors_from_file
       return [] unless File.exist?(ERRORS_PATH)
 
       YAML.safe_load(File.read(ERRORS_PATH))
+    end
+
+    # @return [Array<String>] array with the reported errors hash sums
+    def reported_errors
+      @reported_errors ||= []
     end
 
     # an internal helper for building the error message
