@@ -31,8 +31,7 @@ module Yast
   # directory.
   #
   # #### Post Partitioning Scripts
-  # Runs after partitioning from {Yast::InstAutoimageClient} unconditionaly even when images is
-  # not used.
+  # Runs after partitioning from {Yast::InstKickoffClient}
   #
   class AutoinstScriptsClass < Module
     include Yast::Logger
