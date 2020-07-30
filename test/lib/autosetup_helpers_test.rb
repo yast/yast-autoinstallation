@@ -34,7 +34,8 @@ describe Y2Autoinstallation::AutosetupHelpers do
   let(:profile_dir_path) { File.join(TESTS_PATH, "tmp") }
 
   before do
-    allow(Y2Autoinstallation::XmlChecks).to receive(:valid_modified_profile?).and_return(true)
+    allow(Y2Autoinstallation::XmlChecks.instance)
+      .to receive(:valid_modified_profile?).and_return(true)
   end
 
   describe "#probe_storage" do
@@ -213,7 +214,7 @@ describe Y2Autoinstallation::AutosetupHelpers do
 
       context "when the modified profile is not valid" do
         before do
-          expect(Y2Autoinstallation::XmlChecks).to receive(:valid_modified_profile?)
+          expect(Y2Autoinstallation::XmlChecks.instance).to receive(:valid_modified_profile?)
             .and_return(false)
         end
 

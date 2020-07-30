@@ -52,7 +52,7 @@ module Yast
     # Reads classes
     def Read
       if SCR.Read(path(".target.size"), @classPath) != -1 &&
-          Y2Autoinstallation::XmlChecks.valid_classes?(@classPath)
+          Y2Autoinstallation::XmlChecks.instance.valid_classes?(@classPath)
         begin
           classes_map = XML.XMLToYCPFile(@classPath)
           @Classes = (classes_map && classes_map["classes"]) || []

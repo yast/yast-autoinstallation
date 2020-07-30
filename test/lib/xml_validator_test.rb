@@ -45,38 +45,4 @@ describe Y2Autoinstallation::XmlValidator do
       expect(subject.errors).to eq(["error"])
     end
   end
-
-  describe "#store_errors" do
-    it "writes current errors to the filesystem in YAML format" do
-      stub_const("Y2Autoinstallation::XmlValidator::STORE_DIR", FIXTURES_PATH)
-      errors_file_path = subject.send(:errors_file_path)
-      expect(File).to receive(:write).with(errors_file_path, subject.errors.to_yaml)
-
-      subject.store_errors
-    end
-  end
-
-  describe "#errors_stored?" do
-    before do
-      stub_const("Y2Autoinstallation::XmlValidator::STORE_DIR", FIXTURES_PATH)
-    end
-
-    after do
-      errors_file_path = subject.send(:errors_file_path)
-      File.delete(errors_file_path) if File.exist?(errors_file_path)
-    end
-
-    context "when there is already a file for the errors reported" do
-      it "returns true" do
-        subject.store_errors
-        expect(subject.errors_stored?).to eq(true)
-      end
-    end
-
-    context "when there is no file with the reported errors" do
-      it "returns false" do
-        expect(subject.errors_stored?).to eq(false)
-      end
-    end
-  end
 end

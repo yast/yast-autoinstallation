@@ -4,8 +4,11 @@ require_relative "../test_helper"
 require "autoinstall/xml_checks"
 
 describe Y2Autoinstallation::XmlChecks do
+  let(:subject) { described_class.instance }
 
   before do
+    errors_path = File.join(FIXTURES_PATH, "xml_checks_errors")
+    stub_const("Y2Autoinstallation::XmlChecks::ERRORS_PATH", errors_path)
     # mock the popup to avoid accidentally displaying a popup in tests
     allow(Yast2::Popup).to receive(:show)
   end
@@ -14,18 +17,18 @@ describe Y2Autoinstallation::XmlChecks do
     let(:valid) { true }
 
     before do
-      allow(described_class).to receive(:check).and_return(valid)
+      allow(subject).to receive(:check).and_return(valid)
     end
 
     it "checks whether a given profile is valid or not" do
-      expect(described_class).to receive(:check)
+      expect(subject).to receive(:check)
 
-      described_class.valid_profile?
+      subject.valid_profile?
     end
 
     context "when a valid profile is used" do
       it "returns true" do
-        expect(described_class.valid_profile?).to eql(true)
+        expect(subject.valid_profile?).to eql(true)
       end
     end
 
@@ -33,7 +36,7 @@ describe Y2Autoinstallation::XmlChecks do
       let(:valid) { false }
 
       it "returns false" do
-        expect(described_class.valid_profile?).to eql(false)
+        expect(subject.valid_profile?).to eql(false)
       end
     end
   end
@@ -45,10 +48,8 @@ describe Y2Autoinstallation::XmlChecks do
     let(:schema) { Pathname.new(schema_name) }
     let(:valid) { true }
     let(:errors) { ["ERROR"] }
-    let(:errors_stored?) { true }
     let(:validator) do
-      instance_double(Y2Autoinstallation::XmlValidator,
-        valid?: valid, errors: errors, errors_stored?: errors_stored?, store_errors: true)
+      instance_double(Y2Autoinstallation::XmlValidator, valid?: valid, errors: errors)
     end
 
     before do
@@ -57,56 +58,67 @@ describe Y2Autoinstallation::XmlChecks do
 
     context "when the profile is a valid one" do
       it "returns true" do
-        expect(described_class.check(xml, schema, "title")).to eq(true)
+        expect(subject.check(xml, schema, "title")).to eq(true)
       end
     end
 
     context "when the profile is an invalid one" do
+      let(:new_errors) { false }
       let(:valid) { false }
 
       context "and it is the first time that the errors have been reported" do
-        let(:errors_stored?) { false }
+        let(:new_errors) { true }
         let(:popup_selection) { :cancel }
+
         before do
           allow(Yast2::Popup).to receive(:show).and_return(popup_selection)
+          allow(subject).to receive(:new_errors?).and_return(new_errors)
+          allow(subject).to receive(:store_errors)
+        end
+
+        it "returns true if the user skipped the validation" do
+          allow(ENV).to receive(:"[]").with("YAST_SKIP_XML_VALIDATION").and_return("1")
+
+          expect(Yast2::Popup).to_not receive(:show)
+          expect(subject.check(xml, schema, "title")).to eql(true)
         end
 
         it "shows a popup" do
           expect(Yast2::Popup).to receive(:show)
 
-          described_class.check(xml, schema, "title")
+          subject.check(xml, schema, "title")
         end
 
         context "if the user continues with the errors reported" do
           let(:popup_selection) { :continue }
 
           it "stores the errors reported" do
-            expect(validator).to receive(:store_errors)
+            expect(subject).to receive(:store_errors).with(validator.errors)
 
-            described_class.check(xml, schema, "title")
+            subject.check(xml, schema, "title")
           end
 
           it "returns true" do
-            expect(described_class.check(xml, schema, "title")).to eql(true)
+            expect(subject.check(xml, schema, "title")).to eql(true)
           end
         end
 
         context "if the user cancel" do
           it "does not stores them" do
-            expect(validator).to_not receive(:store_errors)
+            expect(subject).to_not receive(:store_errors)
 
-            described_class.check(xml, schema, "title")
+            subject.check(xml, schema, "title")
           end
 
           it "returns false" do
-            expect(described_class.check(xml, schema, "title")).to eql(false)
+            expect(subject.check(xml, schema, "title")).to eql(false)
           end
         end
       end
 
       context "and the same errors were already reported" do
         it "returns true" do
-          described_class.check(xml, schema, "title")
+          subject.check(xml, schema, "title")
         end
       end
     end
