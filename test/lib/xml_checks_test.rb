@@ -100,7 +100,7 @@ describe Y2Autoinstallation::XmlChecks do
           end
         end
 
-        context "if the user cancel" do
+        context "if the user cancels" do
           let(:popup_selection) { :cancel }
 
           it "does not stores them" do
