@@ -27,6 +27,7 @@ describe Y2Autoinstallation::Clients::InstAutoinit do
     allow(Yast::WFM).to receive(:CallFunction).and_return(true)
     # can easily ends up in endless loop
     allow(subject).to receive(:ProfileSourceDialog).and_return("")
+    allow(subject).to receive(:autoinit_scripts).and_return(:ok)
     allow(Yast::Linuxrc).to receive(:useiscsi).and_return(false)
     allow(Yast::Linuxrc).to receive(:InstallInf).and_return(nil)
     allow(Yast::ProfileLocation).to receive(:Process).and_return(true)

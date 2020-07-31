@@ -16,7 +16,7 @@ describe "Yast::AutoinstClass" do
 
   before(:each) do
     subject.class_dir = CLASS_DIR
-    allow(Y2Autoinstallation::XmlChecks).to receive(:valid_classes?).and_return(true)
+    allow(Y2Autoinstallation::XmlChecks.instance).to receive(:valid_classes?).and_return(true)
   end
 
   describe "#Read" do
@@ -65,7 +65,7 @@ describe "Yast::AutoinstClass" do
       before(:each) do
         allow(Yast::SCR).to receive(:Read).and_call_original
         allow(Yast::SCR).to receive(:Read).with(Yast::Path.new(".xml"), CLASS_PATH).and_return(nil)
-        expect(Y2Autoinstallation::XmlChecks).to receive(:valid_classes?).and_return(false)
+        expect(Y2Autoinstallation::XmlChecks.instance).to receive(:valid_classes?).and_return(false)
       end
 
       it "set Classes to []" do

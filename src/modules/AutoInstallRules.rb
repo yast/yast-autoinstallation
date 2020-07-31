@@ -899,7 +899,7 @@ module Yast
         log.info("Working on file: #{file}")
         current_profile = File.join(AutoinstConfig.local_rules_location, file)
 
-        if !Y2Autoinstallation::XmlChecks.valid_profile?(current_profile)
+        if !Y2Autoinstallation::XmlChecks.instance.valid_profile?(current_profile)
           error = true
           next
         end

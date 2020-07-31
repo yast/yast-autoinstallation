@@ -6,10 +6,11 @@ Yast.import "AutoInstallRules"
 
 describe "Yast::AutoInstallRules" do
   subject { Yast::AutoInstallRules }
+  let(:profile_checker) { Y2Autoinstallation::XmlChecks.instance }
 
   before do
     Y2Storage::StorageManager.create_test_instance
-    allow(Y2Autoinstallation::XmlChecks).to receive(:valid_profile?).and_return(true)
+    allow(profile_checker).to receive(:valid_profile?).and_return(true)
   end
 
   let(:root_path) { File.expand_path("..", __dir__) }
@@ -328,7 +329,7 @@ describe "Yast::AutoInstallRules" do
     context "when a profile is not valid" do
       it "returns false" do
         subject.CreateFile("first.xml")
-        expect(Y2Autoinstallation::XmlChecks).to receive(:valid_profile?)
+        expect(profile_checker).to receive(:valid_profile?)
           .and_return(false)
         expect(subject.Merge(result_path)).to eq(false)
       end

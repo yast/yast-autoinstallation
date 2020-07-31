@@ -30,6 +30,10 @@ module Yast
       ProfileLocation()
     end
 
+    def profile_checker
+      Y2Autoinstallation::XmlChecks.instance
+    end
+
     # Constructor
     # @return [void]
     def ProfileLocation
@@ -176,7 +180,7 @@ module Yast
         )
       end
 
-      return false if !is_directory && !Y2Autoinstallation::XmlChecks.valid_profile?
+      return false if !is_directory && !profile_checker.valid_profile?
 
       ret = if is_directory
         Get(
@@ -204,7 +208,7 @@ module Yast
       if AutoInstallRules.userrules
         Builtins.y2milestone("Reading Rules File")
         # display an error when the rules file is not valid and return false
-        return false unless Y2Autoinstallation::XmlChecks.valid_rules?
+        return false unless profile_checker.valid_rules?
 
         AutoInstallRules.Read
         # returns false if no rules have matched
@@ -232,7 +236,7 @@ module Yast
       if process_rules
         rulesret = AutoInstallRules.Process(AutoinstConfig.xml_tmpfile)
         # validate the profile
-        return false if rulesret && !Y2Autoinstallation::XmlChecks.valid_profile?
+        return false if rulesret && !profile_checker.valid_profile?
 
         Builtins.y2milestone("rulesret=%1", rulesret)
         return rulesret

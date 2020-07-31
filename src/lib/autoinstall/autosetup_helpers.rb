@@ -56,7 +56,7 @@ module Y2Autoinstallation
         return :not_found
       end
 
-      return :abort unless Y2Autoinstallation::XmlChecks.valid_modified_profile?
+      return :abort unless profile_checker.valid_modified_profile?
 
       if !Yast::Profile.ReadXML(Yast::AutoinstConfig.modified_profile) ||
           Yast::Profile.current == {}
@@ -191,6 +191,10 @@ module Y2Autoinstallation
       end
 
       Yast::Profile.remove_sections("language") if Yast::Profile.current.key?("language")
+    end
+
+    def profile_checker
+      Y2Autoinstallation::XmlChecks.instance
     end
 
   private
