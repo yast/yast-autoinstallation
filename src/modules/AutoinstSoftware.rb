@@ -164,6 +164,18 @@ module Yast
     def AddYdepsFromProfile(entries)
       Builtins.y2milestone("AddYdepsFromProfile entries %1", entries)
       pkglist = []
+      # Evaluating packages via RPM supplements ( e.g. autoyast(kdump) )
+      req_packages = Y2Autoinstallation::PackagerSearcher.new(entries).evaluate_via_rpm
+      entries.each do |e|
+        packs = req_packages[e]
+        next unless packs && !packs.empty?
+
+        log.info "AddYdepsFromProfile add packages #{packs} for entry #{e}"
+        pkglist += packs
+        entries.delete(e)
+      end
+
+      # Evaluating packages for not founded entries via desktop file and rnc files.
       entries.each do |e|
         registry = Y2Autoinstallation::Entries::Registry.instance
         description = registry.descriptions.find { |d| d.managed_keys.include?(e) }
@@ -188,7 +200,7 @@ module Yast
 
         packages = Pkg.PkgQueryProvides(provide)
         if packages.empty?
-          packs = Y2Autoinstallation::PackagerSearcher.new([e]).evaluate[e]
+          packs = Y2Autoinstallation::PackagerSearcher.new([e]).evaluate_via_schema[e]
           if packs.nil? || packs.empty?
             log.info "No package provides: #{provide}"
           else
