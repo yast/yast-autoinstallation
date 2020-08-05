@@ -81,18 +81,18 @@ describe Y2Autoinstallation::PackagerSearcher do
         Y2Packager::Resolvable.new("kind" => :package,
            "name" => "foo", "source" => 1,
            "version" => "1.0", "arch" => "x86_64", "status" => :selected,
-           "dependencies" => [{ "provides" => "foo" }]),
+           "deps" => [{ "provides" => "foo" }]),
         Y2Packager::Resolvable.new("kind" => :package,
            "name" => "yast2-users", "source" => 1,
            "version" => "1.0", "arch" => "x86_64", "status" => :selected,
-           "dependencies" => [{ "supplements" => "autyast(groups,users)" }])
+           "deps" => [{ "supplements" => "autyast(groups,users)" }])
       ]
     end
 
     before do
       allow(Y2Packager::Resolvable).to receive(:find).with(
         kind: :package
-      ).and_return(dependencies)
+      ).and_return(packages)
     end
 
     context "no package belongs to section" do
