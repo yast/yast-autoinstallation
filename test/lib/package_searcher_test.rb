@@ -85,7 +85,7 @@ describe Y2Autoinstallation::PackagerSearcher do
         Y2Packager::Resolvable.new("kind" => :package,
            "name" => "yast2-users", "source" => 1,
            "version" => "1.0", "arch" => "x86_64", "status" => :selected,
-           "dependencies" => [{ "dep_kind" => "supplements", "name" => "autyast(groups,users)" }])
+           "dependencies" => [{ "dep_kind" => "supplements", "name" => "autoyast(groups,users)" }])
       ]
     end
 
@@ -98,7 +98,7 @@ describe Y2Autoinstallation::PackagerSearcher do
     context "no package belongs to section" do
       let(:sections) { ["nis"] }
       it "returns hash with section and nil value" do
-        expect(subject.evaluate_via_rpm).to eq("nis" => [])
+        expect(subject.evaluate_via_rpm).to eq("nis" => nil)
       end
     end
 
