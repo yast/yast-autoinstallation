@@ -81,11 +81,11 @@ describe Y2Autoinstallation::PackagerSearcher do
         Y2Packager::Resolvable.new("kind" => :package,
            "name" => "foo", "source" => 1,
            "version" => "1.0", "arch" => "x86_64", "status" => :selected,
-           "deps" => [{ "provides" => "foo" }]),
+           "dependencies" => [{ "provides" => "foo" }]),
         Y2Packager::Resolvable.new("kind" => :package,
            "name" => "yast2-users", "source" => 1,
            "version" => "1.0", "arch" => "x86_64", "status" => :selected,
-           "deps" => [{ "supplements" => "autyast(groups,users)" }])
+           "dependencies" => [{ "supplements" => "autyast(groups,users)" }])
       ]
     end
 
