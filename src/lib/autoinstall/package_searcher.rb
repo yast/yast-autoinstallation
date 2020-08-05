@@ -33,8 +33,9 @@ module Y2Autoinstallation
     end
 
     # Gets packages that needs to be installed via RPM supplements.
-    # @return [Hash<String, Array<String>>] Required packages of a section. Return only
+    # @return [Hash<String, Array<String>>] Required packages of a section. Returning only
     #   packages that are not already installed.
+    #   Returning NIL package list if no package has been found.
     def evaluate_via_rpm
       package_names = {}
       log.info "Evaluating needed packages for handling AY-sections via RPM Supplements"
@@ -43,15 +44,23 @@ module Y2Autoinstallation
 
       sections.each do |section|
         # Evaluting which package has the supplement autoyast(<section>)
-        package_names[section] = []
-        dependency = "autoyast(#{section})"
+        package_names[section] = nil
         packages.each do |p|
           p.dependencies.each do |dep|
-            next unless dep["dep_kind"] == "supplements" &&
-              dep["name"] == dependency &&
-              !Yast::PackageSystem.Installed(p.name)
+            next if dep["dep_kind"] != "supplements" ||
+              !dep["name"].match?(/^autoyast\(/)
 
-            package_names[section] << p.name
+            suppl_sections = dep["name"][9..-2].split(",")
+            suppl_sections.each do |sup_section|
+              next unless sup_section == section
+
+              log.info("Package #{p.name} supports section #{section}" \
+                       " via supplement.")
+              package_names[section] = [] unless package_names[section]
+              next if Yast::PackageSystem.Installed(p.name) # is already installed
+
+              package_names[section] << p.name
+            end
           end
         end
       end
