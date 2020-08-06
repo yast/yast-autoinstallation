@@ -46,11 +46,11 @@ module Y2Autoinstallation
         # Evaluting which package has the supplement autoyast(<section>)
         package_names[section] = nil
         packages.each do |p|
-          p.dependencies.each do |dep|
-            next if dep["dep_kind"] != "supplements" ||
-              !dep["name"].match?(/^autoyast\(/)
+          p.deps.each do |dep|
+            next if !dep["supplements"] ||
+              !dep["supplements"].match?(/^autoyast\(/)
 
-            suppl_sections = dep["name"][9..-2].split(",")
+            suppl_sections = dep["supplements"][9..-2].split(",")
             suppl_sections.each do |sup_section|
               next unless sup_section == section
 
