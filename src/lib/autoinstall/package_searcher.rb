@@ -51,10 +51,6 @@ module Y2Autoinstallation
               !dep["supplements"].match(/^autoyast\((.*)\)/)
 
             suppl_sections = Regexp.last_match(1).split(",")
-            puts "xxx #{Regexp.last_match(0)}"
-            puts "xxx #{Regexp.last_match(1)}"
-puts "xxx #{Regexp.last_match(2)}"                        
-puts "xxx #{suppl_sections}"
             suppl_sections.each do |sup_section|
               next unless sup_section == section
 
