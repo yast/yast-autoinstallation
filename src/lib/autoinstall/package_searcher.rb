@@ -48,9 +48,9 @@ module Y2Autoinstallation
         packages.each do |p|
           p.deps.each do |dep|
             next if !dep["supplements"] ||
-              !dep["supplements"].match?(/^autoyast\(/)
+              !dep["supplements"].match?(/^autoyast\((.*)\)/)
 
-            suppl_sections = dep["supplements"][9..-2].split(",")
+            suppl_sections = Regexp.last_match[1].split(",")
             suppl_sections.each do |sup_section|
               next unless sup_section == section
 
