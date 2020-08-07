@@ -50,7 +50,7 @@ module Y2Autoinstallation
             next if !dep["supplements"] ||
               !dep["supplements"].match?(/^autoyast\((.*)\)/)
 
-            suppl_sections = Regexp.last_match[1].split(",")
+            suppl_sections = Regexp.last_match.split(",")
             suppl_sections.each do |sup_section|
               next unless sup_section == section
 
