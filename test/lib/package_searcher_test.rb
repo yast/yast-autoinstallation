@@ -102,18 +102,9 @@ describe Y2Autoinstallation::PackagerSearcher do
       end
     end
 
-    context "package belonging to section is already installed" do
-      let(:sections) { ["users"] }
-      it "returns hash with section and empty value" do
-        allow(Yast::PackageSystem).to receive(:Installed).and_return(true)
-        expect(subject.evaluate_via_rpm).to eq("users" => [])
-      end
-    end
-
-    context "package belonging to section is not installed" do
+    context "package belonging to section" do
       let(:sections) { ["users"] }
       it "returns hash with section and array with package" do
-        allow(Yast::PackageSystem).to receive(:Installed).and_return(false)
         expect(subject.evaluate_via_rpm).to eq("users" => ["yast2-users"])
       end
     end
