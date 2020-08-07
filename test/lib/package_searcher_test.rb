@@ -97,8 +97,8 @@ describe Y2Autoinstallation::PackagerSearcher do
 
     context "no package belongs to section" do
       let(:sections) { ["nis"] }
-      it "returns hash with section and nil value" do
-        expect(subject.evaluate_via_rpm).to eq("nis" => nil)
+      it "returns hash with section and [] value" do
+        expect(subject.evaluate_via_rpm).to eq("nis" => [])
       end
     end
 
