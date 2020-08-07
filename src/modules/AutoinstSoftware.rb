@@ -166,19 +166,15 @@ module Yast
       pkglist = []
       # Evaluating packages via RPM supplements ( e.g. autoyast(kdump) )
       req_packages = Y2Autoinstallation::PackagerSearcher.new(entries).evaluate_via_rpm
-      entries.each do |e|
+      entries.reject! do |e|
         packs = req_packages[e]
-
-        # no entry has been found
-        next unless packs
-
-        entries.delete(e)
-
-        # entry has been found, but packages will be already installed
-        next if packs.empty?
-
-        log.info "AddYdepsFromProfile add packages #{packs} for entry #{e}"
-        pkglist += packs
+        if packs.empty?
+          false
+        else
+          log.info "AddYdepsFromProfile add packages #{packs} for entry #{e}"
+          pkglist += packs
+          true
+        end
       end
 
       # Evaluating packages for not founded entries via desktop file and rnc files.
