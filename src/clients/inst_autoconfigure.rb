@@ -85,7 +85,9 @@ module Yast
       unknown_sections = importer.unhandled_sections - unsupported_sections
       if unknown_sections.any?
         log.error "Could not process these unknown profile sections: #{unknown_sections}"
-        needed_packages = Y2Autoinstallation::PackagerSearcher.new(unknown_sections).evaluate
+        needed_packages = Y2Autoinstallation::PackagerSearcher.new(
+          unknown_sections
+        ).evaluate_via_schema
         schema_package_list = if needed_packages.empty?
           unknown_sections.map { |section| "&lt;#{section}/&gt;" }
         else

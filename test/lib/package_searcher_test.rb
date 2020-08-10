@@ -30,7 +30,7 @@ describe Y2Autoinstallation::PackagerSearcher do
                                                     ])
   end
 
-  describe "#evaluate" do
+  describe "#evaluate_via_schema" do
     context "no package belongs to section" do
       let(:sections) { ["nis"] }
       it "returns hash with section and empty array" do
@@ -40,7 +40,7 @@ describe Y2Autoinstallation::PackagerSearcher do
           "stderr" => ""
         )
 
-        expect(subject.evaluate).to eq("nis" => [])
+        expect(subject.evaluate_via_schema).to eq("nis" => [])
       end
     end
 
@@ -55,7 +55,7 @@ describe Y2Autoinstallation::PackagerSearcher do
 
         allow(Yast::PackageSystem).to receive(:Installed).and_return(true)
 
-        expect(subject.evaluate).to eq("add-on" => [])
+        expect(subject.evaluate_via_schema).to eq("add-on" => [])
       end
     end
 
@@ -70,7 +70,42 @@ describe Y2Autoinstallation::PackagerSearcher do
 
         allow(Yast::PackageSystem).to receive(:Installed).and_return(false)
 
-        expect(subject.evaluate).to eq("audit-laf" => ["yast2-audit-laf"])
+        expect(subject.evaluate_via_schema).to eq("audit-laf" => ["yast2-audit-laf"])
+      end
+    end
+  end
+
+  describe "#evaluate_via_rpm" do
+    let(:packages) do
+      [
+        Y2Packager::Resolvable.new("kind" => :package,
+           "name" => "foo", "source" => 1,
+           "version" => "1.0", "arch" => "x86_64", "status" => :selected,
+           "deps" => [{ "provides" => "foo" }]),
+        Y2Packager::Resolvable.new("kind" => :package,
+           "name" => "yast2-users", "source" => 1,
+           "version" => "1.0", "arch" => "x86_64", "status" => :selected,
+           "deps" => [{ "supplements" => "autoyast(groups,users)" }])
+      ]
+    end
+
+    before do
+      allow(Y2Packager::Resolvable).to receive(:find).with(
+        kind: :package
+      ).and_return(packages)
+    end
+
+    context "no package belongs to section" do
+      let(:sections) { ["nis"] }
+      it "returns hash with section and [] value" do
+        expect(subject.evaluate_via_rpm).to eq("nis" => [])
+      end
+    end
+
+    context "package belonging to section" do
+      let(:sections) { ["users"] }
+      it "returns hash with section and array with package" do
+        expect(subject.evaluate_via_rpm).to eq("users" => ["yast2-users"])
       end
     end
   end

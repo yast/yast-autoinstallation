@@ -18,6 +18,7 @@
 # find current contact information at www.suse.com.
 
 require "yast"
+require "y2packager/resolvable"
 
 Yast.import "PackageSystem"
 
@@ -31,12 +32,44 @@ module Y2Autoinstallation
       @sections = sections
     end
 
-    # Gets packages that needs to be installed
+    # Gets packages that needs to be installed via RPM supplements.
+    # @return [Hash<String, Array<String>>] Required packages of a section.
+    def evaluate_via_rpm
+      package_names = {}
+      log.info "Evaluating needed packages for handling AY-sections via RPM Supplements"
+      log.info "Sections: #{sections}"
+      packages = Y2Packager::Resolvable.find(kind: :package)
+
+      sections.each do |section|
+        # Evaluting which package has the supplement autoyast(<section>)
+        package_names[section] = []
+        packages.each do |p|
+          p.deps.each do |dep|
+            next if !dep["supplements"] ||
+              !dep["supplements"].match(/^autoyast\((.*)\)/)
+
+            suppl_sections = Regexp.last_match(1).split(",")
+            suppl_sections.each do |sup_section|
+              next unless sup_section == section
+
+              log.info("Package #{p.name} supports section #{section}" \
+                       " via supplement.")
+              package_names[section] << p.name
+            end
+          end
+        end
+      end
+
+      package_names
+    end
+
+    # Gets packages that needs to be installed via the schema file
     # @return [Hash<String, Array<String>>] Required packages of a section. Return only
     #   packages that are not already installed.
-    def evaluate
+    def evaluate_via_schema
       package_names = {}
-      log.info "Evaluating needed packages for handling AY-sections #{sections}"
+      log.info "Evaluating needed packages via schema for handling AY-sections via schema entries."
+      log.info "Sections: #{sections}"
 
       if !File.exist?(SCHEMA_PACKAGE_FILE)
         log.error "Cannot evaluate due to missing yast2-schema"
