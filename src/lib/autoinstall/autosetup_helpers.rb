@@ -203,7 +203,11 @@ module Y2Autoinstallation
 
       # in some cases we need to postpone firewall configuration to the second stage
       # we also have to guarantee that firewall is not blocking second stage in this case
-      firewall_section = need_second_stage_run? ? { "enable_firewall" => false } : Yast::Profile.current["firewall"]
+      firewall_section = if need_second_stage_run?
+        { "enable_firewall" => false }
+      else
+        Yast::Profile.current["firewall"]
+      end
 
       log.info("Importing Firewall settings from AY profile")
       Yast::WFM.CallFunction("firewall_auto", ["Import", firewall_section])
