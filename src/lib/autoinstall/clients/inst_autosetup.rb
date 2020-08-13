@@ -365,6 +365,11 @@ module Y2Autoinstallation
           end
         end
 
+        #
+        # Run firewall configuration according to the profile
+        #
+        autosetup_firewall
+
         # Results of imported values semantic check.
         return :abort unless AutoInstall.valid_imported_values
 

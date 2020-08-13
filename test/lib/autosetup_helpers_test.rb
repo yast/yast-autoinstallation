@@ -242,6 +242,47 @@ describe Y2Autoinstallation::AutosetupHelpers do
 
   end
 
+  describe "#autosetup_firewall" do
+    let(:profile) { { "firewall" => firewall_section } }
+    let(:firewall_section) { { "default_zone" => "external" } }
+
+    before(:each) do
+      Yast::Profile.current = profile
+      Yast::AutoinstConfig.main
+
+      allow(Yast::WFM).to receive(:CallFunction).with("firewall_auto", anything)
+    end
+
+    context "when a firewall section is present in the profile" do
+      context "when no second stage run is needed" do
+        before(:each) do
+          allow(client).to receive(:need_second_stage_run?).and_return(false)
+        end
+
+        it "removes the firewall section from the profile" do
+          client.autosetup_firewall
+          expect(Yast::Profile.current.keys).to_not include("firewall")
+        end
+      end
+
+      context "when second stage run is needed" do
+        before(:each) do
+          allow(client).to receive(:need_second_stage_run?).and_return(true)
+        end
+
+        it "does not remove the firewall section from the profile" do
+          client.autosetup_firewall
+          expect(Yast::Profile.current.keys).to include("firewall")
+        end
+
+        it "does not corrupt the profile" do
+          client.autosetup_firewall
+          expect(Yast::Profile.current).to eql profile
+        end
+      end
+    end
+  end
+
   describe "#autosetup_network" do
     let(:profile) { networking_section }
     let(:networking_section) { { "networking" => { "setup_before_proposal" => true } } }

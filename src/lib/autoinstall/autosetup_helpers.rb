@@ -197,7 +197,43 @@ module Y2Autoinstallation
       Y2Autoinstallation::XmlChecks.instance
     end
 
+    # Invokes autoyast setup for firewall
+    def autosetup_firewall
+      return if !Yast::Profile.current["firewall"]
+
+      # in some cases we need to postpone firewall configuration to the second stage
+      # we also have to guarantee that firewall is not blocking second stage in this case
+      firewall_section = if need_second_stage_run?
+        { "enable_firewall" => false }
+      else
+        Yast::Profile.current["firewall"]
+      end
+
+      log.info("Importing Firewall settings from AY profile")
+      Yast::WFM.CallFunction("firewall_auto", ["Import", firewall_section])
+
+      Yast::Profile.remove_sections("firewall") if !need_second_stage_run?
+    end
+
   private
+
+    # Checks whether we need to run second stage handling
+    def need_second_stage_run?
+      Yast.import "Linuxrc"
+
+      profile = Yast::Profile.current
+
+      # We have a problem when
+      # 1) running remote installation
+      # 2) second stage was requested
+      # 3) firewall was configured (somehow) and started via AY profile we can expect that
+      # ssh / vnc port can be blocked.
+      remote_installer = Yast::Linuxrc.usessh || Yast::Linuxrc.vnc
+      second_stage_required = profile.dig("general", "mode", "second_stage")
+      firewall_enabled = profile.dig("firewall", "enable_firewall")
+
+      remote_installer && second_stage_required && firewall_enabled
+    end
 
     def utf8_supported?
       (Yast::UI.GetDisplayInfo || {}).fetch("HasFullUtf8Support", true)
