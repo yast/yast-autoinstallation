@@ -81,6 +81,11 @@ describe Y2Autoinstallation::Clients::InstAutosetup do
       subject.main
     end
 
+    it "sets up the firewall configuration" do
+      expect(subject).to receive(:autosetup_firewall)
+      subject.main
+    end
+
     it "sets up the partitioning schema" do
       expect(Yast::AutoinstStorage).to receive(:Import).and_return(true)
       expect(Yast::AutoinstStorage).to receive(:Write).and_return(true)
