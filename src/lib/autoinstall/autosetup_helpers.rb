@@ -230,7 +230,7 @@ module Y2Autoinstallation
       # ssh / vnc port can be blocked.
       remote_installer = Yast::Linuxrc.usessh || Yast::Linuxrc.vnc
       second_stage_required = profile.dig("general", "mode", "second_stage")
-      firewall_enabled = profile["firewall"].fetch("enable_firewall", false)
+      firewall_enabled = profile.dig("firewall", "enable_firewall")
 
       remote_installer && second_stage_required && firewall_enabled
     end

@@ -243,8 +243,8 @@ describe Y2Autoinstallation::AutosetupHelpers do
   end
 
   describe "#autosetup_firewall" do
-    let(:profile) { firewall_section }
-    let(:firewall_section) { { "firewall" => { "default_zone" => "external" } } }
+    let(:profile) { { "firewall" => firewall_section } }
+    let(:firewall_section) { { "default_zone" => "external" } }
 
     before(:each) do
       Yast::Profile.current = profile
