@@ -609,54 +609,34 @@ module Yast
       false
     end
 
-    def setMValue(l, v, m)
-      l = deep_copy(l)
-      v = deep_copy(v)
-      m = deep_copy(m)
-      i = Ops.get_string(l, 0, "")
-      tmp = Builtins.remove(l, 0)
-      if Ops.greater_than(Builtins.size(tmp), 0)
-        if Ops.is_string?(Ops.get(tmp, 0))
-          Ops.set(m, i, setMValue(tmp, v, Ops.get_map(m, i, {})))
-        else
-          Ops.set(m, i, setLValue(tmp, v, Ops.get_list(m, i, [])))
-        end
-      else
-        Builtins.y2debug("setting %1 to %2", i, v)
-        Ops.set(m, i, v)
-      end
-      deep_copy(m)
-    end
-
-    def setLValue(l, v, m)
-      l = deep_copy(l)
-      v = deep_copy(v)
-      m = deep_copy(m)
-      i = Ops.get_integer(l, 0, 0)
-      tmp = Builtins.remove(l, 0)
-      if Ops.greater_than(Builtins.size(tmp), 0)
-        if Ops.is_string?(Ops.get(tmp, 0))
-          Ops.set(m, i, setMValue(tmp, v, Ops.get_map(m, i, {})))
-        else
-          Ops.set(m, i, setLValue(tmp, v, Ops.get_list(m, i, [])))
-        end
-      else
-        Builtins.y2debug("setting %1 to %2", i, v)
-        Ops.set(m, i, v)
-      end
-      deep_copy(m)
-    end
-
-    #  this function is a replacement for this code:
+    # Returns a profile merging the given value into the specified path
+    #
+    # The given profile is not modified.
+    #
+    # This method is a replacement for this YCP code:
     #      list<any> l = [ "key1",0,"key3" ];
     #      m[ l ] = v;
-    #  @return [Hash]
-    def setElementByList(l, v, m)
-      l = deep_copy(l)
-      v = deep_copy(v)
-      m = deep_copy(m)
-      m = setMValue(l, v, m)
-      deep_copy(m)
+    #
+    # @example Set a value
+    #   path = ["a", "b"]
+    #   setElementByList(path, 1, {}) #=> { "a" => { "b" => 1 } }
+    #
+    #
+    # @example Add an element to an array
+    #   path = ["users", 0, "username"]
+    #   setElementByList(path, "root", {}) #=> { "users" => [{"username" => "root"}] }
+    #
+    # @example Beware of the gaps!
+    #   path = ["users", 1, "username"]
+    #   setElementByList(path, "root", {}) #=> { "users" => [nil, {"username" => "root"}] }
+    #
+    # @param path [Array<String,Integer>] Element's path
+    # @param value [Object] Value to write
+    # @param profile [Hash] Initial profile
+    # @return [Hash] Modified profile
+    def setElementByList(path, value, profile)
+      profile = deep_copy(profile)
+      merge_element_by_list(path, value, profile)
     end
 
     # @deprecated Unused, removed
@@ -777,6 +757,23 @@ module Yast
         end
       end
     end
+
+    # @see setElementByList
+    def merge_element_by_list(path, value, profile)
+      current, *remaining_path = path
+      current_value =
+        if remaining_path.empty?
+          value
+        elsif remaining_path.first.is_a?(::String)
+          merge_element_by_list(remaining_path, value, profile[current] || {})
+        else
+          merge_element_by_list(remaining_path, value, profile[current] || [])
+        end
+      log.debug("Setting #{current} to #{current_value.inspect}")
+      profile[current] = current_value
+      profile
+    end
+
   end
 
   Profile = ProfileClass.new
