@@ -189,6 +189,9 @@ module Yast
 
       return false if !is_directory && !profile_checker.valid_profile?
 
+      # no rules and classes support for erb templates
+      return true if AutoinstConfig.filepath.end_with?(".erb")
+
       ret = if is_directory
         Get(
           AutoinstConfig.scheme,
