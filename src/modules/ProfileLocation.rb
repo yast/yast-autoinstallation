@@ -116,6 +116,15 @@ module Yast
           return false
         end
         tmp = Convert.to_string(SCR.Read(path(".target.string"), localfile))
+
+        unless tmp.valid_encoding?
+          # TRANSLATORS: %s is the filename
+          Report.Error(
+            format(_("AutoYaST file %s\nhas no valid encoding or is corrupted."), filename)
+          )
+          return false
+        end
+
         l = Builtins.splitstring(tmp, "\n")
         while !tmp.nil? && Ops.get(l, 0, "") == "-----BEGIN PGP MESSAGE-----"
           Builtins.y2milestone("encrypted profile found")
