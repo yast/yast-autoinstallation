@@ -37,10 +37,10 @@ describe "Yast::ProfileLocation" do
         allow(Yast::InstURL).to receive(:installInf2Url).and_return(
           "http://download.opensuse.org/distribution/leap/15.1/repo/oss/"
         )
-#        allow(subject).to receive(:Get).with("http",
-#          "download.opensuse.org",
-#          "/distribution/leap/15.1/repo/oss/error.xml",
-#          "/tmp/123").and_return("error_string")
+        allow(subject).to receive(:Get).with("http",
+          "download.opensuse.org",
+          "/distribution/leap/15.1/repo/oss/error.xml",
+          "/tmp/123").and_return("error_string")
         allow(Yast::SCR).to receive(:Read).with(Yast.path(".target.string"),
           Yast::AutoinstConfig.xml_tmpfile).and_return("error_string")
       end
