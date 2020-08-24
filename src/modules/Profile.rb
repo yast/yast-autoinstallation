@@ -8,6 +8,7 @@ require "yast"
 require "yast2/popup"
 
 require "autoinstall/entries/registry"
+require "installation/autoinst_profile/element_path"
 
 module Yast
   class ProfileClass < Module
@@ -611,6 +612,34 @@ module Yast
 
     # Returns a profile merging the given value into the specified path
     #
+    # The path can be a proper a String or a proper {Installation::AutoinstProfile::ElementPath} object.
+    # Although the real work is performedby {SetElementByList}, it is usually preferred
+    # to use this method as it takes care of handling the path.
+    #
+    # @example Set a value using a XPath-like path
+    #   path = "//a/b"
+    #   set_element_by_path(path, 1, {}) #=> { "a" => { "b" => 1 } }
+    #
+    # @example Set a value using an ask-list style path
+    #   path = "users,0,username"
+    #   set_element_by_path(path, "root", {}) #=> { "users" => [{"username" => "root"}] }
+    #
+    # @param path [ElementPath,String] Profile path or string representing the path
+    # @param value [Object] Value to write
+    # @param profile [Hash] Initial profile
+    # @return [Hash] Modified profile
+    def set_element_by_path(path, value, profile)
+      profile_path =
+        if path.is_a?(::String)
+          ::Installation::AutoinstProfile::ElementPath.from_string(path)
+        else
+          path
+        end
+      setElementByList(profile_path.to_a, value, profile)
+    end
+
+    # Returns a profile merging the given value into the specified path
+    #
     # The given profile is not modified.
     #
     # This method is a replacement for this YCP code:
@@ -620,7 +649,6 @@ module Yast
     # @example Set a value
     #   path = ["a", "b"]
     #   setElementByList(path, 1, {}) #=> { "a" => { "b" => 1 } }
-    #
     #
     # @example Add an element to an array
     #   path = ["users", 0, "username"]
@@ -773,7 +801,6 @@ module Yast
       profile[current] = current_value
       profile
     end
-
   end
 
   Profile = ProfileClass.new

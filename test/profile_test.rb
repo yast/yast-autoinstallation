@@ -604,6 +604,33 @@ describe Yast::Profile do
     end
   end
 
+  describe "#set_element_by_path" do
+    let(:profile) { double("profile") }
+    let(:value) { double("value") }
+    let(:new_profile) { double("new_profile") }
+
+    context "when a string is given as path" do
+      it "sets the element by using the path's parts" do
+        expect(subject).to receive(:setElementByList).with(
+          ["users", 0, "username"], value, profile
+        ).and_return(new_profile)
+        result = subject.set_element_by_path("users,0,username", value, profile)
+        expect(result).to eq(new_profile)
+      end
+    end
+
+    context "when a profile path object is given as path" do
+      let(:path) { Installation::AutoinstProfile::ElementPath.from_string("groups,0,name") }
+      it "sets the element by using the path's parts" do
+        expect(subject).to receive(:setElementByList).with(
+          ["groups", 0, "name"], value, profile
+        ).and_return(new_profile)
+        result = subject.set_element_by_path(path, value, profile)
+        expect(result).to eq(new_profile)
+      end
+    end
+  end
+
   describe "#setElementByList" do
     let(:profile) do
       {

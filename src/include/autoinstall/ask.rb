@@ -20,19 +20,6 @@ module Yast
       Yast.import "UI"
     end
 
-    def path2pos(pa)
-      pos = []
-      Builtins.foreach(Builtins.splitstring(pa, ",")) do |p|
-        if Builtins.regexpmatch(p, "^[1,2,3,4,5,6,7,8,9,0]+$")
-          index = Builtins.tointeger(p)
-          pos = Builtins.add(pos, index)
-        else
-          pos = Builtins.add(pos, p)
-        end
-      end
-      deep_copy(pos)
-    end
-
     def createWidget(widget, _frametitle)
       widget = deep_copy(widget)
       ret = Left(widget)
@@ -423,20 +410,14 @@ module Yast
 
                 # Save the value in the profile (and also as default value)
                 Ops.set(ask, "default", val)
-                pos = path2pos(Ops.get_string(ask, "path", ""))
                 if Ops.get_string(ask, "path", "") != "" # Set value in the profile
-                  Profile.current = Profile.setElementByList(
-                    pos,
-                    val,
-                    Profile.current
+                  Profile.current = Profile.set_element_by_path(
+                    ask["path"], val, Profile.current
                   )
                 end
                 Builtins.foreach(Ops.get_list(ask, "pathlist", [])) do |p|
-                  pos2 = path2pos(p)
-                  Profile.current = Profile.setElementByList(
-                    pos2,
-                    val,
-                    Profile.current
+                  Profile.current = Profile.set_element_by_path(
+                    p, val, Profile.current
                   )
                 end
 
