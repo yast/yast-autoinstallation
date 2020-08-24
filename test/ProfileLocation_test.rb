@@ -18,7 +18,7 @@ describe "Yast::ProfileLocation" do
         "http://download.opensuse.org/distribution/leap/15.1/repo/oss/"
       )
     end
-    
+
     context "when scheme is \"relurl\"" do
       it "downloads AutoYaST configuration file with absolute path" do
         expect(subject).to receive(:Get).with("http",
