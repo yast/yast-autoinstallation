@@ -39,7 +39,7 @@ describe "Yast::ProfileLocation" do
         )
         allow(subject).to receive(:Get).with("http",
           "download.opensuse.org",
-          "/distribution/leap/15.1/repo/oss/error.xml",
+          "/distribution/leap/15.1/repo/oss/autoinst.xml",
           "/tmp/123").and_return("error_string").and_return(true)
         allow(Yast::SCR).to receive(:Read).with(Yast.path(".target.string"),
           Yast::AutoinstConfig.xml_tmpfile).and_return("error_string")
