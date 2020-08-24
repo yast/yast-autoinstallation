@@ -42,7 +42,7 @@ describe "Yast::ProfileLocation" do
 #          "/distribution/leap/15.1/repo/oss/error.xml",
 #          "/tmp/123").and_return("error_string")
         allow(Yast::SCR).to receive(:Read).with(Yast.path(".target.string"),
-          AutoinstConfig.xml_tmpfile).and_return("error_string")
+          Yast::AutoinstConfig.xml_tmpfile).and_return("error_string")
       end
 
       it "reports an error" do
