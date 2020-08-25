@@ -38,4 +38,3 @@ describe Y2Autoinstallation::Y2ERB do
     end
   end
 end
-
