@@ -7,6 +7,7 @@
 require "yast"
 
 require "autoinstall/xml_checks"
+require "autoinstall/y2erb"
 require "y2storage"
 
 module Yast
@@ -168,6 +169,12 @@ module Yast
           tmp = Convert.to_string(SCR.Read(path(".target.string"), localfile))
           l = Builtins.splitstring(tmp, "\n")
         end
+
+        # render erb template
+        if AutoinstConfig.filepath.end_with?(".erb")
+          res = Y2Autoinstallation::Y2ERB.render(localfile)
+          SCR.Write(path(".target.string"), localfile, res)
+        end
       else
         is_directory = true
       end
@@ -190,6 +197,9 @@ module Yast
       end
 
       return false if !is_directory && !profile_checker.valid_profile?
+
+      # no rules and classes support for erb templates
+      return true if AutoinstConfig.filepath.end_with?(".erb")
 
       ret = if is_directory
         Get(
