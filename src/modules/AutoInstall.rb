@@ -7,6 +7,7 @@
 require "yast"
 require "autoinstall/pkg_gpg_check_handler"
 require "installation/autoinst_issues"
+require "installation/autoinst_issues/issues_presenter"
 
 module Yast
   class AutoInstallClass < Module
