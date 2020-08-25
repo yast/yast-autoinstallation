@@ -38,7 +38,11 @@ module Y2Autoinstallation
       package_names = {}
       log.info "Evaluating needed packages for handling AY-sections via RPM Supplements"
       log.info "Sections: #{sections}"
-      packages = Y2Packager::Resolvable.find(kind: :package)
+      packages = Y2Packager::Resolvable.find(
+        kind:               :package,
+        # this is a POSIX extended regexp, not a Ruby regexp!
+        supplements_regexp: "^autoyast\\(.*\\)"
+      )
 
       sections.each do |section|
         # Evaluting which package has the supplement autoyast(<section>)

@@ -22,7 +22,7 @@
 %endif
 
 Name:           autoyast2
-Version:        4.3.36
+Version:        4.3.37
 Release:        0
 Summary:        YaST2 - Automated Installation
 License:        GPL-2.0-only
@@ -130,8 +130,8 @@ Requires:       yast2-transfer >= 2.21.0
 # storage-ng based version
 Requires:       yast2-update >= 3.3.0
 Requires:       yast2-xml
-# "transact_by" key in PkgPropertiesAll()
-Requires:       yast2-pkg-bindings >= 4.0.7
+# RPM dependencies in Pkg.Resolvables
+Requires:       yast2-pkg-bindings >= 4.3.0
 Requires:       yast2-ruby-bindings >= 1.0.0
 
 Provides:       yast2-trans-autoinst
