@@ -51,6 +51,10 @@ describe Y2Autoinstallation::Clients::InstAutosetupUpgrade do
     allow(Yast::Pkg).to receive(:ResolvableInstall)
     allow(Yast::Pkg).to receive(:ResolvableRemove)
     allow(Yast::Pkg).to receive(:PkgSolve).and_return(true)
+    # do not change the current language, using translated messages
+    # would break test expectations
+    allow(Yast::WFM).to receive(:SetLanguage)
+    allow(Yast::UI).to receive(:SetLanguage)
   end
 
   describe "#main" do

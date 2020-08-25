@@ -91,7 +91,8 @@ describe Y2Autoinstallation::PackagerSearcher do
 
     before do
       allow(Y2Packager::Resolvable).to receive(:find).with(
-        kind: :package
+        kind:               :package,
+        supplements_regexp: "^autoyast\\(.*\\)"
       ).and_return(packages)
     end
 
