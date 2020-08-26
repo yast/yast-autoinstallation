@@ -8,6 +8,7 @@ require "yast"
 require "yast2/popup"
 
 require "autoinstall/entries/registry"
+require "installation/autoinst_profile/element_path"
 
 module Yast
   class ProfileClass < Module
@@ -609,54 +610,62 @@ module Yast
       false
     end
 
-    def setMValue(l, v, m)
-      l = deep_copy(l)
-      v = deep_copy(v)
-      m = deep_copy(m)
-      i = Ops.get_string(l, 0, "")
-      tmp = Builtins.remove(l, 0)
-      if Ops.greater_than(Builtins.size(tmp), 0)
-        if Ops.is_string?(Ops.get(tmp, 0))
-          Ops.set(m, i, setMValue(tmp, v, Ops.get_map(m, i, {})))
+    # Returns a profile merging the given value into the specified path
+    #
+    # The path can be a String or a Installation::AutoinstProfile::ElementPath
+    # object. Although the real work is performed by {setElementByList}, it is
+    # usually preferred to use this method as it takes care of handling the
+    # path.
+    #
+    # @example Set a value using a XPath-like path
+    #   path = "//a/b"
+    #   set_element_by_path(path, 1, {}) #=> { "a" => { "b" => 1 } }
+    #
+    # @example Set a value using an ask-list style path
+    #   path = "users,0,username"
+    #   set_element_by_path(path, "root", {}) #=> { "users" => [{"username" => "root"}] }
+    #
+    # @param path [ElementPath,String] Profile path or string representing the path
+    # @param value [Object] Value to write
+    # @param profile [Hash] Initial profile
+    # @return [Hash] Modified profile
+    def set_element_by_path(path, value, profile)
+      profile_path =
+        if path.is_a?(::String)
+          ::Installation::AutoinstProfile::ElementPath.from_string(path)
         else
-          Ops.set(m, i, setLValue(tmp, v, Ops.get_list(m, i, [])))
+          path
         end
-      else
-        Builtins.y2debug("setting %1 to %2", i, v)
-        Ops.set(m, i, v)
-      end
-      deep_copy(m)
+      setElementByList(profile_path.to_a, value, profile)
     end
 
-    def setLValue(l, v, m)
-      l = deep_copy(l)
-      v = deep_copy(v)
-      m = deep_copy(m)
-      i = Ops.get_integer(l, 0, 0)
-      tmp = Builtins.remove(l, 0)
-      if Ops.greater_than(Builtins.size(tmp), 0)
-        if Ops.is_string?(Ops.get(tmp, 0))
-          Ops.set(m, i, setMValue(tmp, v, Ops.get_map(m, i, {})))
-        else
-          Ops.set(m, i, setLValue(tmp, v, Ops.get_list(m, i, [])))
-        end
-      else
-        Builtins.y2debug("setting %1 to %2", i, v)
-        Ops.set(m, i, v)
-      end
-      deep_copy(m)
-    end
-
-    #  this function is a replacement for this code:
+    # Returns a profile merging the given value into the specified path
+    #
+    # The given profile is not modified.
+    #
+    # This method is a replacement for this YCP code:
     #      list<any> l = [ "key1",0,"key3" ];
     #      m[ l ] = v;
-    #  @return [Hash]
-    def setElementByList(l, v, m)
-      l = deep_copy(l)
-      v = deep_copy(v)
-      m = deep_copy(m)
-      m = setMValue(l, v, m)
-      deep_copy(m)
+    #
+    # @example Set a value
+    #   path = ["a", "b"]
+    #   setElementByList(path, 1, {}) #=> { "a" => { "b" => 1 } }
+    #
+    # @example Add an element to an array
+    #   path = ["users", 0, "username"]
+    #   setElementByList(path, "root", {}) #=> { "users" => [{"username" => "root"}] }
+    #
+    # @example Beware of the gaps!
+    #   path = ["users", 1, "username"]
+    #   setElementByList(path, "root", {}) #=> { "users" => [nil, {"username" => "root"}] }
+    #
+    # @param path [Array<String,Integer>] Element's path
+    # @param value [Object] Value to write
+    # @param profile [Hash] Initial profile
+    # @return [Hash] Modified profile
+    def setElementByList(path, value, profile)
+      profile = deep_copy(profile)
+      merge_element_by_list(path, value, profile)
     end
 
     # @deprecated Unused, removed
@@ -776,6 +785,22 @@ module Yast
           end
         end
       end
+    end
+
+    # @see setElementByList
+    def merge_element_by_list(path, value, profile)
+      current, *remaining_path = path
+      current_value =
+        if remaining_path.empty?
+          value
+        elsif remaining_path.first.is_a?(::String)
+          merge_element_by_list(remaining_path, value, profile[current] || {})
+        else
+          merge_element_by_list(remaining_path, value, profile[current] || [])
+        end
+      log.debug("Setting #{current} to #{current_value.inspect}")
+      profile[current] = current_value
+      profile
     end
   end
 

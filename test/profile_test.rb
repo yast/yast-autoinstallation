@@ -603,4 +603,90 @@ describe Yast::Profile do
       expect(subject.SaveSingleSections("/tmp")).to eq({})
     end
   end
+
+  describe "#set_element_by_path" do
+    let(:profile) { double("profile") }
+    let(:value) { double("value") }
+    let(:new_profile) { double("new_profile") }
+
+    context "when a string is given as path" do
+      it "sets the element by using the path's parts" do
+        expect(subject).to receive(:setElementByList).with(
+          ["users", 0, "username"], value, profile
+        ).and_return(new_profile)
+        result = subject.set_element_by_path("users,0,username", value, profile)
+        expect(result).to eq(new_profile)
+      end
+    end
+
+    context "when a profile path object is given as path" do
+      let(:path) { Installation::AutoinstProfile::ElementPath.from_string("groups,0,name") }
+      it "sets the element by using the path's parts" do
+        expect(subject).to receive(:setElementByList).with(
+          ["groups", 0, "name"], value, profile
+        ).and_return(new_profile)
+        result = subject.set_element_by_path(path, value, profile)
+        expect(result).to eq(new_profile)
+      end
+    end
+  end
+
+  describe "#setElementByList" do
+    let(:profile) do
+      {
+        "users" => [
+          { "username" => "root" },
+          { "username" => "guest" }
+        ]
+      }
+    end
+    let(:path) { ["users", 1, "username"] }
+
+    context "when the element exists" do
+      it "replaces its value" do
+        new_profile = subject.setElementByList(path, "admin", profile)
+        expect(new_profile["users"][1]).to eq(
+          "username" => "admin"
+        )
+      end
+    end
+
+    context "when the element does not exist" do
+      let(:path) { ["users", 1, "realname"] }
+
+      it "adds the element in the given path" do
+        new_profile = subject.setElementByList(path, "Guest User", profile)
+        expect(new_profile["users"][1]).to eq(
+          "username" => "guest", "realname" => "Guest User"
+        )
+      end
+    end
+
+    context "when the element is supposed to be an array member but it does not exist" do
+      let(:path) { ["users", 3, "username"] }
+
+      it "adds an element to the array" do
+        new_profile = subject.setElementByList(path, "admin", profile)
+        expect(new_profile["users"][3]).to eq(
+          "username" => "admin"
+        )
+      end
+
+      it "fills any gap with nil" do
+        new_profile = subject.setElementByList(path, "admin", profile)
+        expect(new_profile["users"][2]).to be_nil
+      end
+    end
+
+    context "when parent elements are missing" do
+      let(:path) { ["groups", 0, "name"] }
+
+      it "adds all the full hierarchy up to the given path" do
+        new_profile = subject.setElementByList(path, "root", profile)
+        expect(new_profile["groups"]).to eq(
+          [{ "name" => "root" }]
+        )
+      end
+    end
+  end
 end
