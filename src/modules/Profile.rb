@@ -612,9 +612,10 @@ module Yast
 
     # Returns a profile merging the given value into the specified path
     #
-    # The path can be a proper a String or a proper {Installation::AutoinstProfile::ElementPath} object.
-    # Although the real work is performedby {SetElementByList}, it is usually preferred
-    # to use this method as it takes care of handling the path.
+    # The path can be a String or a {Installation::AutoinstProfile::ElementPath}
+    # object. Although the real work is performed by {SetElementByList}, it is
+    # usually preferred to use this method as it takes care of handling the
+    # path.
     #
     # @example Set a value using a XPath-like path
     #   path = "//a/b"
