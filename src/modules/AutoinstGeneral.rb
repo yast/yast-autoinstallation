@@ -282,6 +282,8 @@ module Yast
           "string (map)")
       )
 
+      return if signature_handling.empty?
+
       if signature_handling.key?("accept_unsigned_file")
         Pkg.CallbackAcceptUnsignedFile(
           if signature_handling["accept_unsigned_file"]
