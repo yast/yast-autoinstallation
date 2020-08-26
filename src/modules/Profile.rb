@@ -612,8 +612,8 @@ module Yast
 
     # Returns a profile merging the given value into the specified path
     #
-    # The path can be a String or a {Installation::AutoinstProfile::ElementPath}
-    # object. Although the real work is performed by {SetElementByList}, it is
+    # The path can be a String or a Installation::AutoinstProfile::ElementPath
+    # object. Although the real work is performed by {setElementByList}, it is
     # usually preferred to use this method as it takes care of handling the
     # path.
     #
