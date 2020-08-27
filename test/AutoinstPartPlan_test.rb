@@ -51,7 +51,7 @@ describe "Yast::AutoinstPartPlan" do
     end
   end
 
-  describe "#Import" do
+  xdescribe "#Import" do
     let(:sda) { { "device" => "/dev/sda", "initialize" => true } }
     let(:sdb) { { "device" => "/dev/sdb" } }
     let(:settings) { [sda, sdb] }
@@ -107,50 +107,6 @@ describe "Yast::AutoinstPartPlan" do
     it "does not include drive indexes" do
       drives = subject.Export
       expect(drives.first.keys).to_not include("_id")
-    end
-  end
-
-  describe "#getDrive" do
-    let(:sda) { { "device" => "/dev/sda" } }
-    let(:sdb) { { "device" => "/dev/sdb" } }
-    let(:settings) { [sda, sdb] }
-
-    before { subject.Import(settings) }
-
-    it "returns the drive in the given position" do
-      drive = subject.getDrive(1)
-      expect(drive["device"]).to eq("/dev/sdb")
-    end
-
-    context "when the drive does not exist" do
-      it "returns an empty hash" do
-        expect(subject.getDrive(2)).to eq({})
-      end
-    end
-  end
-
-  describe "#getPartition" do
-    let(:sda) do
-      { "device" => "/dev/sda", "partitions" => [{ "mount" => "/" }, { "mount" => "/home" }] }
-    end
-    let(:settings) { [sda] }
-
-    before { subject.Import(settings) }
-
-    it "returns the drive in the given position" do
-      expect(subject.getPartition(0, 1)).to eq("mount" => "/home")
-    end
-
-    context "when the drive does not exist" do
-      it "returns an empty hash" do
-        expect(subject.getPartition(1, 0)).to eq({})
-      end
-    end
-
-    context "when the partition does not exist" do
-      it "returns an empty hash" do
-        expect(subject.getPartition(0, 2)).to eq({})
-      end
     end
   end
 end

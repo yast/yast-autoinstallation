@@ -242,9 +242,7 @@ done
 %{yast_moduledir}/AutoInstallRules.rb
 %{yast_moduledir}/ProfileLocation.rb
 %{yast_moduledir}/AutoinstCommon.rb
-%{yast_moduledir}/AutoinstDrive.rb
 %{yast_moduledir}/AutoinstPartPlan.rb
-%{yast_moduledir}/AutoinstPartition.rb
 %{yast_moduledir}/AutoinstFunctions.rb
 
 #clients
