@@ -38,6 +38,22 @@ describe Y2Autoinstallation::StorageController do
     end
   end
 
+  describe "#add_partition" do
+    let(:partitioning) do
+      Y2Storage::AutoinstProfile::PartitioningSection.new_from_hashes(
+        [{ "type" => :CT_DISK }]
+      )
+    end
+
+    it "adds a new partition section" do
+      subject.add_partition
+      drive = partitioning.drives.first
+      expect(drive.partitions).to contain_exactly(
+        an_instance_of(Y2Storage::AutoinstProfile::PartitionSection)
+      )
+    end
+  end
+
   describe "#delete_section" do
     let(:partitioning) do
       Y2Storage::AutoinstProfile::PartitioningSection.new_from_hashes(
@@ -48,8 +64,6 @@ describe Y2Autoinstallation::StorageController do
           { "type" => :CT_DISK, "partitions" => [{ "create" => true }] }
         ]
       )
-    end
-    let(:part_hash) do
     end
 
     let(:drive) { partitioning.drives[2] }
