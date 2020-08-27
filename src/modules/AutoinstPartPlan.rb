@@ -15,7 +15,6 @@ module Yast
       Yast.import "UI"
       textdomain "autoinst"
 
-      Yast.include self, "autoinstall/types.rb"
       Yast.include self, "autoinstall/common.rb"
       Yast.include self, "autoinstall/tree.rb"
 

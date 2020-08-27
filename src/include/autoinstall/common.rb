@@ -6,10 +6,8 @@
 # $Id: common.ycp 2805 2008-05-27 15:12:42Z sschober $
 module Yast
   module AutoinstallCommonInclude
-    def initialize_autoinstall_common(include_target)
+    def initialize_autoinstall_common(_include_target)
       textdomain "autoinst"
-
-      Yast.include include_target, "autoinstall/types.rb"
 
       Yast.import "AutoinstStorage"
 

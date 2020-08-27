@@ -229,7 +229,6 @@ done
 %{yast_yncludedir}/autoinstall/io.rb
 %{yast_yncludedir}/autoinstall/common.rb
 %{yast_yncludedir}/autoinstall/tree.rb
-%{yast_yncludedir}/autoinstall/types.rb
 
 %{yast_moduledir}/AutoInstall.rb
 %{yast_moduledir}/AutoinstScripts.rb
