@@ -20,6 +20,8 @@
 require "yast"
 require "y2storage"
 require "autoinstall/presenters"
+require "y2storage/autoinst_profile/drive_section"
+require "y2storage/autoinst_profile/partition_section"
 
 module Y2Autoinstallation
   # Controller for editing the <partitioning> section of a profile
@@ -69,7 +71,7 @@ module Y2Autoinstallation
     def delete_section
       return unless section
 
-      if section.section_name == "drives"
+      if section.is_a?(Y2Storage::AutoinstProfile::DriveSection)
         drives.delete(section)
         self.section = drives.first
       else
@@ -109,7 +111,7 @@ module Y2Autoinstallation
     def drive
       return nil unless section
 
-      (section.section_name == "partitions") ? section.parent : section
+      section.is_a?(Y2Storage::AutoinstProfile::PartitionSection) ? section.parent : section
     end
   end
 end
