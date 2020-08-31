@@ -1,19 +1,14 @@
 ## Dynamic Profiles
 
-Somemtimes having static profile is not enough when it should be applied to wide range
-of machines and some dynamic content is useful. Currently autoyast supports
-three different ways how to achieve it. The first and the least flexible is 
-rules and classes [ TODO link to its documentation ]. The second way is creating
-profile via pre script [ TODO link to its documentation ]. It allows to use wide 
-range of languages and create profile from scratch or copy existing one and
-just modify it. Example of creating profile from scratch using shell is
-below. The third way is templates. Autoyast from SLE15 SP3 supports ERB templates
-[ TOO link to ERB documentation ]. ERB is default templating system in ruby
-and basically do preprocessing of specific directives with full power of ruby
-programming language. Example of such template is below. To work it properly it has
-to have suffix `.erb`.
+Sometimes having a static profile is not enough when it should be applied to a wide range of
+machines. In such situation, generating some dynamic content for the profile is needed. Nowadays,
+AutoYaST supports three different ways to do it. The first, and the least flexible, are rules and
+classes [ TODO link to its documentation ]. The second way is modifying the profile using a
+pre-script [ TODO link to its documentation ]. It allows to use a wide range of languages, creating
+the profile from scratch or copying and modifying an existing one.
 
-Pre script with shell example that use two biggest disks for installation:
+This example uses a shell-based pre-script that selects the two biggest disks for installation:
+
 ```xml
 <?xml version="1.0"?>
 <!DOCTYPE profile>
@@ -47,8 +42,13 @@ Pre script with shell example that use two biggest disks for installation:
 </profile>
 ```
 
-Example with ERB template that use two biggest disks, enable multipath
-for specific storage controller and set udev rules for network cards:
+The third way is using templates. From SLE 15 SP3, AutoYaST supports ERB templates [ TOO link to ERB
+documentation ]. ERB is the default templating system in Ruby and, basically, it allows
+preprocessing of specific directives with the full power of Ruby programming language. You enable
+this preprocessing by using the suffix `.erb` in the profile's name.
+
+This ERB template uses the two biggest disks, enables multipath for specific storage controller and
+sets udev rules for network cards:
 
 ```erb
 <profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
