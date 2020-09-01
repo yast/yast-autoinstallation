@@ -55,6 +55,7 @@ module Yast
           "post-scripts"             => "script",
           "chroot-scripts"           => "script",
           "init-scripts"             => "script",
+          "postpartitioning-scripts" => "script",
           "local_domains"            => "domains",
           "masquerade_other_domains" => "domain",
           "masquerade_users"         => "masquerade_user",
