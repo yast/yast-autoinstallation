@@ -122,6 +122,7 @@ Additional Documentation
 ========================
 
 * {file:doc/profile_handling.md Profile Handling}
+* {file:doc/profile_fetching.md Profile Fetching}
 * {file:doc/validation.md Profile Validation}
 * {file:doc/error_reporting.md Error Reporting}
 * {file:doc/network_scenarios.md Network Scenarios}
