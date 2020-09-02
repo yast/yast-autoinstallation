@@ -28,10 +28,10 @@ module Y2Autoinstallation
 
         @disks = []
         hardware["disk"].each do |disk|
-          dev_name = ::File.pathname(disk["dev_name"])
+          dev_name = ::File.basename(disk["dev_name"])
           result = {
-            vendor: disk["vendor"],
-            device: devn_name,
+            vendor:     disk["vendor"],
+            device:     dev_name,
             udev_names: disk["dev_names"]
           }
           result[:model] = sys_block_value(dev_name, "device/model") || "Unknown"
@@ -40,6 +40,8 @@ module Y2Autoinstallation
 
           @disks << result
         end
+
+        @disks
       end
 
       # @return [Array<Hash>] list of info about network cards. Info contain:
@@ -47,26 +49,40 @@ module Y2Autoinstallation
       #   `:device` name of device
       #   `:mac` mac address of card
       #   `:active` if card io is active [Boolean]
-      #   `:link_up` if card link is up [Boolean]
+      #   `:link` if card link is up [Boolean]
       def network_cards
         return @network_cards if @network_cards
 
         @network_cards = []
         hardware["netcard"].each do |card|
           resource = card["resource"]
-          mac = resource["hwaddr"].first["addr"] rescue ""
-          active = resource["io"].first["active"] rescue false
-          link = resource["link"].first["state"] rescue false
+          mac = begin
+                  resource["hwaddr"].first["addr"]
+                rescue StandardError
+                  ""
+                end
+          active = begin
+                     resource["io"].first["active"]
+                   rescue StandardError
+                     false
+                   end
+          link = begin
+                   resource["link"].first["state"]
+                 rescue StandardError
+                   false
+                 end
           result = {
             vendor: card["vendor"],
             device: card["dev_name"],
-            mac: mac,
+            mac:    mac,
             active: active,
-            link: link
+            link:   link
           }
 
           @network_cards << result
         end
+
+        @network_cards
       end
 
       # allow to use env bindings
@@ -76,12 +92,12 @@ module Y2Autoinstallation
 
     private
 
-      def  sys_block_value(device, path)
+      def sys_block_value(device, path)
         sys_path = "/sys/block/#{device}/"
         ::File.read(sys_path + path).strip
-      rescue => e
+      rescue StandardError => e
         log.warn "read of #{sys_path + path}  failed with #{e}"
-        return nil
+        nil
       end
     end
   end
