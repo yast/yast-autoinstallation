@@ -174,8 +174,9 @@ module Yast
 	  dev = "/dev/md"+md.fetch("partition_nr", 0).to_s
 	end
         md["device"] = dev
-        if Ops.get_symbol(md, "enc_type", :none) != :none
+        if md["crypt_fs"]
           Storage.SetCryptPwd(dev, Ops.get_string(md, "crypt_key", ""))
+          md["enc_type"] = md["format"] ? :luks : :twofish
         end
         Builtins.y2milestone("Working on %1", md)
         chunk_size = 4
