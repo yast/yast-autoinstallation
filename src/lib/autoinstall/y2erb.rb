@@ -94,12 +94,11 @@ module Y2Autoinstallation
 
         Yast.import "OSRelease"
         @os_release = {
-          name: Yast::OSRelease.ReleaseName,
+          name:    Yast::OSRelease.ReleaseName,
           version: Yast::OSRelease.ReleaseVersion,
-          id: Yast::OSRelease.id
+          id:      Yast::OSRelease.id
         }
       end
-
 
       # allow to use env bindings
       def public_bindings
