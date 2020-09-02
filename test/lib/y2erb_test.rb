@@ -82,7 +82,7 @@ def hardware_mock_data
           "link"    => [{ "state"=>false }],
           "mem"     =>
                        [{ "active" => true, "length" => 4096,
-                                                                         "start" => 4152377344 },
+                        "start" => 4152377344 },
                         { "active" => true, "length" => 16384,
                         "start" => 4152360960 }],
           "phwaddr" => [{ "addr"=>"a8:5e:45:c1:2f:eb" }]
@@ -225,6 +225,11 @@ describe Y2Autoinstallation::Y2ERB::TemplateEnvironment do
       expect(subject.disks).to be_a(Array)
       expect(subject.disks).to be_all(Hash)
     end
+  end
 
+  describe "#os_release" do
+    it "returns hash" do
+      expect(subject.os_release).to be_a(Hash)
+    end
   end
 end

@@ -85,6 +85,22 @@ module Y2Autoinstallation
         @network_cards
       end
 
+      # @return [Hash] list of info about OS release. Info contain:
+      #   `:name` human readable name of OS like `"openSUSE Tumbleweed"` or `"SLES"`
+      #   `:version` of release like `"20200727"` or `"12.5"`
+      #   `:id` id of OS like `"opensuse-tumbleweed"` or `"sles"`
+      def os_release
+        return @os_release if @os_release
+
+        Yast.import "OSRelease"
+        @os_release = {
+          name: Yast::OSRelease.ReleaseName,
+          version: Yast::OSRelease.ReleaseVersion,
+          id: Yast::OSRelease.id
+        }
+      end
+
+
       # allow to use env bindings
       def public_bindings
         binding
