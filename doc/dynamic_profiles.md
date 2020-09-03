@@ -46,14 +46,43 @@ The third way is using templates. From SLE 15 SP3, AutoYaST supports ERB templat
 documentation ]. ERB is the default templating system in Ruby and, basically, it allows
 preprocessing of specific directives with the full power of Ruby programming language. You enable
 this preprocessing by using the suffix `.erb` in the profile's name.
+ERB templates can be used together with pre-scripts, but it is not supported to use
+together with rules/classes.
+To make usage of ERB templates easier there are also some helpers that can be accessed. List of them are below:
 
-This ERB template uses the two biggest disks, enables multipath for specific storage controller and
+Helper `hardware` which returns map from libhd. It contains a lot of low level information about hardware.
+
+Helper `disks` which is list of hashes that contain:
+
+- `:vendor` of disk
+- `:device` kernel name of device
+- `:udev_names` list of udev names for given disk
+- `:model` model name from sysfs
+- `:serial` serial number of disk
+- `:size` disk size in bytes [Integer]
+
+
+Helper `network_cards` which is list of hashes that contain:
+
+- `:vendor` of card
+- `:device` name of device
+- `:mac` mac address of card
+- `:active` if card io is active [Boolean]
+- `:link` if card link is up [Boolean]
+
+Helper `os_release` which is hash that contain:
+
+- `:name` human readable name of OS like `"openSUSE Tumbleweed"` or `"SLES"`
+- `:version` of release like `"20200727"` or `"12.5"`
+- `:id` id of OS like `"opensuse-tumbleweed"` or `"sles"`
+
+This example ERB template uses the two biggest disks, enables multipath for specific storage controller and
 sets udev rules for network cards:
 
 ```erb
 <profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
-<%# example how to dynamic force multipath. Here it use storage model and if
-    it contain case insensitive word multipath %>
+  <%# example how to dynamic force multipath. Here it use storage model and if
+      it contain case insensitive word multipath %>
   <% if hardware["storage"].any? { |s| s["model"] =~ /multipath/i } %>
     <general>
       <storage>
@@ -66,36 +95,36 @@ sets udev rules for network cards:
       <product>openSUSE</product>
     </products>
   </software>
-  <%# for details about values see libhd %>
-  <% disks = hardware["disk"].sort_by { |d| s = d["resource"]["size"].first; s["x"]*s["y"] }.map { |d| d["dev_name"] }.reverse %>
+  <%# first lets create list of disk names according to its size %>
+  <% sorted_disks = disks.sort_by { |d| d[:size] }.map { |d| d[:device] }.reverse %>
   <partitioning t="list">
-    <% disks[0..1].each do |name| %>
+    <% sorted_disks[0..1].each do |name| %>
       <drive>
-        <device>
-          <%= name %>
-        </device>
-        <initialize t="boolean">
-          true
-        </initialize>
-      </drive>
+         <device>
+           <%= name %>
+         </device>
+         <initialize t="boolean">
+           true
+         </initialize>
+       </drive>
     <% end %>
   </partitioning>
   <%# situation: machine has two network catds. One leads to intranet and other to internet, so here we create udev
-    rules to have internet one as eth0 and intranet as eth1. To distinguish in this example intranet one is not active %>
+      rules to have internet one as eth0 and intranet as eth1. To distinguish in this example if use active flag for intranet %>
   <networking>
     <net-udev t="list">
       <rule>
         <name>eth0</name>
         <rule>ATTR{address}</rule>
         <value>
-          <%= hardware["netcard"].find { |c| c["resource"]["link"].first["state"] }["resource"]["phwaddr"].first["addr"] %>
+  	<%= network_cards.find { |c| c[:link] }[:mac] %>
         </value>
       </rule>
       <rule>
         <name>eth1</name>
         <rule>ATTR{address}</rule>
         <value>
-          <%= hardware["netcard"].find { |c| !c["resource"]["link"].first["state"] }["resource"]["phwaddr"].first["addr"] %>
+  	<%= network_cards.find { |c| !c[:link] }[:mac] %>
         </value>
       </rule>
     </net-udev>
