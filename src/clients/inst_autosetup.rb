@@ -125,14 +125,16 @@ module Yast
 
       AutoinstConfig.network_before_proposal = false
       general_section = Profile.current["general"] || {}
+      networking_section = Profile.current["networking"] || {}
       semiauto_network = general_section["semi-automatic"]&.include?("networking")
+      pkg_list = networking_section["managed"] ? ["NetworkManager"] : []
 
       if Profile.current["networking"] &&
-          (Profile.current["networking"]["setup_before_proposal"] ||
+          (networking_section["setup_before_proposal"] ||
             semiauto_network ||
             !AutoinstConfig.second_stage
           )
-        if Profile.current["networking"]["setup_before_proposal"]
+        if networking_section["setup_before_proposal"]
           Builtins.y2milestone("Networking setup before the proposal")
           AutoinstConfig.network_before_proposal = true
         elsif !AutoinstConfig.second_stage
@@ -148,10 +150,7 @@ module Yast
         Builtins.y2milestone(
           "Importing Network settings from configuration file"
         )
-        Call.Function(
-          "lan_auto",
-          ["Import", Ops.get_map(Profile.current, "networking", {})]
-        )
+        Call.Function("lan_auto", ["Import", networking_section])
       end
 
       if semiauto_network
@@ -355,6 +354,9 @@ module Yast
       # have been defined in the AutoYaST configuration file.
       # Selection will be stored in PackageAI.
       add_yast2_dependencies if AutoinstFunctions.second_stage_required?
+      # Also add packages needed by some profile configuration but missing the
+      # explicit declaration in the software section
+      AutoinstSoftware.add_additional_packages(pkg_list) unless pkg_list.empty?
 
       # Adding selections (defined in PackageAI) to libzypp and solving
       # package dependencies.
