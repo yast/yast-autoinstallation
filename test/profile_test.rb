@@ -535,7 +535,7 @@ describe Yast::Profile do
 
       before do
         allow(Yast::UI).to receive(:UserInput).and_return(:ok)
-        allow(Yast::UI).to receive(:QueryWidget).with(Id(:password), :Value)
+        allow(Yast::UI).to receive(:QueryWidget).with(:password, :Value)
           .and_return("nots3cr3t")
         allow(Yast::UI).to receive(:OpenDialog)
       end
