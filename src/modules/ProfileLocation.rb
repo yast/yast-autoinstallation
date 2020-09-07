@@ -116,7 +116,7 @@ module Yast
           Report.Error(Ops.add(error, @GET_error))
           return false
         end
-        tmp = Convert.to_string(SCR.Read(path(".target.string"), localfile))
+        tmp = SCR.Read(path(".target.string"), localfile)
 
         unless tmp.valid_encoding?
           # TRANSLATORS: %s is the filename
@@ -126,49 +126,9 @@ module Yast
           return false
         end
 
-        l = Builtins.splitstring(tmp, "\n")
-        while !tmp.nil? && Ops.get(l, 0, "") == "-----BEGIN PGP MESSAGE-----"
-          Builtins.y2milestone("encrypted profile found")
-          UI.OpenDialog(
-            VBox(
-              Label(
-                _("Encrypted AutoYaST profile. Enter the correct password.")
-              ),
-              Password(Id(:password), ""),
-              PushButton(Id(:ok), _("&OK"))
-            )
-          )
-          p = ""
-          button = nil
-          begin
-            button = UI.UserInput
-            p = Convert.to_string(UI.QueryWidget(Id(:password), :Value))
-          end until button == :ok
-          UI.CloseDialog
-          SCR.Execute(
-            path(".target.bash"),
-            Builtins.sformat(
-              "gpg2 --batch --output \"/tmp/decrypt.xml\" --passphrase \"%1\" %2",
-              AutoinstConfig.ShellEscape(p),
-              localfile
-            )
-          )
-          next unless Ops.greater_than(
-            SCR.Read(path(".target.size"), "/tmp/decrypt.xml"),
-            0
-          )
-
-          SCR.Execute(
-            path(".target.bash"),
-            Builtins.sformat("mv /tmp/decrypt.xml %1", localfile)
-          )
-          Builtins.y2milestone(
-            "decrypted. Moving now /tmp/decrypt.xml to %1",
-            localfile
-          )
-          tmp = Convert.to_string(SCR.Read(path(".target.string"), localfile))
-          l = Builtins.splitstring(tmp, "\n")
-        end
+        label = _("Encrypted AutoYaST profile.")
+        content = Y2Autoinstallation::Decrypter.decrypt(localfile)
+        SCR.Write(path(".target.string"), localfile, content)
 
         # render erb template
         if AutoinstConfig.filepath.end_with?(".erb")

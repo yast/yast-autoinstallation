@@ -9,6 +9,7 @@ require "yast2/popup"
 
 require "autoinstall/entries/registry"
 require "installation/autoinst_profile/element_path"
+require "autoinstall/decrypter"
 
 module Yast
   class ProfileClass < Module
@@ -40,8 +41,6 @@ module Yast
       Yast.import "Popup"
       Yast.import "ProductControl"
       Yast.import "Directory"
-      Yast.import "FileUtils"
-      Yast.import "PackageSystem"
       Yast.import "AutoinstFunctions"
 
       Yast.include self, "autoinstall/xml.rb"
@@ -547,53 +546,20 @@ module Yast
     # @param file [String] path to file
     # @return [Boolean]
     def ReadXML(file)
-      tmp = Convert.to_string(SCR.Read(path(".target.string"), file))
-      l = Builtins.splitstring(tmp, "\n")
-      if !tmp.nil? && Ops.get(l, 0, "") == "-----BEGIN PGP MESSAGE-----"
-        out = {}
-        while Ops.get_string(out, "stdout", "") == ""
-          UI.OpenDialog(
-            VBox(
-              Label(
-                _("Encrypted AutoYaST profile. Enter the correct password.")
-              ),
-              Password(Id(:password), ""),
-              PushButton(Id(:ok), Label.OKButton)
-            )
-          )
-          p = ""
-          button = nil
-          begin
-            button = UI.UserInput
-            p = Convert.to_string(UI.QueryWidget(Id(:password), :Value))
-          end until button == :ok
-          UI.CloseDialog
-          command = Builtins.sformat(
-            "gpg2 -d --batch --passphrase \"%1\" %2",
-            p,
-            file
-          )
-          out = Convert.convert(
-            SCR.Execute(path(".target.bash_output"), command, {}),
-            from: "any",
-            to:   "map <string, any>"
-          )
-        end
-        @current = XML.XMLToYCPString(Ops.get_string(out, "stdout", ""))
-        AutoinstConfig.ProfileEncrypted = true
+      tmp = SCR.Read(path(".target.string"), file)
+      AutoinstConfig.ProfileEncrypted = true if Y2Autoinstallation::Decrypter.encrypted?(tmp)
+      label = _("Encrypted AutoYaST profile.")
+      content = Y2Autoinstallation::Decrypter.decrypt(file, label)
+      @current = XML.XMLToYCPString(content)
 
-        # FIXME: rethink and check for sanity of that!
-        # save decrypted profile for modifying pre-scripts
-        if Stage.initial
-          SCR.Write(
-            path(".target.string"),
-            file,
-            Ops.get_string(out, "stdout", "")
-          )
-        end
-      else
-        Builtins.y2debug("Reading %1", file)
-        @current = XML.XMLToYCPFile(file)
+      # FIXME: rethink and check for sanity of that!
+      # save decrypted profile for modifying pre-scripts
+      if Stage.initial
+        SCR.Write(
+          path(".target.string"),
+          file,
+          content
+        )
       end
 
       Import(@current)
