@@ -127,7 +127,7 @@ module Yast
         end
 
         label = _("Encrypted AutoYaST profile.")
-        content = Y2Autoinstallation::Decrypter.decrypt(localfile)
+        content = Y2Autoinstallation::Decrypter.decrypt(localfile, label)
         SCR.Write(path(".target.string"), localfile, content)
 
         # render erb template

@@ -42,7 +42,7 @@ module Y2Autoinstallation
       Yast::UI.OpenDialog(
         VBox(
           Label(
-            label + " "  + _("Please provide a password.")
+            label + " " + _("Please provide a password.")
           ),
           Password(Id(:password), ""),
           PushButton(Id(:ok), Yast::Label.OKButton)
@@ -53,6 +53,7 @@ module Y2Autoinstallation
       loop do
         res = Yast::UI.UserInput
         next if res != :ok
+
         password = Yast::UI.QueryWidget(:password, :Value)
 
         # use SCR instead of cheetah due to logging
@@ -62,7 +63,7 @@ module Y2Autoinstallation
         )
 
         if output["exit"] != 0
-          res = Yast::Popup.Error(_("Failed to decrypt file. Error:\n") + output["stderr"])
+          Yast::Popup.Error(_("Failed to decrypt file. Error:\n") + output["stderr"])
         else
           break
         end
