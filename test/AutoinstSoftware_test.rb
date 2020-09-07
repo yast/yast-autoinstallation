@@ -28,6 +28,31 @@ describe Yast::AutoinstSoftware do
     end
   end
 
+  describe "#add_additional_packages" do
+    let(:pkgs) { ["NetworkManager"] }
+    let(:available_packages) { ["a1", "a2", "a3", "NetworkManager"] }
+
+    before do
+      allow(Yast::Pkg).to receive(:GetPackages)
+        .with(:available, true).and_return(available_packages)
+      subject.Import(Yast::Profile.current["software"])
+    end
+
+    it "appends the given list to the one to be installed" do
+      Yast::AutoinstSoftware.add_additional_packages(pkgs)
+      expect(Yast::PackageAI.toinstall).to include("NetworkManager")
+    end
+
+    context "when the packages given are not available" do
+      let(:available_packages) { ["a1", "a2", "a3"] }
+
+      it "the packages are not added" do
+        Yast::AutoinstSoftware.add_additional_packages(pkgs)
+        expect(Yast::PackageAI.toinstall).to_not include("NetworkManager")
+      end
+    end
+  end
+
   describe "#Export" do
     it "puts product definition into the exported profile" do
       expect(Yast::Product)

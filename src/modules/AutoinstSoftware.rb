@@ -161,6 +161,17 @@ module Yast
       true
     end
 
+    # Add the given list of packages to the one to be installed
+    #
+    # @param pkglist [Array<String>] list of additional packages to be installed
+    def add_additional_packages(pkglist)
+      pkglist.each do |p|
+        if !PackageAI.toinstall.include?(p) && @packagesAvailable.include?(p)
+          PackageAI.toinstall.push(p)
+        end
+      end
+    end
+
     def AddYdepsFromProfile(entries)
       Builtins.y2milestone("AddYdepsFromProfile entries %1", entries)
       pkglist = []
@@ -217,11 +228,7 @@ module Yast
       end
       pkglist.uniq!
       Builtins.y2milestone("AddYdepsFromProfile pkglist %1", pkglist)
-      pkglist.each do |p|
-        if !PackageAI.toinstall.include?(p) && @packagesAvailable.include?(p)
-          PackageAI.toinstall.push(p)
-        end
-      end
+      add_additional_packages(pkglist)
     end
 
     # Constructer
