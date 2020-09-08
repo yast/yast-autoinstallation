@@ -126,9 +126,19 @@ module Yast
           return false
         end
 
-        label = _("Encrypted AutoYaST profile.")
-        content = Y2Autoinstallation::Decrypter.decrypt(localfile, label)
-        SCR.Write(path(".target.string"), localfile, content)
+        if GPG.encrypted_symmetric?(localfile)
+          label = _("Encrypted AutoYaST profile.")
+          begin
+            pwd = Y2Autoinstallation::PasswordDialog.new(label)
+            return false unless pwd
+            content = GPG.decrypt_symmetric(localfile, pwd)
+          rescue GPGFailed => e
+            res = Yast2::Popup.show(_("Decryption of profile failed."),
+              details: e.mesage, heading: :error, buttons: :continue_cancel)
+            res == :continue ? retry : return false
+          end
+          SCR.Write(path(".target.string"), localfile, content)
+        end
 
         # render erb template
         if AutoinstConfig.filepath.end_with?(".erb")

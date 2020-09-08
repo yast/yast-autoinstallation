@@ -9,7 +9,7 @@ require "yast2/popup"
 
 require "autoinstall/entries/registry"
 require "installation/autoinst_profile/element_path"
-require "autoinstall/decrypter"
+require "autoinstall/password_dialog"
 
 module Yast
   class ProfileClass < Module
@@ -33,15 +33,16 @@ module Yast
       Yast.import "UI"
       textdomain "autoinst"
 
-      Yast.import "Stage"
-      Yast.import "Mode"
       Yast.import "AutoinstConfig"
-      Yast.import "XML"
+      Yast.import "AutoinstFunctions"
+      Yast.import "Directory"
+      Yast.import "GPG"
       Yast.import "Label"
+      Yast.import "Mode"
       Yast.import "Popup"
       Yast.import "ProductControl"
-      Yast.import "Directory"
-      Yast.import "AutoinstFunctions"
+      Yast.import "Stage"
+      Yast.import "XML"
 
       Yast.include self, "autoinstall/xml.rb"
 
@@ -546,10 +547,22 @@ module Yast
     # @param file [String] path to file
     # @return [Boolean]
     def ReadXML(file)
-      tmp = SCR.Read(path(".target.string"), file)
-      AutoinstConfig.ProfileEncrypted = true if Y2Autoinstallation::Decrypter.encrypted?(tmp)
-      label = _("Encrypted AutoYaST profile.")
-      content = Y2Autoinstallation::Decrypter.decrypt(file, label)
+      if !GPG.encrypted_symmetric?(file)
+        content = File.read(file)
+      else
+        AutoinstConfig.ProfileEncrypted = true
+        label = _("Encrypted AutoYaST profile.")
+
+        begin
+          pwd = Y2Autoinstallation::PasswordDialog.new(label)
+          return false unless pwd
+          content = GPG.decrypt_symmetric(file, pwd)
+        rescue GPGFailed => e
+          res = Yast2::Popup.show(_("Decryption of profile failed."),
+            details: e.mesage, heading: :error, buttons: :continue_cancel)
+          res == :continue ? retry : return false
+        end
+      end
       @current = XML.XMLToYCPString(content)
 
       # FIXME: rethink and check for sanity of that!
