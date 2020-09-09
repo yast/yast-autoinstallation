@@ -314,7 +314,7 @@ module Yast
         if [nil, ""].include?(AutoinstConfig.ProfilePassword)
           password = ::UI::PasswordDialog.new(
             _("Password for encrypted AutoYaST profile"), confirm: true
-          )
+          ).run
           return false unless password
 
           AutoinstConfig.ProfilePassword = password
@@ -518,7 +518,7 @@ module Yast
         label = _("Encrypted AutoYaST profile.")
 
         begin
-          pwd = ::UI::PasswordDialog.new(label)
+          pwd = ::UI::PasswordDialog.new(label).run
           return false unless pwd
 
           content = GPG.decrypt_symmetric(file, pwd)

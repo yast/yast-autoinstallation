@@ -130,7 +130,7 @@ module Yast
         if GPG.encrypted_symmetric?(localfile)
           label = _("Encrypted AutoYaST profile.")
           begin
-            pwd = ::UI::PasswordDialog.new(label)
+            pwd = ::UI::PasswordDialog.new(label).run
             return false unless pwd
 
             content = GPG.decrypt_symmetric(localfile, pwd)
