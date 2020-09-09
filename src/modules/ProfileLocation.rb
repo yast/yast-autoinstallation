@@ -131,11 +131,16 @@ module Yast
           begin
             pwd = Y2Autoinstallation::PasswordDialog.new(label)
             return false unless pwd
+
             content = GPG.decrypt_symmetric(localfile, pwd)
           rescue GPGFailed => e
             res = Yast2::Popup.show(_("Decryption of profile failed."),
               details: e.mesage, heading: :error, buttons: :continue_cancel)
-            res == :continue ? retry : return false
+            if res == :continue
+              retry
+            else
+              return false
+            end
           end
           SCR.Write(path(".target.string"), localfile, content)
         end

@@ -7,6 +7,8 @@
 require "yast"
 require "yast2/popup"
 
+require "fileutils"
+
 require "autoinstall/entries/registry"
 require "installation/autoinst_profile/element_path"
 require "autoinstall/password_dialog"
@@ -305,63 +307,25 @@ module Yast
     # @return [Boolean] true on success
     def Save(file)
       Prepare()
-      ret = false
       Builtins.y2debug("Saving data (%1) to XML file %2", @current, file)
+      XML.YCPToXMLFile(:profile, @current, file)
+
       if AutoinstConfig.ProfileEncrypted
-        xml = XML.YCPToXMLString(:profile, @current)
-        if Ops.greater_than(Builtins.size(xml), 0)
-          if AutoinstConfig.ProfilePassword == ""
-            p = ""
-            q = ""
-            begin
-              UI.OpenDialog(
-                VBox(
-                  Label(
-                    _("Encrypted AutoYaST profile. Enter the password twice.")
-                  ),
-                  Password(Id(:password), ""),
-                  Password(Id(:password2), ""),
-                  PushButton(Id(:ok), Label.OKButton)
-                )
-              )
-              button = nil
-              begin
-                button = UI.UserInput
-                p = Convert.to_string(UI.QueryWidget(Id(:password), :Value))
-                q = Convert.to_string(UI.QueryWidget(Id(:password2), :Value))
-              end until button == :ok
-              UI.CloseDialog
-            end while p != q
-            AutoinstConfig.ProfilePassword = AutoinstConfig.ShellEscape(p)
-          end
-          dir = Convert.to_string(SCR.Read(path(".target.tmpdir")))
-          command = Builtins.sformat(
-            "gpg2 -c --armor --batch --passphrase \"%1\" --output %2/encrypted_autoyast.xml",
-            AutoinstConfig.ProfilePassword,
-            dir
+        if [nil, ""].include?(AutoinstConfig.ProfilePassword)
+          password = Y2Autoinstallation::PasswordDialog.new(
+            _("Password for encrypted AutoYaST profile"), confirm: true
           )
-          SCR.Execute(path(".target.bash_input"), command, xml)
-          if Ops.greater_than(
-            SCR.Read(
-              path(".target.size"),
-              Ops.add(dir, "/encrypted_autoyast.xml")
-            ),
-            0
-          )
-            command = Builtins.sformat(
-              "mv %1/encrypted_autoyast.xml %2",
-              dir,
-              file
-            )
-            SCR.Execute(path(".target.bash"), command, {})
-            ret = true
-          end
+          return false unless password
+
+          AutoinstConfig.ProfilePassword = password
         end
-      else
-        XML.YCPToXMLFile(:profile, @current, file)
-        ret = true
+        dir = SCR.Read(path(".target.tmpdir"))
+        target_file = File.join(dir, "encrypted_autoyast.xml")
+        GPG.encrypt_symmetric(file, target_file, AutoinstConfig.ProfilePassword)
+        ::FileUtils.mv(target_file, file)
       end
-      ret
+
+      true
     rescue XMLSerializationError => e
       log.error "Failed to serialize objects: #{e.inspect}"
       false
@@ -556,11 +520,16 @@ module Yast
         begin
           pwd = Y2Autoinstallation::PasswordDialog.new(label)
           return false unless pwd
+
           content = GPG.decrypt_symmetric(file, pwd)
         rescue GPGFailed => e
           res = Yast2::Popup.show(_("Decryption of profile failed."),
             details: e.mesage, heading: :error, buttons: :continue_cancel)
-          res == :continue ? retry : return false
+          if res == :continue
+            retry
+          else
+            return false
+          end
         end
       end
       @current = XML.XMLToYCPString(content)
