@@ -6,6 +6,7 @@
 # $Id$
 require "yast"
 
+require "ui/password_dialog"
 require "autoinstall/xml_checks"
 require "autoinstall/y2erb"
 require "y2storage"
@@ -129,7 +130,7 @@ module Yast
         if GPG.encrypted_symmetric?(localfile)
           label = _("Encrypted AutoYaST profile.")
           begin
-            pwd = Y2Autoinstallation::PasswordDialog.new(label)
+            pwd = ::UI::PasswordDialog.new(label)
             return false unless pwd
 
             content = GPG.decrypt_symmetric(localfile, pwd)

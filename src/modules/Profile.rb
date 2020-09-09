@@ -11,7 +11,7 @@ require "fileutils"
 
 require "autoinstall/entries/registry"
 require "installation/autoinst_profile/element_path"
-require "autoinstall/password_dialog"
+require "ui/password_dialog"
 
 module Yast
   class ProfileClass < Module
@@ -312,7 +312,7 @@ module Yast
 
       if AutoinstConfig.ProfileEncrypted
         if [nil, ""].include?(AutoinstConfig.ProfilePassword)
-          password = Y2Autoinstallation::PasswordDialog.new(
+          password = ::UI::PasswordDialog.new(
             _("Password for encrypted AutoYaST profile"), confirm: true
           )
           return false unless password
@@ -518,7 +518,7 @@ module Yast
         label = _("Encrypted AutoYaST profile.")
 
         begin
-          pwd = Y2Autoinstallation::PasswordDialog.new(label)
+          pwd = ::UI::PasswordDialog.new(label)
           return false unless pwd
 
           content = GPG.decrypt_symmetric(file, pwd)
