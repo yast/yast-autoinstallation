@@ -139,4 +139,21 @@ describe "Yast::AutoinstPartPlan" do
       expect(drives.first.keys).to_not include("_id")
     end
   end
+
+  describe "#Summary" do
+    let(:partitioning) do
+      Y2Storage::AutoinstProfile::PartitioningSection.new_from_hashes(
+        [
+          { "device" => "/dev/vda", "partitions" => [{ "mount" => "/" }] }
+        ]
+      )
+    end
+
+    it "exports the partitioning summary" do
+      subject.Import(partitioning)
+      summary = subject.Summary
+      expect(summary).to include("Drive (Disk): /dev/vda")
+      expect(summary).to include("Partition: /")
+    end
+  end
 end

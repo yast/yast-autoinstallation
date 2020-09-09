@@ -6,6 +6,7 @@
 # $Id: AutoinstPartPlan.ycp 2813 2008-06-12 13:52:30Z sschober $
 require "yast"
 require "y2storage"
+require "autoinstall/presenters/drive"
 
 module Yast
   class AutoinstPartPlanClass < Module
@@ -75,30 +76,28 @@ module Yast
     # INTER FACE TO CONF TREE
 
     # Return summary of configuration
+    #
     # @return  [String] configuration summary dialog
     def Summary
       summary = ""
       summary = Summary.AddHeader(summary, _("Drives"))
-      if @AutoPartPlan.empty?
+      if @plan.drives.empty?
         summary = Summary.AddLine(summary,
           _("Not yet cloned."))
       else
         # We are counting harddisks only (type CT_DISK)
-        num = @AutoPartPlan.count { |drive| drive["type"] == :CT_DISK }
+        num = @plan.drives.size
         summary = Summary.AddLine(
           summary,
           (n_("%s drive in total", "%s drives in total", num) % num)
         )
         summary = Summary.OpenList(summary)
-        Builtins.foreach(@AutoPartPlan) do |drive|
-          driveDesc = AutoinstDrive.getNodeName(drive, true)
-          summary = Summary.AddListItem(summary, driveDesc)
+        @plan.drives.each do |drive|
+          presenter = Y2Autoinstallation::Presenters::Drive.new(drive)
+          summary = Summary.AddListItem(summary, presenter.ui_label)
           summary = Summary.OpenList(summary)
-          Builtins.foreach(Ops.get_list(drive, "partitions", [])) do |part|
-            summary = Summary.AddListItem(
-              summary,
-              AutoinstPartition.getPartitionDescription(part, true)
-            )
+          presenter.partitions.each do |part|
+            summary = Summary.AddListItem(summary, part.ui_label)
           end
           summary = Summary.CloseList(summary)
           summary = Summary.AddNewLine(summary)
