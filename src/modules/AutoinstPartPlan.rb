@@ -25,8 +25,8 @@ module Yast
       Yast.import "Arch"
 
       # The general idea with this moduls is that it manages a single
-      # partition plan (AutoPartPlan) and the user can work on that
-      # plan without having to sepcify that variable on each method
+      # partition plan (@plan) and the user can work on that
+      # plan without having to specify that variable on each method
       # call.
       # This is on the one hand convenient for the user and on the
       # other hand we have control over the plan.
@@ -36,7 +36,7 @@ module Yast
       # The single plan instance managed by this module.
       #
       # The partition plan is technically a list of DriveT'.
-      @AutoPartPlan = []
+      Reset()
 
       # default value of settings modified
       @modified = false
@@ -67,8 +67,6 @@ module Yast
     # Create a partition plan for the calling client
     # @return [Array] partition plan
     def ReadHelper
-      devicegraph = Y2Storage::StorageManager.instance.probed
-      profile = Y2Storage::AutoinstProfile::PartitioningSection.new_from_storage(devicegraph)
       profile.to_hashes
     end
 
@@ -113,29 +111,34 @@ module Yast
     # Get all the configuration from a map.
     # When called by inst_auto<module name> (preparing autoinstallation data)
     # the list may be empty.
-    # @param [Array<Hash>] settings a list  [...]
+    # @param settings [Array<Hash>,Y2Storage::AutoinstProfile::PartitioningSection]
+    #   An array of hashes describing each drive or a partitioning section object
     # @return  [Boolean] success
     def Import(settings)
       log.info("entering Import with #{settings.inspect}")
-      # index settings
-      @AutoPartPlan = settings.map.with_index { |d, i| d.merge("_id" => i) }
-      # set default value
-      @AutoPartPlan.each do |d|
-        d["initialize"] = false unless d.key?("initialize")
-      end
+
+      @plan =
+        if settings.is_a?(Y2Storage::AutoinstProfile::PartitioningSection)
+          settings
+        else
+          Y2Storage::AutoinstProfile::PartitioningSection.new_from_hashes(settings || [])
+        end
+
       true
     end
 
+    # Gets the probed partitioning from the storage manager
     def Read
-      Import(ReadHelper())
+      devicegraph = Y2Storage::StorageManager.instance.probed
+      @plan = Y2Storage::AutoinstProfile::PartitioningSection.new_from_storage(devicegraph)
     end
 
     # Dump the settings to a map, for autoinstallation use.
-    # @return [Array]
+    #
+    # @return [Array<Hash>]
     def Export
-      log.info("entering Export with #{@AutoPartPlan.inspect}")
-      drives = deep_copy(@AutoPartPlan)
-      drives.each { |d| d.delete("_id") }
+      log.info("entering Export with #{@plan.inspect}")
+      drives = @plan.to_hashes
 
       # Adding skipped devices to partitioning section.
       # These devices will not be taken in the AutoYaSt configuration file
@@ -154,9 +157,7 @@ module Yast
     end
 
     def Reset
-      @AutoPartPlan = []
-
-      nil
+      @plan = Y2Storage::AutoinstProfile::PartitioningSection.new
     end
 
     publish function: :SetModified, type: "void ()"

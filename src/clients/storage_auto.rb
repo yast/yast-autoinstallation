@@ -66,7 +66,7 @@ module Yast
         @ret = storage_dialog.run
         # After succesfully editing the storage settings, import the result as
         # the new partition plan.
-        AutoinstPartPlan.Import(storage_dialog.partitioning.to_hashes) if @ret == :next
+        AutoinstPartPlan.Import(storage_dialog.partitioning) if @ret == :next
       # Return actual state
       elsif @func == "Export"
         @ret = AutoinstPartPlan.Export
@@ -84,7 +84,7 @@ module Yast
       Builtins.y2milestone("Storage auto finished")
       Builtins.y2milestone("----------------------------------------")
 
-      deep_copy(@ret)
+      @ret
 
       # EOF
     end
