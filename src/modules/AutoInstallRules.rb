@@ -104,8 +104,11 @@ module Yast
     end
 
     # Cleanup XML file from namespaces put by xslt
-    def XML_cleanup(_in, out)
-      ycpin = XML.XMLToYCPFile(_in)
+    #
+    # @param in_ [String] Path to the profile to clean-up
+    # @param out [String] Path to the output file
+    def XML_cleanup(in_, out)
+      ycpin = XML.XMLToYCPFile(in_)
       Builtins.y2debug("Writing clean XML file to  %1, YCP is (%2)", out, ycpin)
       XML.YCPToXMLFile(:profile, ycpin, out)
     end
@@ -805,8 +808,9 @@ module Yast
       deep_copy(@tomerge)
     end
 
-    # Return list of file to merge (Order matters)
-    # @return [Boolean]
+    # Retrieves the files to merge
+    #
+    # @return [Boolean] true if the files were retrieved; false otherwise
     def GetRules
       Builtins.y2milestone("Getting Rules: %1", @tomerge)
 
