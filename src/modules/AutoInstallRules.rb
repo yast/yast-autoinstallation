@@ -830,7 +830,7 @@ module Yast
             Ops.add(AutoinstConfig.local_rules_location, "/"),
             file
           )
-          if !Get(
+          if !::File.exist?(localfile) && !Get(
             scheme,
             host,
             Ops.add(Ops.add(directory, "/"), file),

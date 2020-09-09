@@ -10,6 +10,7 @@ require "ui/password_dialog"
 require "autoinstall/xml_checks"
 require "autoinstall/y2erb"
 require "y2storage"
+require "fileutils"
 
 module Yast
   class ProfileLocationClass < Module
@@ -130,10 +131,15 @@ module Yast
         if GPG.encrypted_symmetric?(localfile)
           label = _("Encrypted AutoYaST profile.")
           begin
-            pwd = ::UI::PasswordDialog.new(label).run
-            return false unless pwd
+            if AutoinstConfig.ProfilePassword.empty?
+              pwd = ::UI::PasswordDialog.new(label).run
+              return false unless pwd
+            else
+              pwd = AutoinstConfig.ProfilePassword
+            end
 
             content = GPG.decrypt_symmetric(localfile, pwd)
+            AutoinstConfig.ProfilePassword = pwd
           rescue GPGFailed => e
             res = Yast2::Popup.show(_("Decryption of profile failed."),
               details: e.mesage, heading: :error, buttons: :continue_cancel)
@@ -223,6 +229,8 @@ module Yast
         else
           # Create rules for file
           AutoInstallRules.CreateFile(filename)
+          # And add there already downloaded and decrypted profile (bsc#1176336)
+          ::FileUtils.cp(localfile, File.join(AutoinstConfig.local_rules_location, filename))
         end
         ret = AutoInstallRules.GetRules
         return false if !ret

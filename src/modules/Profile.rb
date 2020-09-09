@@ -518,10 +518,15 @@ module Yast
         label = _("Encrypted AutoYaST profile.")
 
         begin
-          pwd = ::UI::PasswordDialog.new(label).run
-          return false unless pwd
+          if AutoinstConfig.ProfilePassword.empty?
+            pwd = ::UI::PasswordDialog.new(label).run
+            return false unless pwd
+          else
+            pwd = AutoinstConfig.ProfilePassword
+          end
 
           content = GPG.decrypt_symmetric(file, pwd)
+          AutoinstConfig.ProfilePassword = pwd
         rescue GPGFailed => e
           res = Yast2::Popup.show(_("Decryption of profile failed."),
             details: e.mesage, heading: :error, buttons: :continue_cancel)
