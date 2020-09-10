@@ -116,6 +116,8 @@ module Y2Autoinstallation
 
         # configure general settings
         general_section = Profile.current["general"] || {}
+        networking_section = Profile.current["networking"] || {}
+        pkg_list = networking_section["managed"] ? ["NetworkManager"] : []
         AutoinstGeneral.Import(general_section)
         log.info("general: #{general_section}")
         AutoinstGeneral.Write
@@ -287,6 +289,9 @@ module Y2Autoinstallation
         # have been defined in the AutoYaST configuration file.
         # Selection will be stored in PackageAI.
         add_yast2_dependencies if AutoinstFunctions.second_stage_required?
+        # Also add packages needed by some profile configuration but missing the
+        # explicit declaration in the software section
+        AutoinstSoftware.add_additional_packages(pkg_list) unless pkg_list.empty?
 
         # Adding selections (defined in PackageAI) to libzypp and solving
         # package dependencies.

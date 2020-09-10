@@ -1,6 +1,9 @@
 #!/usr/bin/env rspec
 
 require_relative "test_helper"
+require "fileutils"
+require "pathname"
+require "tmpdir"
 
 Yast.import "AutoInstallRules"
 
@@ -367,5 +370,147 @@ describe "Yast::AutoInstallRules" do
         expect(subject.Merge(result_path)).to eq(true)
       end
     end
+  end
+
+  describe "#GetRules" do
+    let(:tmp_dir) { Dir.mktmpdir("YaST-") }
+    let(:config) do
+      double(
+        "AutoinstConfig",
+        scheme: "https", host: "example.net", directory: "",
+        local_rules_location: local_rules_location
+      )
+    end
+    let(:local_rules_location) { File.join(tmp_dir, "rules") }
+    let(:tomerge) { ["profiles/base.xml", "profiles/disks.xml"] }
+
+    before do
+      stub_const("Yast::AutoinstConfig", config)
+      allow(subject).to receive(:Get).and_return(true)
+      subject.tomerge = tomerge
+    end
+
+    after do
+      FileUtils.remove_entry(tmp_dir) if Dir.exist?(tmp_dir)
+    end
+
+    it "retrieves the files to merge" do
+      expect(subject).to receive(:Get).with(
+        "https", "example.net", "/profiles/base.xml", "#{local_rules_location}/profiles/base.xml"
+      ).and_return(true)
+      expect(subject).to receive(:Get).with(
+        "https", "example.net", "/profiles/disks.xml", "#{local_rules_location}/profiles/disks.xml"
+      ).and_return(true)
+      expect(subject.GetRules).to eq(true)
+    end
+
+    context "when the local rules location does not exist" do
+      let(:tmp_dir) { File.join(TESTS_PATH, "tmp") }
+
+      after do
+        FileUtils.rm_f(tmp_dir) if Dir.exist?(tmp_dir)
+      end
+
+      it "creates the directory" do
+        subject.GetRules
+        expect(Pathname.new(tmp_dir)).to exist
+      end
+    end
+
+    context "when the files could be retrieved" do
+      before do
+        allow(subject).to receive(:Get).and_return(true)
+      end
+
+      it "returns true" do
+        expect(subject.GetRules).to eq(true)
+      end
+    end
+
+    context "when the files cannot be retrieved" do
+      before do
+        allow(subject).to receive(:Get).and_return(false)
+      end
+
+      it "returns false" do
+        expect(subject.GetRules).to eq(false)
+      end
+    end
+  end
+
+  describe "#XML_cleanup" do
+    let(:profile) { File.join(FIXTURES_PATH, "profiles", "leap.xml") }
+    let(:tmp_dir) { File.join(TESTS_PATH, "tmp") }
+    let(:output) { File.join(tmp_dir, "output.xml") }
+
+    around do |example|
+      FileUtils.mkdir_p(tmp_dir)
+      example.run
+      FileUtils.rm_r(tmp_dir)
+    end
+
+    it "cleans" do
+      subject.XML_cleanup(profile, output)
+      content = File.read(output)
+      expect(content).to include('t="list"')
+    end
+  end
+
+  describe "#shellseg" do
+    let(:ismatch) { false }
+
+    context "when matchtype is 'exact'" do
+      it "sets the shell command to do the comparison using '='" do
+        subject.shellseg(ismatch, "memsize", "16384", "and", "exact")
+        expect(subject.instance_variable_get(:@shell))
+          .to eq(' ( [ "$memsize" = "16384" ] ) ')
+      end
+    end
+
+    context "when matchtype is 'greater'" do
+      it "sets the shell command to do the comparison using '-gt'" do
+        subject.shellseg(ismatch, "memsize", "16384", "and", "greater")
+        expect(subject.instance_variable_get(:@shell))
+          .to eq(' ( [ "$memsize" -gt "16384" ] ) ')
+      end
+    end
+
+    context "when matchtype is 'lower'" do
+      it "sets the shell command to do the comparison using '-lt'" do
+        subject.shellseg(ismatch, "memsize", "16384", "and", "lower")
+        expect(subject.instance_variable_get(:@shell))
+          .to eq(' ( [ "$memsize" -lt "16384" ] ) ')
+      end
+    end
+
+    context "when matchtype is 'range'" do
+      it "sets the shell command to do the range comparison" do
+        subject.shellseg(ismatch, "memsize", "16384-32768", "and", "range")
+        expect(subject.instance_variable_get(:@shell))
+          .to eq(' ( [ "$memsize" -ge "16384" -a "$memsize" -le "32768" ] ) ')
+      end
+    end
+
+    context "when matchtype is 'regex'" do
+      it "sets the shell command to do a regex-based comparison" do
+        subject.shellseg(ismatch, "installed_product", "openSUSE", "and", "regex")
+        expect(subject.instance_variable_get(:@shell))
+          .to eq(' ( [[ "$installed_product" =~ openSUSE ]] ) ')
+      end
+    end
+
+    context "when ismatch argument is set to true" do
+      before do
+        subject.shellseg(false, "memsize", "16384", "or", "exact")
+      end
+
+      it "adds the condition to the existing one" do
+        subject.shellseg(true, "installed_product_version", "15.2", "or", "exact")
+        expect(subject.instance_variable_get(:@shell)).to eq(
+          ' ( [ "$memsize" = "16384" ] )   ||   ( [ "$installed_product_version" = "15.2" ] )'
+        )
+      end
+    end
+
   end
 end
