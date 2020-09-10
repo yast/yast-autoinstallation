@@ -142,7 +142,7 @@ module Yast
             AutoinstConfig.ProfilePassword = pwd
           rescue GPGFailed => e
             res = Yast2::Popup.show(_("Decryption of profile failed."),
-              details: e.mesage, heading: :error, buttons: :continue_cancel)
+              details: e.message, headline: :error, buttons: :continue_cancel)
             if res == :continue
               retry
             else
