@@ -7,8 +7,11 @@
 require "yast"
 require "yast2/popup"
 
+require "fileutils"
+
 require "autoinstall/entries/registry"
 require "installation/autoinst_profile/element_path"
+require "ui/password_dialog"
 
 module Yast
   class ProfileClass < Module
@@ -32,17 +35,16 @@ module Yast
       Yast.import "UI"
       textdomain "autoinst"
 
-      Yast.import "Stage"
-      Yast.import "Mode"
       Yast.import "AutoinstConfig"
-      Yast.import "XML"
+      Yast.import "AutoinstFunctions"
+      Yast.import "Directory"
+      Yast.import "GPG"
       Yast.import "Label"
+      Yast.import "Mode"
       Yast.import "Popup"
       Yast.import "ProductControl"
-      Yast.import "Directory"
-      Yast.import "FileUtils"
-      Yast.import "PackageSystem"
-      Yast.import "AutoinstFunctions"
+      Yast.import "Stage"
+      Yast.import "XML"
 
       Yast.include self, "autoinstall/xml.rb"
 
@@ -305,63 +307,25 @@ module Yast
     # @return [Boolean] true on success
     def Save(file)
       Prepare()
-      ret = false
       Builtins.y2debug("Saving data (%1) to XML file %2", @current, file)
+      XML.YCPToXMLFile(:profile, @current, file)
+
       if AutoinstConfig.ProfileEncrypted
-        xml = XML.YCPToXMLString(:profile, @current)
-        if Ops.greater_than(Builtins.size(xml), 0)
-          if AutoinstConfig.ProfilePassword == ""
-            p = ""
-            q = ""
-            begin
-              UI.OpenDialog(
-                VBox(
-                  Label(
-                    _("Encrypted AutoYaST profile. Enter the password twice.")
-                  ),
-                  Password(Id(:password), ""),
-                  Password(Id(:password2), ""),
-                  PushButton(Id(:ok), Label.OKButton)
-                )
-              )
-              button = nil
-              begin
-                button = UI.UserInput
-                p = Convert.to_string(UI.QueryWidget(Id(:password), :Value))
-                q = Convert.to_string(UI.QueryWidget(Id(:password2), :Value))
-              end until button == :ok
-              UI.CloseDialog
-            end while p != q
-            AutoinstConfig.ProfilePassword = AutoinstConfig.ShellEscape(p)
-          end
-          dir = Convert.to_string(SCR.Read(path(".target.tmpdir")))
-          command = Builtins.sformat(
-            "gpg2 -c --armor --batch --passphrase \"%1\" --output %2/encrypted_autoyast.xml",
-            AutoinstConfig.ProfilePassword,
-            dir
-          )
-          SCR.Execute(path(".target.bash_input"), command, xml)
-          if Ops.greater_than(
-            SCR.Read(
-              path(".target.size"),
-              Ops.add(dir, "/encrypted_autoyast.xml")
-            ),
-            0
-          )
-            command = Builtins.sformat(
-              "mv %1/encrypted_autoyast.xml %2",
-              dir,
-              file
-            )
-            SCR.Execute(path(".target.bash"), command, {})
-            ret = true
-          end
+        if [nil, ""].include?(AutoinstConfig.ProfilePassword)
+          password = ::UI::PasswordDialog.new(
+            _("Password for encrypted AutoYaST profile"), confirm: true
+          ).run
+          return false unless password
+
+          AutoinstConfig.ProfilePassword = password
         end
-      else
-        XML.YCPToXMLFile(:profile, @current, file)
-        ret = true
+        dir = SCR.Read(path(".target.tmpdir"))
+        target_file = File.join(dir, "encrypted_autoyast.xml")
+        GPG.encrypt_symmetric(file, target_file, AutoinstConfig.ProfilePassword)
+        ::FileUtils.mv(target_file, file)
       end
-      ret
+
+      true
     rescue XMLSerializationError => e
       log.error "Failed to serialize objects: #{e.inspect}"
       false
@@ -547,53 +511,42 @@ module Yast
     # @param file [String] path to file
     # @return [Boolean]
     def ReadXML(file)
-      tmp = Convert.to_string(SCR.Read(path(".target.string"), file))
-      l = Builtins.splitstring(tmp, "\n")
-      if !tmp.nil? && Ops.get(l, 0, "") == "-----BEGIN PGP MESSAGE-----"
-        out = {}
-        while Ops.get_string(out, "stdout", "") == ""
-          UI.OpenDialog(
-            VBox(
-              Label(
-                _("Encrypted AutoYaST profile. Enter the correct password.")
-              ),
-              Password(Id(:password), ""),
-              PushButton(Id(:ok), Label.OKButton)
-            )
-          )
-          p = ""
-          button = nil
-          begin
-            button = UI.UserInput
-            p = Convert.to_string(UI.QueryWidget(Id(:password), :Value))
-          end until button == :ok
-          UI.CloseDialog
-          command = Builtins.sformat(
-            "gpg2 -d --batch --passphrase \"%1\" %2",
-            p,
-            file
-          )
-          out = Convert.convert(
-            SCR.Execute(path(".target.bash_output"), command, {}),
-            from: "any",
-            to:   "map <string, any>"
-          )
-        end
-        @current = XML.XMLToYCPString(Ops.get_string(out, "stdout", ""))
-        AutoinstConfig.ProfileEncrypted = true
-
-        # FIXME: rethink and check for sanity of that!
-        # save decrypted profile for modifying pre-scripts
-        if Stage.initial
-          SCR.Write(
-            path(".target.string"),
-            file,
-            Ops.get_string(out, "stdout", "")
-          )
-        end
+      if !GPG.encrypted_symmetric?(file)
+        content = File.read(file)
       else
-        Builtins.y2debug("Reading %1", file)
-        @current = XML.XMLToYCPFile(file)
+        AutoinstConfig.ProfileEncrypted = true
+        label = _("Encrypted AutoYaST profile.")
+
+        begin
+          if AutoinstConfig.ProfilePassword.empty?
+            pwd = ::UI::PasswordDialog.new(label).run
+            return false unless pwd
+          else
+            pwd = AutoinstConfig.ProfilePassword
+          end
+
+          content = GPG.decrypt_symmetric(file, pwd)
+          AutoinstConfig.ProfilePassword = pwd
+        rescue GPGFailed => e
+          res = Yast2::Popup.show(_("Decryption of profile failed."),
+            details: e.message, headline: :error, buttons: :continue_cancel)
+          if res == :continue
+            retry
+          else
+            return false
+          end
+        end
+      end
+      @current = XML.XMLToYCPString(content)
+
+      # FIXME: rethink and check for sanity of that!
+      # save decrypted profile for modifying pre-scripts
+      if Stage.initial
+        SCR.Write(
+          path(".target.string"),
+          file,
+          content
+        )
       end
 
       Import(@current)

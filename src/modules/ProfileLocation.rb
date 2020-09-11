@@ -6,9 +6,11 @@
 # $Id$
 require "yast"
 
+require "ui/password_dialog"
 require "autoinstall/xml_checks"
 require "autoinstall/y2erb"
 require "y2storage"
+require "fileutils"
 
 module Yast
   class ProfileLocationClass < Module
@@ -116,7 +118,7 @@ module Yast
           Report.Error(Ops.add(error, @GET_error))
           return false
         end
-        tmp = Convert.to_string(SCR.Read(path(".target.string"), localfile))
+        tmp = SCR.Read(path(".target.string"), localfile)
 
         unless tmp.valid_encoding?
           # TRANSLATORS: %s is the filename
@@ -126,48 +128,28 @@ module Yast
           return false
         end
 
-        l = Builtins.splitstring(tmp, "\n")
-        while !tmp.nil? && Ops.get(l, 0, "") == "-----BEGIN PGP MESSAGE-----"
-          Builtins.y2milestone("encrypted profile found")
-          UI.OpenDialog(
-            VBox(
-              Label(
-                _("Encrypted AutoYaST profile. Enter the correct password.")
-              ),
-              Password(Id(:password), ""),
-              PushButton(Id(:ok), _("&OK"))
-            )
-          )
-          p = ""
-          button = nil
+        if GPG.encrypted_symmetric?(localfile)
+          label = _("Encrypted AutoYaST profile.")
           begin
-            button = UI.UserInput
-            p = Convert.to_string(UI.QueryWidget(Id(:password), :Value))
-          end until button == :ok
-          UI.CloseDialog
-          SCR.Execute(
-            path(".target.bash"),
-            Builtins.sformat(
-              "gpg2 --batch --output \"/tmp/decrypt.xml\" --passphrase \"%1\" %2",
-              AutoinstConfig.ShellEscape(p),
-              localfile
-            )
-          )
-          next unless Ops.greater_than(
-            SCR.Read(path(".target.size"), "/tmp/decrypt.xml"),
-            0
-          )
+            if AutoinstConfig.ProfilePassword.empty?
+              pwd = ::UI::PasswordDialog.new(label).run
+              return false unless pwd
+            else
+              pwd = AutoinstConfig.ProfilePassword
+            end
 
-          SCR.Execute(
-            path(".target.bash"),
-            Builtins.sformat("mv /tmp/decrypt.xml %1", localfile)
-          )
-          Builtins.y2milestone(
-            "decrypted. Moving now /tmp/decrypt.xml to %1",
-            localfile
-          )
-          tmp = Convert.to_string(SCR.Read(path(".target.string"), localfile))
-          l = Builtins.splitstring(tmp, "\n")
+            content = GPG.decrypt_symmetric(localfile, pwd)
+            AutoinstConfig.ProfilePassword = pwd
+          rescue GPGFailed => e
+            res = Yast2::Popup.show(_("Decryption of profile failed."),
+              details: e.message, headline: :error, buttons: :continue_cancel)
+            if res == :continue
+              retry
+            else
+              return false
+            end
+          end
+          SCR.Write(path(".target.string"), localfile, content)
         end
 
         # render erb template
@@ -247,6 +229,8 @@ module Yast
         else
           # Create rules for file
           AutoInstallRules.CreateFile(filename)
+          # And add there already downloaded and decrypted profile (bsc#1176336)
+          ::FileUtils.cp(localfile, File.join(AutoinstConfig.local_rules_location, filename))
         end
         ret = AutoInstallRules.GetRules
         return false if !ret
