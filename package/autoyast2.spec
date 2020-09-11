@@ -229,7 +229,6 @@ done
 %{yast_yncludedir}/autoinstall/io.rb
 %{yast_yncludedir}/autoinstall/common.rb
 %{yast_yncludedir}/autoinstall/tree.rb
-%{yast_yncludedir}/autoinstall/types.rb
 
 %{yast_moduledir}/AutoInstall.rb
 %{yast_moduledir}/AutoinstScripts.rb
@@ -242,9 +241,7 @@ done
 %{yast_moduledir}/AutoInstallRules.rb
 %{yast_moduledir}/ProfileLocation.rb
 %{yast_moduledir}/AutoinstCommon.rb
-%{yast_moduledir}/AutoinstDrive.rb
 %{yast_moduledir}/AutoinstPartPlan.rb
-%{yast_moduledir}/AutoinstPartition.rb
 %{yast_moduledir}/AutoinstFunctions.rb
 
 #clients

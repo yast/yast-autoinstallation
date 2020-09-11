@@ -51,24 +51,54 @@ describe "Yast::AutoinstPartPlan" do
     end
   end
 
+  describe "#Read" do
+    let(:probed) { instance_double(Y2Storage::Devicegraph) }
+
+    let(:partitioning) do
+      Y2Storage::AutoinstProfile::PartitioningSection.new_from_hashes(
+        [{ "device" => "/dev/vda" }]
+      )
+    end
+
+    before do
+      allow(Y2Storage::StorageManager.instance).to receive(:probed).and_return(probed)
+      allow(Y2Storage::AutoinstProfile::PartitioningSection).to receive(:new_from_storage)
+        .with(probed)
+        .and_return(partitioning)
+      subject.Reset
+    end
+
+    it "stores the plan for the probed partitioning layout" do
+      subject.Read
+      expect(subject.Export).to eq(partitioning.to_hashes)
+    end
+  end
+
   describe "#Import" do
-    let(:sda) { { "device" => "/dev/sda", "initialize" => true } }
-    let(:sdb) { { "device" => "/dev/sdb" } }
-    let(:settings) { [sda, sdb] }
+    let(:partitioning) do
+      Y2Storage::AutoinstProfile::PartitioningSection.new_from_hashes(
+        [{ "device" => "/dev/vda" }]
+      )
+    end
 
-    before { subject.Import(settings) }
-
-    context "\"initialize\" is not given" do
-      it "set default value for \"initialize\" to false" do
-        drive = subject.getDrive(1)
-        expect(drive["initialize"]).to eq(false)
+    context "when an partitioning partitioning object is give" do
+      it "stores the given object as the partitioning plan" do
+        subject.Import(partitioning)
+        expect(subject.Export).to eq(partitioning.to_hashes)
       end
     end
 
-    context "\"initialize\" is given" do
-      it "does not overwrite \"initialize\" with default setting" do
-        drive = subject.getDrive(0)
-        expect(drive["initialize"]).to eq(true)
+    context "when an array of hashes is given" do
+      let(:profile) { [double("drive1")] }
+
+      before do
+        allow(Y2Storage::AutoinstProfile::PartitioningSection)
+          .to receive(:new_from_hashes).with(profile).and_return(partitioning)
+      end
+
+      it "processes the array and stores the correspondant partitioning partitioning" do
+        subject.Import(profile)
+        expect(subject.Export).to eq(partitioning.to_hashes)
       end
     end
   end
@@ -110,47 +140,20 @@ describe "Yast::AutoinstPartPlan" do
     end
   end
 
-  describe "#getDrive" do
-    let(:sda) { { "device" => "/dev/sda" } }
-    let(:sdb) { { "device" => "/dev/sdb" } }
-    let(:settings) { [sda, sdb] }
-
-    before { subject.Import(settings) }
-
-    it "returns the drive in the given position" do
-      drive = subject.getDrive(1)
-      expect(drive["device"]).to eq("/dev/sdb")
+  describe "#Summary" do
+    let(:partitioning) do
+      Y2Storage::AutoinstProfile::PartitioningSection.new_from_hashes(
+        [
+          { "device" => "/dev/vda", "partitions" => [{ "mount" => "/" }] }
+        ]
+      )
     end
 
-    context "when the drive does not exist" do
-      it "returns an empty hash" do
-        expect(subject.getDrive(2)).to eq({})
-      end
-    end
-  end
-
-  describe "#getPartition" do
-    let(:sda) do
-      { "device" => "/dev/sda", "partitions" => [{ "mount" => "/" }, { "mount" => "/home" }] }
-    end
-    let(:settings) { [sda] }
-
-    before { subject.Import(settings) }
-
-    it "returns the drive in the given position" do
-      expect(subject.getPartition(0, 1)).to eq("mount" => "/home")
-    end
-
-    context "when the drive does not exist" do
-      it "returns an empty hash" do
-        expect(subject.getPartition(1, 0)).to eq({})
-      end
-    end
-
-    context "when the partition does not exist" do
-      it "returns an empty hash" do
-        expect(subject.getPartition(0, 2)).to eq({})
-      end
+    it "exports the partitioning summary" do
+      subject.Import(partitioning)
+      summary = subject.Summary
+      expect(summary).to include("Drive (Disk): /dev/vda")
+      expect(summary).to include("Partition: /")
     end
   end
 end
