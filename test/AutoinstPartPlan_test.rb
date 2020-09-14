@@ -72,6 +72,10 @@ describe "Yast::AutoinstPartPlan" do
       subject.Read
       expect(subject.Export).to eq(partitioning.to_hashes)
     end
+
+    it "returns true" do
+      expect(subject.Read).to eq(true)
+    end
   end
 
   describe "#Import" do

@@ -65,12 +65,6 @@ module Yast
       @modified
     end
 
-    # Create a partition plan for the calling client
-    # @return [Array] partition plan
-    def ReadHelper
-      profile.to_hashes
-    end
-
     # PUBLIC INTERFACE
 
     # INTER FACE TO CONF TREE
@@ -127,9 +121,12 @@ module Yast
     end
 
     # Gets the probed partitioning from the storage manager
+    #
+    # @return [Boolean]
     def Read
       devicegraph = Y2Storage::StorageManager.instance.probed
       @plan = Y2Storage::AutoinstProfile::PartitioningSection.new_from_storage(devicegraph)
+      true
     end
 
     # Dump the settings to a map, for autoinstallation use.
