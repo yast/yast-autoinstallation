@@ -121,6 +121,8 @@ module Yast
     end
 
     # Gets the probed partitioning from the storage manager
+    #
+    # @return [Boolean]
     def Read
       devicegraph = Y2Storage::StorageManager.instance.probed
       @plan = Y2Storage::AutoinstProfile::PartitioningSection.new_from_storage(devicegraph)
