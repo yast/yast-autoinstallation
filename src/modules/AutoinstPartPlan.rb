@@ -65,12 +65,6 @@ module Yast
       @modified
     end
 
-    # Create a partition plan for the calling client
-    # @return [Array] partition plan
-    def ReadHelper
-      profile.to_hashes
-    end
-
     # PUBLIC INTERFACE
 
     # INTER FACE TO CONF TREE
