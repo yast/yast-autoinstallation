@@ -130,6 +130,7 @@ module Yast
     def Read
       devicegraph = Y2Storage::StorageManager.instance.probed
       @plan = Y2Storage::AutoinstProfile::PartitioningSection.new_from_storage(devicegraph)
+      true
     end
 
     # Dump the settings to a map, for autoinstallation use.
