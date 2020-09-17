@@ -174,8 +174,13 @@ module Y2Autoinstallation
           break if ret == :not_found
         end
 
-        # reimport scripts, for the case <ask> has changed them
-        Yast::AutoinstScripts.Import(Yast::Profile.current["scripts"] || {})
+        if modified_profile?
+          # reimport scripts, for the case <ask> has changed them
+          Yast::AutoinstScripts.Import(Yast::Profile.current["scripts"] || {})
+          Yast::Report.Import(Yast::Profile.current.fetch("report", {}))
+          Yast::AutoinstGeneral.Import(Yast::Profile.current.fetch("general", {}))
+        end
+
         :ok
       end
 
