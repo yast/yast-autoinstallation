@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<!DOCTYPE profile>
+<profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
+  <scripts>
+    <pre-scripts config:type="list">
+      <script>
+        <interpreter>shell</interpreter>
+        <source><![CDATA[
+          # get list of disks. In this case it picks two biggest disks
+          # Some details, perl part makes disk info one liner, sed keep just device name and its capacity. Then it is sorted and removed size info
+          DISKS=`hwinfo --disk | perl -p0E 'while(s/^(.*)\n /$1 /gm){}' | sed '/^$/d; s/^.*Device File: \([^ ]\+\).*Capacity: [^(]*(\(.*\) bytes).*/\1 \2/' | sort --key 2 -nr | sed 's/ [0-9]*$//' | head -2`
+          # final static profile
+          TARGET_FILE=/tmp/profile/modified.xml
+          echo '<profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
+            <software>
+              <products config:type="list">
+                <product>openSUSE</product>
+              </products>
+            </software>
+            <partitioning t="list">' > $TARGET_FILE
+          for i in $DISKS; do
+            echo "<drive><device>$i</device><initialize t=\"boolean\">true</initialize></drive>" >> $TARGET_FILE
+          done
+          echo '</partitioning></profile>' >> $TARGET_FILE
+          ]]>
+        </source>
+      </script>
+    </pre-scripts>
+  </scripts>
+</profile>
