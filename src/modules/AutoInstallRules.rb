@@ -808,7 +808,7 @@ module Yast
       deep_copy(@tomerge)
     end
 
-    # Retrieves the files to merge
+    # Retrieves the rules files to merge
     #
     # @return [Boolean] true if the files were retrieved; false otherwise
     def GetRules
@@ -949,21 +949,8 @@ module Yast
       ok
     end
 
-    # Process Rules
-    # @param [String] result_profile
-    # @return [Boolean]
-    def Process(result_profile)
-      ok = true
-      prefinal = Ops.add(
-        AutoinstConfig.local_rules_location,
-        "/prefinal_autoinst.xml"
-      )
-      return false if !Merge(prefinal)
-
-      @tomerge = []
-
-      # Now check if there any classes defined in theis pre final control file
-      if !Profile.ReadXML(prefinal)
+    def read_xml(profile)
+      if !Profile.ReadXML(profile)
         Popup.Error(
           _(
             "Error while parsing the control file.\n" \
@@ -973,48 +960,56 @@ module Yast
         )
         return false
       end
-      Builtins.y2milestone("Checking classes...")
-      if Builtins.haskey(Profile.current, "classes")
-        Builtins.y2milestone("User defined classes available, processing....")
-        classes = Ops.get_list(Profile.current, "classes", [])
-        Builtins.foreach(classes) do |_class|
-          # backdoor for merging problems.
-          if Builtins.haskey(_class, "dont_merge")
-            AutoinstConfig.dontmerge = [] if @dontmergeIsDefault
-            AutoinstConfig.dontmerge = Convert.convert(
-              Builtins.union(
-                AutoinstConfig.dontmerge,
-                Ops.get_list(_class, "dont_merge", [])
-              ),
-              from: "list",
-              to:   "list <string>"
-            )
-            @dontmergeIsDefault = false
-            Builtins.y2milestone(
-              "user defined dont_merge for class found. dontmerge is %1",
-              AutoinstConfig.dontmerge
-            )
-          end
-          @tomerge = Builtins.add(
-            @tomerge,
-            Ops.add(
-              Ops.add(
-                Ops.add(
-                  "classes/",
-                  Ops.get_string(_class, "class_name", "none")
-                ),
-                "/"
-              ),
-              Ops.get_string(_class, "configuration", "none")
-            )
-          )
-        end
 
-        Builtins.y2milestone("New files to process: %1", @tomerge)
-        @Behaviour = :multiple
-        ret = GetRules()
-        if ret
-          @tomerge = Builtins.prepend(@tomerge, "prefinal_autoinst.xml")
+      true
+    end
+
+    # When there are classes defined in the profile it adds mergeable
+    # configurations to the list of files to be merged.
+    #
+    # @return [Boolean] true when there are configurations to be merged; false
+    #   otherwise
+    def classes_to_merge
+      # Now check if there are any classes defined in the pre final control file
+      log.info("Checking classes...")
+      return false unless (Profile.current || {}).keys.include?("classes")
+
+      log.info("User defined classes available, processing....")
+      classes = Profile.current["classes"]
+      classes.each do |profile_class|
+        # backdoor for merging problems.
+        if profile_class.keys.include?("dont_merge")
+          AutoinstConfig.dontmerge = [] if @dontmergeIsDefault
+          not_mergeable = profile_class.fetch("dont_merge", [])
+          AutoinstConfig.dontmerge = AutoinstConfig.dontmerge.union(not_mergeable)
+          @dontmergeIsDefault = false
+          log.info("user defined dont_merge for class found. " \
+                   "dontmerge is #{AutoinstConfig.dontmerge}")
+        end
+        class_name = profile_class.fetch("class_name", "none")
+        file_name  = profile_class.fetch("configuration", "none")
+        @tomerge << File.join("classes", class_name, file_name)
+      end
+
+      log.info("New files to process: #{@tomerge.inspect}")
+      @Behaviour = :multiple
+
+      true
+    end
+
+    # Process Rules
+    # @param [String] result_profile
+    # @return [Boolean]
+    def Process(result_profile)
+      prefinal = File.join(AutoinstConfig.local_rules_location, "prefinal_autoinst.xml")
+      return false if !Merge(prefinal)
+      return false if !read_xml(prefinal)
+
+      ok = true
+      @tomerge = []
+      if classes_to_merge
+        if GetRules()
+          @tomerge.prepend("prefinal_autoinst.xml")
           ok = Merge(result_profile)
         else
           Report.Error(
@@ -1028,18 +1023,13 @@ module Yast
           )
 
           ok = false
-          SCR.Execute(
-            path(".target.bash"),
-            Ops.add(Ops.add(Ops.add("cp ", prefinal), " "), result_profile)
-          )
+          SCR.Execute(path(".target.bash"), "cp #{prefinal} #{result_profile}")
         end
       else
-        SCR.Execute(
-          path(".target.bash"),
-          Ops.add(Ops.add(Ops.add("cp ", prefinal), " "), result_profile)
-        )
+        SCR.Execute(path(".target.bash"), "cp #{prefinal} #{result_profile}")
       end
-      Builtins.y2milestone("returns=%1", ok)
+
+      log.info("returns=#{ok}")
       ok
     end
 

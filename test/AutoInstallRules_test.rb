@@ -511,6 +511,146 @@ describe "Yast::AutoInstallRules" do
         )
       end
     end
+  end
 
+  describe "#Process" do
+    let(:tmp_dir) { Dir.mktmpdir("YaST-") }
+    let(:config) do
+      double(
+        "AutoinstConfig",
+        scheme: "https", host: "example.net", directory: "",
+        local_rules_location: local_rules_location, tmpDir: tmp_dir
+      )
+    end
+
+    let(:output) { File.join(tmp_dir, "output.xml") }
+    let(:local_rules_location) { File.join(tmp_dir, "rules") }
+    let(:prefinal_profile_path) { File.join(local_rules_location, "prefinal_autoinst.xml") }
+    let(:tomerge) { ["profiles/base.xml", "profiles/disks.xml"] }
+    let(:classes) { false }
+
+    before do
+      stub_const("Yast::AutoinstConfig", config)
+      allow(subject).to receive(:Merge).and_return(true)
+      allow(subject).to receive(:read_xml).and_return(true)
+      allow(subject).to receive(:classes_to_merge).and_return(:classes)
+      allow(Yast::SCR).to receive(:Execute)
+    end
+
+    after do
+      FileUtils.remove_entry(tmp_dir) if Dir.exist?(tmp_dir)
+    end
+
+    it "merges the rules already read into a prefinal profile" do
+      expect(subject).to receive(:Merge).with(prefinal_profile_path)
+
+      subject.Process(output)
+    end
+
+    it "reads classes defined in the prefinal profile" do
+      expect(subject).to receive(:classes_to_merge).and_return(classes)
+
+      subject.Process(output)
+    end
+
+    context "when there are no classes to be merged" do
+      it "copies the prefinal profile to the path given" do
+        expect(Yast::SCR).to receive(:Execute)
+          .with(Yast::Path.new(".target.bash"), "cp #{prefinal_profile_path} #{output}")
+
+        subject.Process(output)
+      end
+    end
+
+    context "when there are classes to be merged" do
+      let(:get_rules) { true }
+      let(:classes) { true }
+
+      before do
+        allow(subject).to receive(:GetRules).and_return(get_rules)
+      end
+
+      context "and get the classes files correctly" do
+        it "merges the prefinal profile with the classes ones to the given path" do
+          expect(subject).to receive(:Merge).with(prefinal_profile_path).and_return(true)
+          expect(subject).to receive(:Merge).with(output)
+
+          subject.Process(output)
+        end
+
+        it "returns true" do
+          expect(subject.Process(output)).to eql(true)
+        end
+      end
+
+      context "and do not get the files correctly" do
+        let(:get_rules) { false }
+
+        it "reports an error" do
+          expect(Yast::Report).to receive(:Error)
+
+          subject.Process(output)
+        end
+
+        it "copies the prefinal profile to the path given" do
+          expect(Yast::SCR).to receive(:Execute)
+            .with(Yast::Path.new(".target.bash"), "cp #{prefinal_profile_path} #{output}")
+
+          subject.Process(output)
+        end
+
+        it "returns false" do
+          expect(subject.Process(output)).to eql(false)
+        end
+      end
+    end
+  end
+
+  describe "#classes_to_merge" do
+    let(:profile_def) do
+      { "classes" => [
+        {
+          "class_name"    => "TrainingRoom",
+          "configuration" => "Software.xml",
+          "dont_merge"    => dont_merge
+        }
+      ] }
+    end
+
+    let(:profile) { double("Profile", current: profile_def) }
+    let(:dont_merge) { [] }
+    # let(:config) { double("AutoinstConfig", dontmerge: []) }
+
+    before do
+      stub_const("Yast::Profile", profile)
+      # stub_const("Yast::AutoinstConfig", config)
+      subject.tomerge = []
+      Yast::AutoinstConfig.dontmerge = []
+    end
+
+    context "when there are no classes defined in the profile" do
+      let(:profile_def) { {} }
+
+      it "returns false" do
+        expect(subject.classes_to_merge).to eql(false)
+      end
+    end
+
+    context "when there classes defined in the profile" do
+      let(:tomerge) { ["classes/TrainingRoom/Software.xml"] }
+
+      it "adds the configuration file to the list of files to be merged" do
+        expect { subject.classes_to_merge }.to change { subject.tomerge }.from([]).to(tomerge)
+      end
+
+      context "and the classes defines sections to not be merged" do
+        let(:dont_merge) { ["partition", "software"] }
+
+        it "adds the sections to the list of not mergeable" do
+          expect { subject.classes_to_merge }
+            .to change { Yast::AutoinstConfig.dontmerge }.from([]).to(dont_merge)
+        end
+      end
+    end
   end
 end
