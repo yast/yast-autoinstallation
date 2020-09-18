@@ -177,8 +177,16 @@ module Y2Autoinstallation
         end
 
         # reimport scripts, for the case <ask> has changed them
-        Yast::AutoinstScripts.Import(Yast::Profile.current["scripts"] || {})
+        import_initial_config if modified_profile?
         :ok
+      end
+
+      # Imports the initial profile configuration (report, general and
+      # pre-scripts sections)
+      def import_initial_config
+        Yast::Report.Import(Yast::Profile.current.fetch("report", {}))
+        Yast::AutoinstGeneral.Import(Yast::Profile.current.fetch("general", {}))
+        Yast::AutoinstScripts.Import(Yast::Profile.current.fetch("scripts", {}))
       end
 
       # Checking profile for unsupported sections.
@@ -263,8 +271,7 @@ module Y2Autoinstallation
         Yast::Progress.NextStage
         Yast::Progress.Title(_("Initial Configuration"))
         log.info "Initial Configuration"
-        Yast::Report.Import(Yast::Profile.current.fetch("report", {}))
-        Yast::AutoinstGeneral.Import(Yast::Profile.current.fetch("general", {}))
+        import_initial_config
 
         #
         # Copy the control file for easy access by user to  a pre-defined

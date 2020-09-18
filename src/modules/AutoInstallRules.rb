@@ -981,7 +981,7 @@ module Yast
         if profile_class.keys.include?("dont_merge")
           AutoinstConfig.dontmerge = [] if @dontmergeIsDefault
           not_mergeable = profile_class.fetch("dont_merge", [])
-          AutoinstConfig.dontmerge = AutoinstConfig.dontmerge.union(not_mergeable)
+          AutoinstConfig.dontmerge = (AutoinstConfig.dontmerge || []).union(not_mergeable)
           @dontmergeIsDefault = false
           log.info("user defined dont_merge for class found. " \
                    "dontmerge is #{AutoinstConfig.dontmerge}")
