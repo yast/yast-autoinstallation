@@ -104,15 +104,24 @@ module Y2Autoinstallation
             }
           },
           "options"    => {
-            "filename"    => { "type" => "string", "help" => "filename=XML_PROFILE" },
+            "filename"    => { "type" => "string", "help" => "Which profile to use. In " \
+              "check-profile case it supports also remote location like " \
+              "filename=ftp://test.com/example.xml" },
             "modname"     => { "type" => "string", "help" => "modname=AYAST_MODULE" },
+            "output"      => { "type" => "string", "help" => "where evaluated profile will be " \
+              "written. Default is ~/check_profile_result.xml Example filename=~/test.xml." },
             "run-scripts" => { "type"     => "enum",
                                "help"     => "run also scripts that are defined in profile. " \
               "By default false. Example: run-scripts=true",
+                               "typespec" => ["true", "false"] },
+            "import-all"  => { "type"     => "enum",
+                               "help"     => "Do testing import of all sections in profile. " \
+              "Note that scripts are imported when run-scripts is set to true. By default true. " \
+              "Example: import-all=false",
                                "typespec" => ["true", "false"] }
           },
           "mappings"   => {
-            "check-profile" => ["filename", "run-scripts"],
+            "check-profile" => ["filename", "run-scripts", "output", "import-all"],
             "file"          => ["filename", "modname"],
             "module"        => ["filename", "modname"],
             "ui"            => ["filename", "modname"]
@@ -157,23 +166,31 @@ module Y2Autoinstallation
       # @param options [Hash] Command line options
       # @return [Boolean] true if profile is valid
       def check_profile(options)
+        log.info "calling check profile with #{options.inspect}"
+
         if !options["filename"]
           Yast::CommandLine.Error(_("Filename parameter is mandatory."))
           return false
         end
+        Yast::Mode.SetUI("dialog") # check profile use UI and not cmdline
 
         path = options["filename"]
-        path = File.join(Dir.pwd, path) unless path.start_with?("/")
+        if path !~ /^[a-zA-Z0-9]+:\//
+          path = File.join(Dir.pwd, path) unless path.start_with?("/")
+          path = "file://#{path}"
+        end
 
-        Yast::AutoinstConfig.ParseCmdLine("file://#{path}")
+        Yast::AutoinstConfig.ParseCmdLine(path)
         res = Yast::ProfileLocation.Process
+        return res unless res
 
         # This is not problematic from security POV as it is own home,
         # so another user cannot create malicious link
-        target_file = ::File.expand_path("~/check_profile_result.xml")
+        target_file = ::File.expand_path(options["output"] || "~/check_profile_result.xml")
         ::FileUtils.cp(Yast::AutoinstConfig.xml_tmpfile, target_file)
-        import_profile(target_file)
-        run_scripts(target_file) if options["run-scripts"] == "true"
+        import_all = options["import-all"] != "false"
+        import_profile(target_file) if import_all
+        run_scripts(target_file, import_all: import_all) if options["run-scripts"] == "true"
         Yast2::Popup.show("Resulting autoyast profile is at #{target_file}")
 
         res
@@ -278,13 +295,24 @@ module Y2Autoinstallation
       ].freeze
       # run all scripts defined in profile
       # @return [Boolean] true if all scripts works
-      def run_scripts(filename)
+      def run_scripts(filename, import_all: )
+        log.info "Running scripts"
         mode = Yast::Mode.mode
         Yast::Mode.SetMode("autoinstallation") # to run scripts we need autoinst mode
         res = true
+        # we need to import at least scripts if not all of them are imported
+        if !import_all
+          Yast::Profile.ReadXML(filename)
+          Yast::AutoinstScripts.Import(Yast::Profile.current.fetch("scripts", {}))
+          log.info "importing scripts #{Yast::Profile.current.fetch("scripts", {})}"
+        end
         SCRIPTS_PARAMS.each do |type, special|
           # pre-scripts has some expectations where profile lives
           if type == "pre-scripts"
+            # clean previous content
+            if File.exist?(Yast::AutoinstConfig.profile_dir)
+              ::FileUtils.rm_r(Yast::AutoinstConfig.profile_dir)
+            end
             ::FileUtils.mkdir_p(Yast::AutoinstConfig.profile_dir)
             ::FileUtils.cp(filename, Yast::AutoinstConfig.profile_path)
           end
@@ -292,7 +320,7 @@ module Y2Autoinstallation
           # pre scripts can do modification of profile, so reload it
           if type == "pre-scripts" && File.exist?(Yast::AutoinstConfig.modified_profile)
             ::FileUtils.cp(Yast::AutoinstConfig.modified_profile, filename)
-            import_profile(filename)
+            import_profile(filename) if import_all
           end
         end
         Yast::Mode.SetMode(mode) # restore previous mode
