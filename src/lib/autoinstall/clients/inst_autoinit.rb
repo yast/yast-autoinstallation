@@ -150,7 +150,8 @@ module Y2Autoinstallation
       # an ask-list is declared redoing the import and write of the pre-scripts as
       # many times as needed.
       def autoinit_scripts
-        # pre-scripts should be already imported
+        # Pre-Scripts
+        Yast::AutoinstScripts.Import(Yast::Profile.current["scripts"] || {})
         Yast::AutoinstScripts.Write("pre-scripts", false)
 
         # Reread Profile in case it was modified in pre-script
@@ -173,6 +174,7 @@ module Y2Autoinstallation
           break if ret == :not_found
         end
 
+        # reimport scripts, for the case <ask> has changed them
         import_initial_config if modified_profile?
         :ok
       end
@@ -180,10 +182,9 @@ module Y2Autoinstallation
       # Imports the initial profile configuration (report, general and
       # pre-scripts sections)
       def import_initial_config
-        # reimport scripts, for the case <ask> has changed them
-        Yast::AutoinstScripts.Import(Yast::Profile.current.fetch("scripts", {}))
         Yast::Report.Import(Yast::Profile.current.fetch("report", {}))
         Yast::AutoinstGeneral.Import(Yast::Profile.current.fetch("general", {}))
+        Yast::AutoinstScripts.Import(Yast::Profile.current.fetch("scripts", {}))
       end
 
       # Checking profile for unsupported sections.
