@@ -68,7 +68,7 @@ module Y2Autoinstallation
     end
 
   private
-    attr_reader :sections
 
+    attr_reader :sections
   end
 end
