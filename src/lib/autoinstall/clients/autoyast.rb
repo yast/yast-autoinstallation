@@ -21,6 +21,7 @@ require "yast"
 require "autoinstall/auto_sequence"
 require "autoinstall/entries/registry"
 require "autoinstall/importer"
+require "autoinstall/profile_checker"
 
 Yast.import "AddOnProduct"
 Yast.import "AutoInstall"
