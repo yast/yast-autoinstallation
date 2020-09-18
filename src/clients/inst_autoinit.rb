@@ -171,9 +171,17 @@ module Yast
         break if ret == :not_found
       end
 
-      # reimport scripts, for the case <ask> has changed them
-      AutoinstScripts.Import(Ops.get_map(Profile.current, "scripts", {}))
+      import_initial_config if modified_profile?
       :ok
+    end
+
+    # Imports the initial profile configuration (report, general and
+    # pre-scripts sections)
+    def import_initial_config
+      # reimport scripts, for the case <ask> has changed them
+      Yast::AutoinstScripts.Import(Yast::Profile.current.fetch("scripts", {}))
+      Yast::Report.Import(Yast::Profile.current.fetch("report", {}))
+      Yast::AutoinstGeneral.Import(Yast::Profile.current.fetch("general", {}))
     end
 
     # Checking profile for unsupported sections.
@@ -259,8 +267,7 @@ module Yast
       Progress.NextStage
       Progress.Title(_("Initial Configuration"))
       Builtins.y2milestone("Initial Configuration")
-      Report.Import(Profile.current.fetch("report",{}))
-      AutoinstGeneral.Import(Profile.current.fetch("general",{}))
+      import_initial_config
 
       #
       # Copy the control file for easy access by user to  a pre-defined
