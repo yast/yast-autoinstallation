@@ -132,5 +132,57 @@ describe Y2Autoinstallation::Clients::InstAutoinit do
     end
 
     #  TODO: more test for profile processing
+    it "reports a warning with the list of unsupported section when present in the profile" do
+      allow(Yast::Y2ModuleConfig).to receive(:unsupported_profile_sections)
+        .and_return(["unsupported"])
+
+      expect(Yast::Report).to receive(:LongWarning)
+      subject.run
+    end
+
+    context "when pre-scripts are defined" do
+      let(:scripts_return) { :ok }
+      let(:read_modified) { :not_found }
+      let(:modified) { false }
+
+      before do
+        allow(subject).to receive(:autoinit_scripts).and_return(scripts_return)
+        allow(subject).to receive(:readModified).and_return(read_modified)
+        allow(Yast::AutoinstScripts).to receive(:Import)
+        allow(Yast::AutoinstScripts).to receive(:Write)
+        allow(subject).to receive(:import_initial_config)
+        allow(subject).to receive(:modified_profile?).and_return(modified)
+      end
+
+      it "runs pre-scripts" do
+        expect(subject).to receive(:autoinit_scripts)
+        subject.run
+      end
+
+      context "when the pre-scripts modify the profile" do
+        let(:modified) { true }
+
+        it "imports the initial configuration (report, general and scripts)" do
+          expect(subject).to receive(:import_initial_config)
+
+          subject.run
+        end
+      end
+
+      context "when applying pre-scripts return :ok" do
+        it "finishes the Progress" do
+          expect(Yast::Progress).to receive(:Finish)
+          subject.run
+        end
+      end
+
+      context "when applying pre-scripts do not return :ok" do
+        let(:scripts_return) { :restart_yast }
+
+        it "returns what was returned by the call" do
+          expect(subject.run).to eq(:restart_yast)
+        end
+      end
+    end
   end
 end
