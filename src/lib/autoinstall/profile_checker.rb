@@ -56,11 +56,11 @@ module Y2Autoinstallation
       target_file = ::File.expand_path(@target_file)
       ::FileUtils.cp(Yast::AutoinstConfig.xml_tmpfile, target_file)
       return false unless import_profile(target_file)
+
       res = run_scripts(target_file)
       Yast2::Popup.show("Resulting autoyast profile is at #{target_file}")
 
       res
-
     end
 
   private
@@ -85,7 +85,7 @@ module Y2Autoinstallation
       return true unless @import_all
 
       if !Yast::Profile.ReadXML(filename)
-        Yast2::Popup.(
+        Yast2::Popup.show(
           _(
             "Error while parsing the control file.\n" \
               "Check the log files for more details or fix the\n" \
@@ -151,6 +151,5 @@ module Y2Autoinstallation
 
       res
     end
-
   end
 end
