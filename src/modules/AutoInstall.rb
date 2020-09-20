@@ -6,6 +6,7 @@
 # $Id$
 require "yast"
 require "autoinstall/pkg_gpg_check_handler"
+require "autoinstall/dialogs/question"
 require "installation/autoinst_issues"
 
 module Yast
