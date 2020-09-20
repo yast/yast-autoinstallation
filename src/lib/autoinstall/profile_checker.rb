@@ -20,13 +20,12 @@
 require "yast"
 require "yast2/popup"
 
+Yast.import "AutoInstall"
 Yast.import "AutoinstConfig"
 Yast.import "AutoinstScripts"
 Yast.import "Mode"
 Yast.import "Popup"
 Yast.import "ProfileLocation"
-Yast.import "Progress"
-Yast.import "Wizard"
 
 module Y2Autoinstallation
   class ProfileChecker
@@ -56,13 +55,9 @@ module Y2Autoinstallation
       # so another user cannot create malicious link
       target_file = ::File.expand_path(@target_file)
       ::FileUtils.cp(Yast::AutoinstConfig.xml_tmpfile, target_file)
-      if @import_all
-        Yast::Progress.NextStage()
-        import_profile(target_file)
-      end
+      return false unless import_profile(target_file)
       res = run_scripts(target_file)
       Yast2::Popup.show("Resulting autoyast profile is at #{target_file}")
-      Yast::Wizard.CloseDialog
 
       res
 
@@ -85,7 +80,10 @@ module Y2Autoinstallation
     # Reads and imports a profile
     #
     # @param filename [String] Profile path
+    # @return [Boolean] if import does not find any issue
     def import_profile(filename)
+      return true unless @import_all
+
       if !Yast::Profile.ReadXML(filename)
         Yast2::Popup.(
           _(
@@ -101,6 +99,8 @@ module Y2Autoinstallation
       ) do
         Y2Autoinstallation::Importer.new(Yast::Profile.current).import_sections
       end
+
+      Yast::AutoInstall.valid_imported_values
     end
 
     SCRIPTS_PARAMS = [
@@ -143,7 +143,7 @@ module Y2Autoinstallation
           # pre scripts can do modification of profile, so reload it
           if type == "pre-scripts" && File.exist?(Yast::AutoinstConfig.modified_profile)
             ::FileUtils.cp(Yast::AutoinstConfig.modified_profile, filename)
-            import_profile(filename) if @import_all
+            return false unless import_profile(filename)
           end
         end
         Yast::Mode.SetMode(mode) # restore previous mode
