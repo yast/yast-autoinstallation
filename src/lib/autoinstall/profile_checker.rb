@@ -30,10 +30,22 @@ Yast.import "Popup"
 Yast.import "ProfileLocation"
 
 module Y2Autoinstallation
+  # Goal of this class is to do check of given profile file. It can evaluate
+  # dynamic profiles (erb, rules/classes, pre-script ). It contain also all UI
+  # interaction like showing feedback, or asking for confirmation.
   class ProfileChecker
     include Yast::I18n
     include Yast::Logger
 
+    # @param filename [String] can be relative path to pwd, absolute path or
+    #   any URL that AY supports.
+    # @param import_all [Boolean] if importing all sections and checking for
+    #   autoyast issues. Can be time consuming.
+    # @param run_scripts [Boolean] if also run all scripts defined in profile
+    #   to check its correctness. It is also needed for dynamic profiles using
+    #   pre-script generation. Can be dangeours if scripts contain destructive
+    #   operations
+    # @param target_file [String] absolute path where to write resulting profile.
     def initialize(filename, import_all:, run_scripts:, target_file:)
       textdomain "autoinst"
 
@@ -43,6 +55,7 @@ module Y2Autoinstallation
       @target_file = target_file
     end
 
+    # Runs the check according to flags specified in constructor.
     def check
       Yast::Mode.SetUI("dialog") # check profile use UI and not cmdline
 
