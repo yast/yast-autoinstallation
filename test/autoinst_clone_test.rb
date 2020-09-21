@@ -72,6 +72,7 @@ describe Yast::AutoinstClone do
   let(:multipaths) { [] }
 
   before do
+    Y2Storage::StorageManager.create_test_instance
     allow(Yast::Y2ModuleConfig).to receive(:ModuleMap).and_return(module_map)
     allow(Y2Storage::StorageManager.instance).to receive(:probed).and_return(probed_devicegraph)
     subject.additional = ["add-on"]
