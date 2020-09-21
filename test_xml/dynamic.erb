@@ -1,0 +1,41 @@
+<profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
+  <software>
+    <products config:type="list">
+      <product>openSUSE</product>
+    </products>
+  </software>
+  <%# first lets create list of disk names according to its size %>
+  <% sorted_disks = disks.sort_by { |d| d[:size] }.map { |d| d[:device] }.reverse %>
+  <partitioning t="list">
+    <% sorted_disks[0..1].each do |name| %>
+      <drive>
+         <device>
+           <%= name %>
+         </device>
+         <initialize t="boolean">
+           true
+         </initialize>
+       </drive>
+    <% end %>
+  </partitioning>
+  <%# situation: machine has two network catds. One leads to intranet and other to internet, so here we create udev
+      rules to have internet one as eth0 and intranet as eth1. To distinguish in this example if use active flag for intranet %>
+  <networking>
+    <net-udev t="list">
+      <rule>
+        <name>eth0</name>
+        <rule>ATTR{address}</rule>
+        <value>
+  	<%= network_cards.find { |c| c[:link] }[:mac] %>
+        </value>
+      </rule>
+      <rule>
+        <name>eth1</name>
+        <rule>ATTR{address}</rule>
+        <value>
+  	<%= network_cards.find { |c| !c[:link] }[:mac] %>
+        </value>
+      </rule>
+    </net-udev>
+  </networking>
+</profile>

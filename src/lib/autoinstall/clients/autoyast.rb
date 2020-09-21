@@ -21,17 +21,18 @@ require "yast"
 require "autoinstall/auto_sequence"
 require "autoinstall/entries/registry"
 require "autoinstall/importer"
+require "autoinstall/profile_checker"
 
-Yast.import "Pkg"
-Yast.import "Wizard"
-Yast.import "Mode"
-Yast.import "Profile"
-Yast.import "AutoinstConfig"
-Yast.import "Popup"
 Yast.import "AddOnProduct"
-Yast.import "CommandLine"
 Yast.import "AutoInstall"
+Yast.import "AutoinstConfig"
+Yast.import "CommandLine"
+Yast.import "Mode"
+Yast.import "Pkg"
+Yast.import "Popup"
+Yast.import "Profile"
 Yast.import "UI"
+Yast.import "Wizard"
 
 module Y2Autoinstallation
   module Clients
@@ -64,43 +65,64 @@ module Y2Autoinstallation
           "help"       => _("AutoYaST"),
           "guihandler" => fun_ref(method(:auto_sequence), "any ()"),
           "actions"    => {
-            "ui"           => {
+            "ui"            => {
               "handler" => fun_ref(
                 method(:run_ui),
                 "boolean (map <string, string>)"
               ),
               "help"    => ui_action_help
             },
-            "file"         => {
+            "file"          => {
               "handler" => fun_ref(
                 method(:run_ui),
                 "boolean (map <string, string>)"
               ),
               "help"    => file_action_help
             },
-            "module"       => {
+            "module"        => {
               "handler" => fun_ref(
                 method(:run_ui),
                 "boolean (map <string, string>)"
               ),
               "help"    => module_action_help
             },
-            "list-modules" => {
+            "list-modules"  => {
               "handler" => fun_ref(
                 method(:list_modules),
                 "void ()"
               ),
               "help"    => list_modules_action_help
+            },
+            "check-profile" => {
+              "handler" => fun_ref(
+                method(:check_profile),
+                "boolean (map <string, string>)"
+              ),
+              "help"    => check_profile_action_help
             }
           },
           "options"    => {
-            "filename" => { "type" => "string", "help" => "filename=XML_PROFILE" },
-            "modname"  => { "type" => "string", "help" => "modname=AYAST_MODULE" }
+            "filename"    => { "type" => "string", "help" => "Which profile to use. In " \
+              "check-profile case it supports also remote location like " \
+              "filename=ftp://test.com/example.xml" },
+            "modname"     => { "type" => "string", "help" => "modname=AYAST_MODULE" },
+            "output"      => { "type" => "string", "help" => "where evaluated profile will be " \
+              "written. Default is '~/check_profile_result.xml'. Example 'filename=~/test.xml'." },
+            "run-scripts" => { "type"     => "enum",
+                               "help"     => "run also scripts that are defined in profile. " \
+              "By default false. Example: run-scripts=true",
+                               "typespec" => ["true", "false"] },
+            "import-all"  => { "type"     => "enum",
+                               "help"     => "Do testing import of all sections in profile. " \
+              "Note that scripts are imported when run-scripts is set to true. By default true. " \
+              "Example: import-all=false",
+                               "typespec" => ["true", "false"] }
           },
           "mappings"   => {
-            "ui"     => ["filename", "modname"],
-            "file"   => ["filename", "modname"],
-            "module" => ["filename", "modname"]
+            "check-profile" => ["filename", "run-scripts", "output", "import-all"],
+            "file"          => ["filename", "modname"],
+            "module"        => ["filename", "modname"],
+            "ui"            => ["filename", "modname"]
           }
         }
 
@@ -135,6 +157,25 @@ module Y2Autoinstallation
           Header(_("Module"), _("Description")),
           items
         )
+      end
+
+      # Check if profile is valid
+      #
+      # @param options [Hash] Command line options
+      # @return [Boolean] true if profile is valid
+      def check_profile(options)
+        log.info "calling check profile with #{options.inspect}"
+
+        if !options["filename"]
+          Yast::CommandLine.Error(_("Filename parameter is mandatory."))
+          return false
+        end
+
+        checker = ProfileChecker.new(options["filename"],
+          import_all:  options["import_all"] != "false",
+          run_scripts: options["run-scripts"] == "true",
+          target_file: options["output"] || "~/check_profile_result.xml")
+        checker.check
       end
 
     private
@@ -217,6 +258,13 @@ module Y2Autoinstallation
       # @return [String]
       def list_modules_action_help
         _("List known modules.")
+      end
+
+      # @return [String]
+      def check_profile_action_help
+        _("Check if profile is valid. Also evaluate profile for dynamic profiles like " \
+          "ERB or rules/classes. If run-scripts parameter is set to 'true' it can be used " \
+          "also to validate dynamic profiles generated by pre-scripts.")
       end
     end
   end
