@@ -156,7 +156,7 @@ device_order = element device_order {
 }
 
 cache_mode = element cache_mode { STRING_ATTR, ("writethrough" | "writeback" | "writearound" | "none") }
-bcache_options = element bcache_options { cache_mode? }
+bcache_options = element bcache_options { MAP, (cache_mode?) }
 
 btrfs_name = element btrfs_name { STRING }
 
