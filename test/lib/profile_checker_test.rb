@@ -25,8 +25,10 @@ describe Y2Autoinstallation::ProfileChecker do
   let(:run_scripts) { false }
   let(:target_file) { "~/test.xml" }
 
-  subject { described_class.new(fixture_xml("leap.xml"), import_all: import_all,
-    run_scripts: run_scripts, target_file: target_file) }
+  subject do
+    described_class.new(fixture_xml("leap.xml"), import_all: import_all,
+    run_scripts: run_scripts, target_file: target_file)
+  end
 
   def fixture_xml(filename)
     File.expand_path("#{__dir__}/../fixtures/profiles/#{filename}")
@@ -57,13 +59,15 @@ describe Y2Autoinstallation::ProfileChecker do
 
       before do
         allow(Yast::Profile).to receive(:ReadXML)
-        allow(Y2Autoinstallation::Importer).to receive(:new).and_return(double(import_sections: true))
+        allow(Y2Autoinstallation::Importer).to receive(:new)
+          .and_return(double(import_sections: true))
         allow(Yast::AutoInstall).to receive(:valid_imported_values)
       end
 
       it "imports all sections in profile" do
         expect(Yast::Profile).to receive(:ReadXML)
-        expect(Y2Autoinstallation::Importer).to receive(:new).and_return(double(import_sections: true))
+        expect(Y2Autoinstallation::Importer).to receive(:new)
+          .and_return(double(import_sections: true))
 
         subject.check
       end
@@ -80,7 +84,6 @@ describe Y2Autoinstallation::ProfileChecker do
 
       before do
         allow(Yast::Profile).to receive(:ReadXML)
-        allow(Y2Autoinstallation::Importer).to receive(:new).and_return(double(import_sections: true))
         allow(Yast::AutoinstScripts).to receive(:Write)
         allow(::FileUtils).to receive(:rm_r)
         allow(::FileUtils).to receive(:mkdir_p)
