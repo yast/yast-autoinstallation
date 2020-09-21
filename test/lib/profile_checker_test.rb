@@ -23,7 +23,8 @@ require "autoinstall/profile_checker"
 describe Y2Autoinstallation::ProfileChecker do
   let(:import_all) { false }
   let(:run_scripts) { false }
-  let(:target_file) { "~/test.xml" }
+  # here it is a bit tricky, but as we mock all fs operations, we need to use here source xml
+  let(:target_file) { fixture_xml("leap.xml") }
 
   subject do
     described_class.new(fixture_xml("leap.xml"), import_all: import_all,
@@ -58,14 +59,12 @@ describe Y2Autoinstallation::ProfileChecker do
       let(:import_all) { true }
 
       before do
-        allow(Yast::Profile).to receive(:ReadXML)
         allow(Y2Autoinstallation::Importer).to receive(:new)
           .and_return(double(import_sections: true))
         allow(Yast::AutoInstall).to receive(:valid_imported_values)
       end
 
       it "imports all sections in profile" do
-        expect(Yast::Profile).to receive(:ReadXML)
         expect(Y2Autoinstallation::Importer).to receive(:new)
           .and_return(double(import_sections: true))
 
@@ -83,7 +82,6 @@ describe Y2Autoinstallation::ProfileChecker do
       let(:run_scripts) { true }
 
       before do
-        allow(Yast::Profile).to receive(:ReadXML)
         allow(Yast::AutoinstScripts).to receive(:Write)
         allow(::FileUtils).to receive(:rm_r)
         allow(::FileUtils).to receive(:mkdir_p)
