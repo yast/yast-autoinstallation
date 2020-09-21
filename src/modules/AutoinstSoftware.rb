@@ -187,45 +187,6 @@ module Yast
           true
         end
       end
-
-      # Evaluating packages for not founded entries via desktop file and rnc files.
-      entries.each do |e|
-        registry = Y2Autoinstallation::Entries::Registry.instance
-        description = registry.descriptions.find { |d| d.managed_keys.include?(e) }
-        # if needed taking default because no entry has been defined in the *.desktop file
-        yast_module = description ? description.module_name : e
-        # FIXME: Does not work see below
-        #
-        # This does currently not work at all as the packages provide this
-        # with the module name camel-cased; e.g.:
-        #
-        #   application(YaST2/org.opensuse.yast.Kdump.desktop)
-        #
-        # As there's no way to predict which letters are upper-cased this cannot work at all.
-        #
-        # The fallback method via #required_packages relies on a
-        # pre-calculated data set which may or may not reflect the
-        # dependencies of the packages in the repo.
-        #
-        # This area should be re-thought entirely.
-        #
-        provide = "application(YaST2/org.opensuse.yast.#{yast_module}.desktop)"
-
-        packages = Pkg.PkgQueryProvides(provide)
-        if packages.empty?
-          packs = Y2Autoinstallation::PackagerSearcher.new([e]).evaluate_via_schema[e]
-          if packs.nil? || packs.empty?
-            log.info "No package provides: #{provide}"
-          else
-            log.info "AddYdepsFromProfile add packages #{packs} for entry #{e}"
-            pkglist += packs
-          end
-        else
-          name = packages[0][0]
-          log.info "AddYdepsFromProfile add package #{name} for entry #{e}"
-          pkglist.push(name) if !pkglist.include?(name)
-        end
-      end
       pkglist.uniq!
       Builtins.y2milestone("AddYdepsFromProfile pkglist %1", pkglist)
       add_additional_packages(pkglist)

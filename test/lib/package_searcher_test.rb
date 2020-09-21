@@ -30,51 +30,6 @@ describe Y2Autoinstallation::PackagerSearcher do
                                                     ])
   end
 
-  describe "#evaluate_via_schema" do
-    context "no package belongs to section" do
-      let(:sections) { ["nis"] }
-      it "returns hash with section and empty array" do
-        allow(Yast::SCR).to receive(:Execute).and_return(
-          "exit"   => 0,
-          "stdout" => "/usr/share/YaST2/schema/autoyast/rng/nis.rng",
-          "stderr" => ""
-        )
-
-        expect(subject.evaluate_via_schema).to eq("nis" => [])
-      end
-    end
-
-    context "package belonging to section is already installed" do
-      let(:sections) { ["add-on"] }
-      it "returns hash with section and empty array" do
-        allow(Yast::SCR).to receive(:Execute).and_return(
-          "exit"   => 0,
-          "stdout" => "/usr/share/YaST2/schema/autoyast/rng/add-on.rng",
-          "stderr" => ""
-        )
-
-        allow(Yast::PackageSystem).to receive(:Installed).and_return(true)
-
-        expect(subject.evaluate_via_schema).to eq("add-on" => [])
-      end
-    end
-
-    context "package belonging to section is not installed" do
-      let(:sections) { ["audit-laf"] }
-      it "returns hash with section and array with package" do
-        allow(Yast::SCR).to receive(:Execute).and_return(
-          "exit"   => 0,
-          "stdout" => "/usr/share/YaST2/schema/autoyast/rng/audit-laf.rng",
-          "stderr" => ""
-        )
-
-        allow(Yast::PackageSystem).to receive(:Installed).and_return(false)
-
-        expect(subject.evaluate_via_schema).to eq("audit-laf" => ["yast2-audit-laf"])
-      end
-    end
-  end
-
   describe "#evaluate_via_rpm" do
     let(:packages) do
       [
