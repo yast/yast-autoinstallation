@@ -20,6 +20,8 @@
 require "yast"
 require "yast2/popup"
 
+require "autoinstall/importer"
+
 Yast.import "AutoInstall"
 Yast.import "AutoinstConfig"
 Yast.import "AutoinstScripts"
