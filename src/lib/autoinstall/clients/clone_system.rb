@@ -18,6 +18,7 @@
 # find current contact information at www.suse.com.
 
 require "yast"
+require "fileutils"
 
 require "autoinstall/entries/registry"
 
@@ -151,9 +152,11 @@ module Y2Autoinstallation
             # always clone general
             Yast::ProductControl.clone_modules + ["general"]
           end
+
         Yast::AutoinstClone.Process(target: target)
         begin
           Yast::XML.YCPToXMLFile(:profile, Yast::Profile.current, filename)
+          ::FileUtils.chmod(0o600, filename)
         rescue Yast::XMLSerializationError => e
           log.error "Creation of XML failed with #{e.inspect}"
           Yast::Popup.Error(
