@@ -155,6 +155,7 @@ module Y2Autoinstallation
 
         Yast::AutoinstClone.Process(target: target)
         begin
+          # The file might contain sensitive data, so let's set the permissions to 0o600.
           ::FileUtils.touch(filename)
           ::FileUtils.chmod(0o600, filename)
           Yast::XML.YCPToXMLFile(:profile, Yast::Profile.current, filename)
