@@ -155,8 +155,9 @@ module Y2Autoinstallation
 
         Yast::AutoinstClone.Process(target: target)
         begin
-          Yast::XML.YCPToXMLFile(:profile, Yast::Profile.current, filename)
+          ::FileUtils.touch(filename)
           ::FileUtils.chmod(0o600, filename)
+          Yast::XML.YCPToXMLFile(:profile, Yast::Profile.current, filename)
         rescue Yast::XMLSerializationError => e
           log.error "Creation of XML failed with #{e.inspect}"
           Yast::Popup.Error(
