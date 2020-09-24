@@ -35,6 +35,7 @@ describe Y2Autoinstallation::Clients::CloneSystem do
     let(:normal?) { true }
     let(:package_installed?) { true }
     let(:tmp_dir) { Dir.mktmpdir("YaST-") }
+    let(:profile_path) { File.join(tmp_dir, "autoinst.xml") }
     let(:profile_exists?) { false }
 
     before do
@@ -45,9 +46,12 @@ describe Y2Autoinstallation::Clients::CloneSystem do
       allow(Yast::Installation).to receive(:restart_file)
         .and_return(File.join(tmp_dir, "restart_yast"))
       allow(Yast::AutoinstClone).to receive(:Process)
-      allow(Yast::XML).to receive(:YCPToXMLFile)
       allow(Yast::FileUtils).to receive(:Exists).and_call_original
       allow(Yast::FileUtils).to receive(:Exists).with(/autoinst.xml/).and_return(profile_exists?)
+      stub_const(
+        "Y2Autoinstallation::Clients::CloneSystem::DEFAULT_FILENAME",
+        File.join(tmp_dir, "autoinst.xml")
+      )
     end
 
     around(:each) do |example|
@@ -81,7 +85,7 @@ describe Y2Autoinstallation::Clients::CloneSystem do
 
     describe "'modules' command" do
       let(:args) { ["modules"] }
-      let(:profile) { instance_double(Hash) }
+      let(:profile) { { "general" => { "mode" => { "confirm" => true } } } }
 
       before do
         allow(Yast::Profile).to receive(:current).and_return(profile)
@@ -98,9 +102,9 @@ describe Y2Autoinstallation::Clients::CloneSystem do
           let(:continue?) { true }
 
           it "saves the profile to the given file" do
-            expect(Yast::XML).to receive(:YCPToXMLFile)
-              .with(:profile, profile, "/root/autoinst.xml")
             client.main
+            expect(File).to exist(profile_path)
+            expect(File.stat(profile_path).mode.to_s(8)).to eq("100600")
           end
         end
 
@@ -117,8 +121,9 @@ describe Y2Autoinstallation::Clients::CloneSystem do
 
       it "clones and writes the profile to '/root/autoinst.xml'" do
         expect(Yast::AutoinstClone).to receive(:Process)
-        expect(Yast::XML).to receive(:YCPToXMLFile).with(:profile, profile, "/root/autoinst.xml")
         client.main
+        expect(File).to exist(profile_path)
+        expect(File.stat(profile_path).mode.to_s(8)).to eq("100600")
       end
 
       it "shows error popup if invalid object is found during serialization" do
@@ -130,12 +135,14 @@ describe Y2Autoinstallation::Clients::CloneSystem do
       end
 
       context "when a filename is given" do
-        let(:args) { ["modules", "filename=/tmp/autoinst.xml"] }
+        let(:profile_path) { File.join(tmp_dir, "alternative.xml") }
+        let(:args) { ["modules", "filename=#{profile_path}"] }
 
         it "clones and writes the profile to the given file" do
           expect(Yast::AutoinstClone).to receive(:Process)
-          expect(Yast::XML).to receive(:YCPToXMLFile).with(:profile, profile, "/tmp/autoinst.xml")
           client.main
+          expect(File).to exist(profile_path)
+          expect(File.stat(profile_path).mode.to_s(8)).to eq("100600")
         end
       end
 
