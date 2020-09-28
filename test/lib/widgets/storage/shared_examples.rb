@@ -150,6 +150,10 @@ RSpec.shared_examples "Y2Autoinstallation::Widgets::Storage::SizeSelector" do
   end
 
   describe "#value=" do
+    before do
+      allow(subject).to receive(:change_items)
+    end
+
     context "when given value is a valid disk size" do
       let(:size)  { 67108864 }
 
