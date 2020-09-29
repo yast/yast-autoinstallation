@@ -168,7 +168,8 @@ module Y2Autoinstallation
         # TRANSLATORS: Warn user about using invalid XML
         _("Using an invalid XML document might result in an unexpected behavior, " \
           "crash or even data loss!") +
-        "</p><h4>" + _("Details") + "</h4>" + ERB::Util.html_escape(errors.join("<br>")) +
+        "</p><h4>" + _("Details") + "</h4>" \
+        "<p>" + ERB::Util.html_escape(errors.join("<br>")) + "</p>" \
         "<h4>" + _("Note") + "</h4>" +
         # TRANSLATORS: A hint how to check a XML file, displayed as a part of the
         # validation error message, %{jing} and %{xmllint} are replaced by shell commands,
