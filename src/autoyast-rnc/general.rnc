@@ -10,15 +10,17 @@ general = element general {
       element mode {
         MAP,
         (
-          element confirm       { BOOLEAN }? &
-          element halt          { BOOLEAN }? &
-          element second_stage  { BOOLEAN }? &
-          element final_halt    { BOOLEAN }? &
-          element final_reboot  { BOOLEAN }? &
-          element forceboot     { BOOLEAN }? &
-          element confirm_base_product_license { BOOLEAN }? &
+          element activate_systemd_default_target   { BOOLEAN }? &
+          element confirm                           { BOOLEAN }? &
+          element confirm_base_product_license      { BOOLEAN }? &
+          element final_halt                        { BOOLEAN }? &
+          element final_reboot                      { BOOLEAN }? &
+          element final_restart_services            { BOOLEAN }? &
+          element forceboot                         { BOOLEAN }? &
+          element halt                              { BOOLEAN }? &
+          element max_systemd_wait                  { INTEGER }? &
           element ntp_sync_time_before_installation { STRING }? &
-          element max_systemd_wait { INTEGER }?
+          element second_stage                      { BOOLEAN }?
         )
       }? &
       ask-list? &
