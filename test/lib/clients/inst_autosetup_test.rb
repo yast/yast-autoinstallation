@@ -42,7 +42,7 @@ describe Y2Autoinstallation::Clients::InstAutosetup do
       allow(Yast::Progress).to receive(:Title)
       allow(Yast::AutoinstStorage).to receive(:Import).and_return(true)
       allow(Yast::AutoinstStorage).to receive(:Write).and_return(true)
-      allow(Yast::Profile).to receive(:current).and_return(profile)
+
       allow(Yast::WFM).to receive(:CallFunction).with(/_auto/, Array).and_return(true)
       allow(Yast::Popup).to receive(:ConfirmAbort).and_return(true)
 
@@ -59,6 +59,7 @@ describe Y2Autoinstallation::Clients::InstAutosetup do
       allow(subject).to receive(:probe_storage)
       allow(Yast::AutoinstSoftware).to receive(:Write).and_return(true)
       allow(Yast::ServicesManager).to receive(:import)
+      Yast::Profile.current = profile
     end
 
     it "sets up the network" do
@@ -174,7 +175,7 @@ describe Y2Autoinstallation::Clients::InstAutosetup do
     end
 
     it "sets up the software" do
-      expect(Yast::AutoinstSoftware).to receive(:Import).with(profile["software"])
+      expect(Yast::AutoinstSoftware).to receive(:Import).with(a_hash_including(profile["software"]))
       expect(Yast::AutoinstSoftware).to receive(:Write).and_return(true)
       subject.main
     end
