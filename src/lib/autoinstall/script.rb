@@ -269,7 +269,7 @@ module Y2Autoinstallation
       "python" => "/usr/bin/python"
     }.freeze
     # Runs the script
-    # @return [Boolean] if exit code is zero
+    # @return [Boolean,nil] if exit code is zero; nil if the script was not executed
     def execute
       return if already_run? && !rerun
 

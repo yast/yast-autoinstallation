@@ -261,6 +261,24 @@ describe "Yast::AutoinstScripts" do
         subject.Import(data)
         subject.Write("pre-scripts", true)
       end
+
+      context "when the script does not run" do
+        let(:script) do
+          Y2Autoinstallation::PreScript.new(
+            "location" => "http://test.com/script", "rerun" => false
+          )
+        end
+
+        before do
+          allow(subject).to receive(:scripts).and_return([script])
+          allow(script).to receive(:execute).and_return(nil)
+        end
+
+        it "does not report any problem" do
+          expect(Yast::Report).to_not receive(:Warning)
+          subject.Write("pre-scripts", false)
+        end
+      end
     end
 
     context "for postpartitioning-scripts" do
