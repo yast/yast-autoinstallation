@@ -264,7 +264,9 @@ describe "Yast::AutoinstScripts" do
 
       context "when the script does not run" do
         let(:script) do
-          Y2Autoinstallation::PreScript.new("location" => "http://test.com/script", "rerun" => false)
+          Y2Autoinstallation::PreScript.new(
+            "location" => "http://test.com/script", "rerun" => false
+          )
         end
 
         before do
