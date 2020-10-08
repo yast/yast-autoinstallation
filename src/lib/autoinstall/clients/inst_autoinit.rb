@@ -59,7 +59,7 @@ module Y2Autoinstallation
         Yast::Progress.New(
           _("Preparing System for Automatic Installation"),
           "", # progress_title
-          6, # progress bar length
+          7, # progress bar length
           progress_stages,
           [],
           help_text
