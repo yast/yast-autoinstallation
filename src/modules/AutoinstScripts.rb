@@ -245,7 +245,7 @@ module Yast
     def Write(type, special)
       return true if !Mode.autoinst && !Mode.autoupgrade
 
-      target_scripts = @scripts.select { |s| s.class.type == type }
+      target_scripts = scripts.select { |s| s.class.type == type }
       target_scripts.select! { |s| s.chrooted == special } if type == "chroot-scripts"
 
       target_scripts.each(&:create_script_file)
@@ -259,6 +259,7 @@ module Yast
         Popup.ShowFeedback("", script.notification) unless script.notification.empty?
 
         res = script.execute
+        next if res.nil? # the script was not executed
 
         Popup.ClearFeedback unless script.notification.empty?
 
