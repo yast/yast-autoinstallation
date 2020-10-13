@@ -4,7 +4,10 @@ namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
 
 backup =
   element backup {
-    element modified { BOOLEAN }? &
-    element remove_old { BOOLEAN }? &
-    element sysconfig { BOOLEAN }?
+    MAP,
+    (
+      element modified { BOOLEAN }? &
+      element remove_old { BOOLEAN }? &
+      element sysconfig { BOOLEAN }?
+    )
 }
