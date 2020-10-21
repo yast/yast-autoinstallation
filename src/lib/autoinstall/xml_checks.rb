@@ -100,8 +100,9 @@ module Y2Autoinstallation
 
       ret = Yast2::Popup.show(message(msg, validator.errors, file, schema),
         richtext: true,
-        headline: :error,
+        headline: :warning,
         buttons:  :continue_cancel,
+        timeout:  Yast::Report.Export["warnings"]["timeout"],
         focus:    :cancel) == :continue
 
       if ret
