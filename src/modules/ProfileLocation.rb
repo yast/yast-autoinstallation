@@ -197,6 +197,13 @@ module Yast
         false
       end
 
+      # Download has produced an error which is stored in the target
+      # file --> delete it.
+      if !ret && ::File.exist?(AutoinstConfig.local_rules_file)
+        log.info("cleanup #{AutoinstConfig.local_rules_file}")
+        ::FileUtils.rm(AutoinstConfig.local_rules_file)
+      end
+
       if ret
         AutoInstallRules.userrules = true
       else
