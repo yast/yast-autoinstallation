@@ -844,6 +844,9 @@ module Yast
               "Error while fetching file:  %1",
               Ops.add(Ops.add(directory, "/"), file)
             )
+            # Download has produced an error which is stored in the target
+            # file --> delete it.
+            ::FileUtils.rm_r(localfile) if ::File.exist?(localfile)
           else
             stop = true if @Behaviour == :one
             valid = Builtins.add(valid, file)
