@@ -1,0 +1,98 @@
+
+# See https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
+
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  Tests:
+    runs-on: ubuntu-latest
+    container: registry.opensuse.org/yast/head/containers/yast-ruby:latest
+
+    steps:
+
+    - name: Git Checkout
+      uses: actions/checkout@v1
+
+    #  install missing dependencies
+    - name: Install Dependencies
+      run: |
+        zypper --non-interactive install --no-recommends \
+          trang \
+          libxml2-tools \
+          libxslt-tools \
+          yast2-installation-control \
+          yast2-update
+
+    # just for easier debugging...
+    - name: Inspect Installed Packages
+      run: rpm -qa | sort
+
+    - name: Unit Tests
+      run: rake test:unit
+      # enable code coverage reporting
+      env:
+        COVERAGE: 1
+
+    # send the coverage report to coveralls.io
+    - name: Coveralls Report
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+
+  Rubocop:
+    runs-on: ubuntu-latest
+    container: registry.opensuse.org/yast/head/containers/yast-ruby:latest
+
+    steps:
+
+    - name: Git Checkout
+      uses: actions/checkout@v1
+
+    - name: Rubocop
+      run: rake check:rubocop
+
+  Package:
+    runs-on: ubuntu-latest
+    container: registry.opensuse.org/yast/head/containers/yast-ruby:latest
+
+    steps:
+
+    - name: Git Checkout
+      uses: actions/checkout@v1
+
+    - name: Package Build
+      run: yast-ci-ruby -o package
+
+  Yardoc:
+    runs-on: ubuntu-latest
+    container: registry.opensuse.org/yast/head/containers/yast-ruby:latest
+
+    steps:
+
+    - name: Git Checkout
+      uses: actions/checkout@v1
+
+    - name: Yardoc
+      run: rake check:doc
+
+  # downloading the Docker image takes some time so bundling several fast
+  # checks into one job avoids that overhead
+  Checks:
+    runs-on: ubuntu-latest
+    container: registry.opensuse.org/yast/head/containers/yast-ruby:latest
+
+    steps:
+
+    - name: Git Checkout
+      uses: actions/checkout@v1
+
+    - name: Perl Syntax
+      run: yast-ci-ruby -o perl_syntax
+
+    - name: POT Check
+      run: rake check:pot
+
+    - name: Check RNC files
+      run: ./check_schema.sh
