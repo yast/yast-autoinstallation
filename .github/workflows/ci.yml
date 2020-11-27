@@ -15,16 +15,6 @@ jobs:
     - name: Git Checkout
       uses: actions/checkout@v1
 
-    #  install missing dependencies
-    - name: Install Dependencies
-      run: |
-        zypper --non-interactive install --no-recommends \
-          trang \
-          libxml2-tools \
-          libxslt-tools \
-          yast2-installation-control \
-          yast2-update
-
     # just for easier debugging...
     - name: Inspect Installed Packages
       run: rpm -qa | sort
