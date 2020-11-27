@@ -1,8 +1,10 @@
 YaST - The AutoYaST Framework
 =============================
 
-[![Travis Build](https://travis-ci.org/yast/yast-autoinstallation.svg?branch=master)](https://travis-ci.org/yast/yast-autoinstallation)
-[![Jenkins Build](http://img.shields.io/jenkins/s/https/ci.opensuse.org/yast-autoinstallation-master.svg)](https://ci.opensuse.org/view/Yast/job/yast-autoinstallation-master/)
+[![Workflow Status](https://github.com/yast/yast-autoinstallation/workflows/CI/badge.svg?branch=master)](
+https://github.com/yast/yast-autoinstallation/actions?query=branch%3Amaster)
+[![Jenkins Status](https://ci.opensuse.org/buildStatus/icon?job=yast-yast-autoinstallation-master)](
+https://ci.opensuse.org/view/Yast/job/yast-yast-autoinstallation-master/)
 [![Coverage Status](https://coveralls.io/repos/github/yast/yast-autoinstallation/badge.svg?branch=master)](https://coveralls.io/github/yast/yast-autoinstallation?branch=master)
 
 
