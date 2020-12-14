@@ -93,6 +93,7 @@ y2_partition =
   | bcache_backing_for
   | bcache_caching_for
   | btrfs_name
+  | quotas
 
 partition = element partition {
   MAP,
@@ -159,6 +160,8 @@ cache_mode = element cache_mode { STRING_ATTR, ("writethrough" | "writeback" | "
 bcache_options = element bcache_options { MAP, (cache_mode?) }
 
 btrfs_name = element btrfs_name { STRING }
+# jsc#SLE-7742: add support for Btrfs subvolumes quotas
+quotas = element quotas { BOOLEAN }
 
 btrfs_options = element btrfs_options { MAP, (data_raid_level? & metadata_raid_level?) }
 data_raid_level = element data_raid_level { STRING }
@@ -179,7 +182,9 @@ subvolume_full =
     (
       element path { STRING } &
       # FATE#320342: add support to enable copy-on-write for Btrfs subvolumes
-      element copy_on_write { BOOLEAN }?
+      element copy_on_write { BOOLEAN }? &
+      # jsc#SLE-7742: add support for Btrfs subvolumes quotas
+      element referenced_limit { STRING }?
     )
   }
 
