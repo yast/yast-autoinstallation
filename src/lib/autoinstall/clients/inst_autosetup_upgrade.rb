@@ -231,7 +231,7 @@ module Y2Autoinstallation
         #
         begin
           Product.FindBaseProducts
-        rescue => e
+        rescue StandardError
           msg = _("No new base product has been set.\n" \
            "Please check the <b>software</b>/<b>products</b> entry in the " \
            "AutoYaST configuration file.<br><br>" \
