@@ -227,6 +227,23 @@ module Y2Autoinstallation
         )
 
         #
+        # Checking if at least one base product has been selected/evaluated.
+        #
+        begin
+          Product.FindBaseProducts
+        rescue => e
+          msg = _("No new base product has been set.\n" \
+           "Please check the <b>software</b>/<b>products</b> entry in the " \
+           "AutoYaST configuration file.<br><br>" \
+           "Following base products are available:<br>")
+          Yast::AutoinstFunctions.available_base_products.each do |product|
+            msg += "#{product.details.product} (#{product.details.summary})<br>"
+          end
+          Yast::Popup.LongError(msg) # No timeout because we are stopping the upgrade.
+          return :abort
+        end
+
+        #
         # Checking Base Product licenses
         #
         Progress.NextStage
