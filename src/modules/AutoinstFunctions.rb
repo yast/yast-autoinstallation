@@ -135,7 +135,7 @@ module Yast
     # @return [Hash] an array of product hashes
     def available_base_products_hash
       available_base_products.map do |product|
-        if Y2Packager::MediumType.offline? && !@force_libzypp
+        if product.is_a?(Y2Packager::ProductLocation)
           {:name => product.details.product, :summary => product.details.summary}
         else
           {:name => product.name, :summary => product.product.display_name}

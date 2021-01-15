@@ -1,6 +1,7 @@
 require "autoinstall/autosetup_helpers"
 
 require "y2packager/product_upgrade"
+require "yast2/popup"
 
 Yast.import "AddOnProduct"
 Yast.import "Arch"
@@ -239,7 +240,7 @@ module Y2Autoinstallation
           Yast::AutoinstFunctions.available_base_products_hash.each do |product|
             msg += "#{product[:name]} (#{product[:summary]})<br>"
           end
-          Yast::Popup.LongError(msg) # No timeout because we are stopping the upgrade.
+          Yast2::Popup.show(msg, richtext: true) # No timeout because we are stopping the upgrade.
           return :abort
         end
 
