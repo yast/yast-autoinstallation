@@ -236,8 +236,8 @@ module Y2Autoinstallation
            "Please check the <b>software</b>/<b>products</b> entry in the " \
            "AutoYaST configuration file.<br><br>" \
            "Following base products are available:<br>")
-          Yast::AutoinstFunctions.available_base_products.each do |product|
-            msg += "#{product.details.product} (#{product.details.summary})<br>"
+          Yast::AutoinstFunctions.available_base_products_hash.each do |product|
+            msg += "#{product[:name]} (#{product[:summary]})<br>"
           end
           Yast::Popup.LongError(msg) # No timeout because we are stopping the upgrade.
           return :abort
