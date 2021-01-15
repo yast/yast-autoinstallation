@@ -138,7 +138,7 @@ module Yast
         if product.is_a?(Y2Packager::ProductLocation)
           {:name => product.details.product, :summary => product.details.summary}
         else
-          {:name => product.name, :summary => product.product.display_name}
+          {:name => product.name, :summary => product.display_name}
         end
       end
     end
