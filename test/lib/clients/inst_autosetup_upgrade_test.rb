@@ -56,6 +56,7 @@ describe Y2Autoinstallation::Clients::InstAutosetupUpgrade do
     allow(Yast::WFM).to receive(:SetLanguage)
     allow(Yast::UI).to receive(:SetLanguage)
     allow(Yast::AutoinstFunctions).to receive(:available_base_products).and_return([])
+    allow(Yast::Product).to receive(:FindBaseProducts).and_return([])
   end
 
   describe "#main" do

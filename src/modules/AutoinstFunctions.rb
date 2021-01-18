@@ -137,9 +137,9 @@ module Yast
     def available_base_products_hash
       available_base_products.map do |product|
         if product.is_a?(Y2Packager::ProductLocation)
-          {:name => product.details.product, :summary => product.details.summary}
+          { name: product.details.product, summary: product.details.summary }
         else
-          {:name => product.name, :summary => product.display_name}
+          { name: product.name, summary: product.display_name }
         end
       end
     end
