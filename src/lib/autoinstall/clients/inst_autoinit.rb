@@ -134,8 +134,8 @@ module Y2Autoinstallation
            "in the AutoYaST configuration file. " \
            "Please check the <b>products</b> entry in the <b>software</b> section.<br><br>" \
            "Following base products are available:<br>")
-          Yast::AutoinstFunctions.available_base_products.each do |product|
-            msg += "#{product.name} (#{product.display_name})<br>"
+          Yast::AutoinstFunctions.available_base_products_hash.each do |product|
+            msg += "#{product[:name]} (#{product[:summary]})<br>"
           end
           Yast::Popup.LongError(msg) # No timeout because we are stopping the installation/upgrade.
           return :abort
@@ -423,10 +423,8 @@ module Y2Autoinstallation
               "Please check the <b>products</b> entry in the <b>software</b> section.<br><br>" \
               "Following base products are available:<br>")
           end
-          Yast::AutoinstFunctions.available_base_products.each do |bp|
-            # FIXME: here we abuse knowledge that base product is ProductLocation and not Product
-            # so we access that details which is not available in Product
-            msg += "#{bp.details.product} (#{bp.details.summary})<br>"
+          Yast::AutoinstFunctions.available_base_products_hash.each do |p|
+            msg += "#{p[:name]} (#{p[:summary]})<br>"
           end
           Yast::Popup.LongError(msg) # No timeout because we are stopping the installation/upgrade.
           return :abort

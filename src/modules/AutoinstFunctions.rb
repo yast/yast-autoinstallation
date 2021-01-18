@@ -110,6 +110,13 @@ module Yast
       @selected_product
     end
 
+    #
+    # Evaluate all available base products and returns a list of product.
+    # CAUTION: The type of the return values depend of the kind of where
+    # the product information has been read (libzypp, product location).
+    # So the type could be ProductLocation or Product.
+    # available_base_products_hash could be an alternative for this call.
+    #
     def available_base_products
       @base_products ||= if Y2Packager::MediumType.offline? && !@force_libzypp
         url = InstURL.installInf2Url("")
@@ -119,6 +126,21 @@ module Yast
           .sort(&::Y2Packager::PRODUCT_SORTER)
       else
         Y2Packager::ProductReader.new.available_base_products(force_repos: @force_libzypp)
+      end
+    end
+
+    #
+    # Evaluate all available base products and returns a list of hashes which contains
+    # human readable strings only.
+    #
+    # @return [Hash] an array of product hashes
+    def available_base_products_hash
+      available_base_products.map do |product|
+        if product.is_a?(Y2Packager::ProductLocation)
+          { name: product.details.product, summary: product.details.summary }
+        else
+          { name: product.name, summary: product.display_name }
+        end
       end
     end
 

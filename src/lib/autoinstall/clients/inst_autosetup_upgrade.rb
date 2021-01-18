@@ -1,6 +1,7 @@
 require "autoinstall/autosetup_helpers"
 
 require "y2packager/product_upgrade"
+require "yast2/popup"
 
 Yast.import "AddOnProduct"
 Yast.import "Arch"
@@ -225,6 +226,23 @@ module Y2Autoinstallation
           ["backup", "remove_old"],
           false
         )
+
+        #
+        # Checking if at least one base product has been selected/evaluated.
+        #
+        begin
+          Product.FindBaseProducts
+        rescue StandardError
+          msg = _("No new base product has been set.\n" \
+           "It can be specified in the <b>software</b>/<b>products</b> entry in the " \
+           "AutoYaST configuration file.<br><br>" \
+           "Following base products are available:<br>")
+          Yast::AutoinstFunctions.available_base_products_hash.each do |product|
+            msg += "#{product[:name]} (#{product[:summary]})<br>"
+          end
+          Yast2::Popup.show(msg, richtext: true) # No timeout because we are stopping the upgrade.
+          return :abort
+        end
 
         #
         # Checking Base Product licenses
