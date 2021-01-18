@@ -51,6 +51,7 @@ describe Y2Autoinstallation::Clients::InstAutosetupUpgrade do
     allow(Yast::Pkg).to receive(:ResolvableInstall)
     allow(Yast::Pkg).to receive(:ResolvableRemove)
     allow(Yast::Pkg).to receive(:PkgSolve).and_return(true)
+    allow(Yast::AutoinstFunctions).to receive(:available_base_products).and_return([])
   end
 
   describe "#main" do
