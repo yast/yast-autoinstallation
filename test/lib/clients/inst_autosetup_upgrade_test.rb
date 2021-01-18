@@ -55,6 +55,7 @@ describe Y2Autoinstallation::Clients::InstAutosetupUpgrade do
     # would break test expectations
     allow(Yast::WFM).to receive(:SetLanguage)
     allow(Yast::UI).to receive(:SetLanguage)
+    allow(Yast::AutoinstFunctions).to receive(:available_base_products).and_return([])
   end
 
   describe "#main" do
