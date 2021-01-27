@@ -1,4 +1,4 @@
-# Copyright (c) [2020] SUSE LLC
+# Copyright (c) [2020-2021] SUSE LLC
 #
 # All Rights Reserved.
 #
@@ -23,6 +23,7 @@ require "autoinstall/widgets/storage/raid_name"
 require "autoinstall/widgets/storage/md_level"
 require "autoinstall/widgets/storage/chunk_size"
 require "autoinstall/widgets/storage/parity_algorithm"
+require "autoinstall/widgets/storage/disklabel"
 
 module Y2Autoinstallation
   module Widgets
@@ -41,7 +42,8 @@ module Y2Autoinstallation
             HSquash(raid_name_widget),
             md_level_widget,
             parity_algorithm_widget,
-            chunk_size_widget
+            chunk_size_widget,
+            disklabel_widget
           ]
         end
 
@@ -49,6 +51,7 @@ module Y2Autoinstallation
         def init_widgets_values
           raid_name_widget.value = drive.device
           raid_options = drive.raid_options
+          disklabel_widget.value = drive.disklabel
           if raid_options
             md_level_widget.value = raid_options.raid_type.to_s
             parity_algorithm_widget.value = raid_options.parity_algorithm
@@ -60,6 +63,7 @@ module Y2Autoinstallation
         def widgets_values
           {
             "device"       => raid_name_widget.value,
+            "disklabel"    => disklabel_widget.value,
             "raid_options" => {
               "raid_type"        => md_level_widget.value,
               "parity_algorithm" => parity_algorithm_widget.value,
@@ -88,6 +92,11 @@ module Y2Autoinstallation
         # Widget for setting the chunk size
         def chunk_size_widget
           @chunk_size_widget ||= ChunkSize.new
+        end
+
+        # Widget for setting the type of the RAID partition table
+        def disklabel_widget
+          @disklabel_widget ||= Disklabel.new
         end
       end
     end
