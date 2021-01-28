@@ -53,11 +53,15 @@ module Y2Autoinstallation
 
         # @macro seeCustomWidget
         def contents
-          VBox(
-            *mount_widgets,
-            VSpacing(0.5),
-            *format_widgets
-          )
+          if section.fstab_based?
+            VBox(*mount_widgets)
+          else
+            VBox(
+              *mount_widgets,
+              VSpacing(0.5),
+              *format_widgets
+            )
+          end
         end
 
         # @macro seeAbstractWidget

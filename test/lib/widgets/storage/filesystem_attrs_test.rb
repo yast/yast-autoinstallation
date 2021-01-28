@@ -19,14 +19,22 @@
 
 require_relative "../../../test_helper"
 require "y2storage"
+require "autoinstall/presenters"
 require "autoinstall/widgets/storage/filesystem_attrs"
 require "cwm/rspec"
 
 describe Y2Autoinstallation::Widgets::Storage::FilesystemAttrs do
   subject(:widget) { described_class.new(section) }
 
-  let(:section) do
-    Y2Storage::AutoinstProfile::PartitionSection.new
+  let(:drive) { Y2Autoinstallation::Presenters::Drive.new(partitioning.drives.first) }
+  let(:section) { drive.partitions.first }
+
+  let(:partitioning) do
+    Y2Storage::AutoinstProfile::PartitioningSection.new_from_hashes(
+      [
+        { "type" => :CT_DISK, "partitions" => [{}] }
+      ]
+    )
   end
 
   include_examples "CWM::CustomWidget"

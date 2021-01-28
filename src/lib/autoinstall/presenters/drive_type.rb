@@ -45,12 +45,16 @@ module Y2Autoinstallation
       # DriveType for CT_RAID
       RAID = new(:CT_RAID, N_("RAID")).freeze
       # DriveType for CT_BCACHE
-      BCACHE = new(:CT_BCACHE, N_("bcache")).freeze
+      BCACHE = new(:CT_BCACHE, N_("Bcache")).freeze
       # DriveType for CT_BTRFS
       BTRFS = new(:CT_BTRFS, N_("Btrfs")).freeze
+      # DriveType for CT_NFS
+      NFS = new(:CT_NFS, N_("NFS")).freeze
+      # DriveType for CT_TMPFS
+      TMPFS = new(:CT_TMPFS, N_("Tmpfs")).freeze
 
       # All drive types
-      ALL = [DISK, RAID, LVM, BCACHE, BTRFS].freeze
+      ALL = [DISK, RAID, LVM, BCACHE, BTRFS, NFS, TMPFS].freeze
 
       # All possible types
       #
