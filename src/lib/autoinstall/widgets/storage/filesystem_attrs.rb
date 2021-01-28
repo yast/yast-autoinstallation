@@ -54,29 +54,9 @@ module Y2Autoinstallation
         # @macro seeCustomWidget
         def contents
           VBox(
-            Left(
-              HBox(
-                filesystem_widget,
-                HSpacing(2),
-                HSquash(MinWidth(15, label_widget))
-              )
-            ),
+            *mount_widgets,
             VSpacing(0.5),
-            Left(create_subvolumes_widget),
-            VSpacing(0.5),
-            Left(
-              HBox(
-                HSquash(MinWidth(15, mount_point_widget)),
-                HSpacing(2),
-                mountby_widget,
-                HSpacing(2),
-                HSquash(fstab_options_widget)
-              )
-            ),
-            VSpacing(0.5),
-            Left(
-              HSquash(MinWidth(35, mkfs_options_widget))
-            )
+            *format_widgets
           )
         end
 
@@ -169,6 +149,40 @@ module Y2Autoinstallation
         # Widget for setting if Btrfs subvolumes should be created or not
         def create_subvolumes_widget
           @create_subvolumes_widget ||= CreateSubvolumes.new
+        end
+
+        # @see #contents
+        def format_widgets
+          [
+            Left(
+              HBox(
+                filesystem_widget,
+                HSpacing(2),
+                HSquash(MinWidth(15, label_widget))
+              )
+            ),
+            VSpacing(0.5),
+            Left(
+              HSquash(MinWidth(35, mkfs_options_widget))
+            ),
+            VSpacing(0.5),
+            Left(create_subvolumes_widget)
+          ]
+        end
+
+        # @see #contents
+        def mount_widgets
+          [
+            Left(
+              HBox(
+                HSquash(MinWidth(15, mount_point_widget)),
+                HSpacing(2),
+                mountby_widget,
+                HSpacing(2),
+                HSquash(fstab_options_widget)
+              )
+            )
+          ]
         end
       end
     end

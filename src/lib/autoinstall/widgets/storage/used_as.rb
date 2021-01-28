@@ -45,7 +45,6 @@ module Y2Autoinstallation
 
         # @macro seeComboBox
         def items
-          # FIXME: uncomment when support for each type is added
           [
             # TRANSLATORS: option for setting to not use the partition
             [:none, _("Do Not Use")],
