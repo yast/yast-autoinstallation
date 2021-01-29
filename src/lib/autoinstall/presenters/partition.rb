@@ -91,6 +91,20 @@ module Y2Autoinstallation
         drive_type.to_sym == :CT_LVM
       end
 
+      # Whether this belongs to a drive that is only used to represent filesystems
+      #
+      # @return [Boolean]
+      def filesystem_drive?
+        [:CT_NFS, :CT_TMPFS, :CT_BTRFS].include?(drive_type.to_sym)
+      end
+
+      # Whether this represents a device that only exists in the system when it's mounted
+      #
+      # @return [Boolean] false if this is no backed (directly or indirectly) by block devices
+      def fstab_based?
+        [:CT_NFS, :CT_TMPFS].include?(drive_type.to_sym)
+      end
+
       # Values to suggest for bcache devices fields
       #
       # @return [Array<String>]
@@ -164,6 +178,10 @@ module Y2Autoinstallation
           # TRANSLATORS: 'Partition' is the name of a section in the AutoYaST
           # profile, so it's likely not a good idea to translate the term
           _("Partition (LV)")
+        when :filesystem
+          # TRANSLATORS: 'Partition' is the name of a section in the AutoYaST
+          # profile, so it's likely not a good idea to translate the term
+          _("Partition (File System)")
         else
           # TRANSLATORS: 'Partition' is the name of a section in the AutoYaST
           # profile, so it's likely not a good idea to translate the term
@@ -203,9 +221,16 @@ module Y2Autoinstallation
       def device_type
         return :lv if drive.type == :CT_LVM
 
-        return :partition unless drive.unwanted_partitions?
+        return device_type_no_partitions if drive.master_partition
 
-        (drive.master_partition == section) ? :drive : :none
+        (drive.type == :CT_TMPFS) ? :filesystem : :partition
+      end
+
+      # @see #device_type
+      def device_type_no_partitions
+        return :drive if drive.master_partition == section
+
+        :none
       end
     end
   end

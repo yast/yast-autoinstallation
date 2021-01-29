@@ -65,16 +65,20 @@ module Y2Autoinstallation
 
         # Tabs to display the partition section data
         #
-        # First tab contains common options for a partition section (including those that depend on
-        # the parent section type). The second one allows to choose the partition usage and its
-        # related options.
+        # Normally, the first tab contains common options for a partition section (including those
+        # that depend on the parent section type). The second one allows to choose the partition
+        # usage and its related options. In some cases, that second tab is enough.
         #
         # @return [CWM::Tabs]
         def tabs
-          CWM::Tabs.new(
-            general_tab,
-            usage_tab
-          )
+          if partition.fstab_based?
+            CWM::Tabs.new(usage_tab)
+          else
+            CWM::Tabs.new(
+              general_tab,
+              usage_tab
+            )
+          end
         end
 
         # Tab to display common options for all partition sections

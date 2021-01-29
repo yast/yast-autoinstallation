@@ -30,6 +30,7 @@ require "autoinstall/widgets/storage/lvm_partition_attrs"
 require "autoinstall/widgets/storage/btrfs_member_attrs"
 require "autoinstall/widgets/storage/encryption_attrs"
 require "autoinstall/widgets/storage/used_as"
+require "autoinstall/widgets/storage/used_as_filesystem"
 
 module Y2Autoinstallation
   module Widgets
@@ -119,7 +120,7 @@ module Y2Autoinstallation
 
         # Widget for choosing the partition usage
         def used_as_widget
-          @used_as_widget ||= UsedAs.new
+          @used_as_widget ||= partition.filesystem_drive? ? UsedAsFilesystem.new : UsedAs.new
         end
 
         def replace_point

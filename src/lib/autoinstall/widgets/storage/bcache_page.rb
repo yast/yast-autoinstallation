@@ -1,4 +1,4 @@
-# Copyright (c) [2020] SUSE LLC
+# Copyright (c) [2020-2021] SUSE LLC
 #
 # All Rights Reserved.
 #
@@ -21,6 +21,7 @@ require "yast"
 require "autoinstall/widgets/storage/drive_page"
 require "autoinstall/widgets/storage/bcache_device"
 require "autoinstall/widgets/storage/cache_mode"
+require "autoinstall/widgets/storage/disklabel"
 
 module Y2Autoinstallation
   module Widgets
@@ -37,7 +38,8 @@ module Y2Autoinstallation
         def widgets
           [
             HSquash(MinWidth(15, device_widget)),
-            cache_mode_widget
+            cache_mode_widget,
+            disklabel_widget
           ]
         end
 
@@ -45,12 +47,14 @@ module Y2Autoinstallation
         def init_widgets_values
           device_widget.value = section.device
           cache_mode_widget.value = section.bcache_options&.cache_mode
+          disklabel_widget.value = drive.disklabel
         end
 
         # @see DrivePage#widgets_values
         def widgets_values
           {
             "device"         => device_widget.value,
+            "disklabel"      => disklabel_widget.value,
             "bcache_options" => {
               "cache_mode" => cache_mode_widget.value
             }
@@ -67,6 +71,11 @@ module Y2Autoinstallation
         # Widget for setting the cache mode
         def cache_mode_widget
           @cache_mode_widget ||= CacheMode.new
+        end
+
+        # Widget for setting the type of the partition table
+        def disklabel_widget
+          @disklabel_widget ||= Disklabel.new
         end
       end
     end
