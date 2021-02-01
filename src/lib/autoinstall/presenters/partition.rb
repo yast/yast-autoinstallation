@@ -84,6 +84,17 @@ module Y2Autoinstallation
         drive_presenter.type
       end
 
+      # String representation of #fstab_options
+      #
+      # The field is actually called fstopt in the AutoYaST xml and treated like a plain string,
+      # so this method provides a more direct communication between the profile and the current
+      # UI (which also uses a plain InputField).
+      #
+      # @return [String]
+      def fstopt
+        fstab_options&.join(",")
+      end
+
       # Whether the section is an LVM Logical Volume
       #
       # @return [Boolean] true when belongs to an LVM drive; false otherwise
@@ -231,6 +242,20 @@ module Y2Autoinstallation
         return :drive if drive.master_partition == section
 
         :none
+      end
+
+      # @see Section#clean_section
+      def clean_section(attrs)
+        # "fstopt" is the right key to use as part of the hash received by
+        # Y2Storage::AutoinstProfile::PartitionSection.init_from_hashes,
+        # but the corresponding attribute in that class is called #fstab_options
+        new_attrs =
+          if attrs.include?("fstopt")
+            attrs - ["fstopt"] + ["fstab_options"]
+          else
+            attrs
+          end
+        super(new_attrs)
       end
     end
   end

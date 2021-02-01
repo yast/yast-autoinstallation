@@ -145,13 +145,14 @@ describe Y2Autoinstallation::Widgets::Storage::PartitionUsageTab do
 
   describe "#store" do
     it "sets section attributes related to its usage" do
+      # See bsc#1181577, the correct name in this hash is fstopt (not fstab_options)
       expect(partition).to receive(:update).with(
         hash_including(
           "filesystem",
           "label",
           "mount",
           "mountby",
-          "fstab_options",
+          "fstopt",
           "mkfs_options",
           "raid_name",
           "lvm_group",

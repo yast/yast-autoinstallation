@@ -70,7 +70,7 @@ module Y2Autoinstallation
           label_widget.value             = section.label
           mount_point_widget.value       = section.mount
           mountby_widget.value           = section.mountby
-          fstab_options_widget.value     = section.fstab_options
+          fstab_options_widget.value     = section.fstopt
           mkfs_options_widget.value      = section.mkfs_options
           create_subvolumes_widget.value = section.create_subvolumes
 
@@ -86,7 +86,7 @@ module Y2Autoinstallation
             "label"             => label_widget.value,
             "mount"             => mount_point_widget.value,
             "mountby"           => mountby_widget.value,
-            "fstab_options"     => fstab_options_widget.value,
+            "fstopt"            => fstab_options_widget.value,
             "mkfs_options"      => mkfs_options_widget.value,
             "create_subvolumes" => btrfs? ? create_subvolumes_widget.value : nil
           }
