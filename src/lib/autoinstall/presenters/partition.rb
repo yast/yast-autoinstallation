@@ -90,7 +90,8 @@ module Y2Autoinstallation
       # so this method provides a more direct communication between the profile and the current
       # UI (which also uses a plain InputField).
       #
-      # @return [String]
+      # @return [String, nil] nil if there are no fstab_options (which is consistent with the
+      #   behavior of all other attributes of Y2Storage::AutoinstProfile::PartitionSection)
       def fstopt
         fstab_options&.join(",")
       end
