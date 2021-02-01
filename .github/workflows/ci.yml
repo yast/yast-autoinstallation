@@ -13,7 +13,7 @@ jobs:
     steps:
 
     - name: Git Checkout
-      uses: actions/checkout@v1
+      uses: actions/checkout@v2
 
     # just for easier debugging...
     - name: Inspect Installed Packages
@@ -38,7 +38,7 @@ jobs:
     steps:
 
     - name: Git Checkout
-      uses: actions/checkout@v1
+      uses: actions/checkout@v2
 
     - name: Rubocop
       run: rake check:rubocop
@@ -50,7 +50,7 @@ jobs:
     steps:
 
     - name: Git Checkout
-      uses: actions/checkout@v1
+      uses: actions/checkout@v2
 
     - name: Package Build
       run: yast-ci-ruby -o package
@@ -62,7 +62,7 @@ jobs:
     steps:
 
     - name: Git Checkout
-      uses: actions/checkout@v1
+      uses: actions/checkout@v2
 
     - name: Yardoc
       run: rake check:doc
@@ -76,7 +76,7 @@ jobs:
     steps:
 
     - name: Git Checkout
-      uses: actions/checkout@v1
+      uses: actions/checkout@v2
 
     - name: Perl Syntax
       run: yast-ci-ruby -o perl_syntax

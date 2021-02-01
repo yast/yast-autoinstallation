@@ -144,7 +144,8 @@ describe Y2Autoinstallation::Widgets::Storage::FilesystemAttrs do
     end
 
     it "includes fstab options" do
-      expect(widget.values).to include("fstab_options" => "ro,noatime,user")
+      # See bsc#1181577, the correct name in this hash is fstopt (not fstab_options)
+      expect(widget.values).to include("fstopt" => "ro,noatime,user")
     end
   end
 end
