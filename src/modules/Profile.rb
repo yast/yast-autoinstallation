@@ -14,6 +14,33 @@ require "installation/autoinst_profile/element_path"
 require "ui/password_dialog"
 
 module Yast
+  class ProfileHash < Hash
+    # replace Hash -> ProfileHash recursively
+    def initialize(x = {})
+      x.each_pair do |key, value|
+        if value.is_a?(Hash)
+          self[key] = ProfileHash.new(value)
+        else
+          self[key] = value
+        end
+      end
+    end
+
+    # with an explicit default it's possible to check for the presence of an
+    # element vs. empty element
+    def fetch_as(x, type, default = nil)
+      tmp = self.fetch(x, nil)
+      if !tmp.is_a?(type)
+        if default.is_a?(Hash)
+          tmp = ProfileHash.new(default)
+        else
+          tmp = default
+        end
+      end
+      tmp
+    end
+  end
+
   class ProfileClass < Module
     include Yast::Logger
 
@@ -254,7 +281,9 @@ module Yast
       generalCompat # compatibility to new language,keyboard and timezone (SL10.1)
       softwareCompat
 
-      Builtins.y2debug("Current Profile=%1", @current)
+      @current = ::Yast::ProfileHash.new(@current)
+      log.debug "Current Profile = #{@current}"
+
       nil
     end
 
