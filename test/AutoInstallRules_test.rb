@@ -14,6 +14,8 @@ describe "Yast::AutoInstallRules" do
   before do
     Y2Storage::StorageManager.create_test_instance
     allow(profile_checker).to receive(:valid_profile?).and_return(true)
+    # do not crash on reporting errors
+    allow(Yast::Report).to receive(:Error)
   end
 
   let(:root_path) { File.expand_path("..", __dir__) }
