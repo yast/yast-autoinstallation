@@ -17,6 +17,8 @@ describe "Yast::ProfileLocation" do
       allow(Yast::InstURL).to receive(:installInf2Url).and_return(
         "http://download.opensuse.org/distribution/leap/15.1/repo/oss/"
       )
+      allow(Yast::SCR).to receive(:Read).and_return("test")
+      allow(Yast::Report).to receive(:Error) # test is already quite weak and some errors are shown
     end
 
     context "when scheme is \"relurl\"" do
@@ -24,7 +26,8 @@ describe "Yast::ProfileLocation" do
         expect(subject).to receive(:Get).with("http",
           "download.opensuse.org",
           "/distribution/leap/15.1/repo/oss/autoinst.xml",
-          "/tmp/123")
+          "/tmp/123").and_return(false)
+          # ^^^ Intentionally kill Process after get as rest of method is not tested and has too much side effects
         subject.Process
       end
     end
