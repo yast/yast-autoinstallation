@@ -105,5 +105,9 @@ RSpec.configure do |c|
 
   c.before do
     allow(Y2Packager::MediumType).to receive(:detect_medium_type).and_return(:standard)
+    # FIXME: temporary mock to avoid interdependencies failures
+    allow(Yast::Report).to receive(:Error)
+    allow(Yast::Report).to receive(:Warning)
+    allow(Yast::Report).to receive(:Message)
   end
 end
