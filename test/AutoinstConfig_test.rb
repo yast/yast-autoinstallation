@@ -17,6 +17,7 @@ describe "Yast::AutoinstConfig" do
       let(:slp_server_reply) { [] }
 
       it "returns nil" do
+        expect(Yast::Report).to receive(:Error)
         expect(subject.find_slp_autoyast).to eq(nil)
       end
     end
@@ -91,7 +92,7 @@ describe "Yast::AutoinstConfig" do
     context "when the profile url is invalid" do
       let(:autoyast_profile_url) { "//file:8080/path/auto-installation.xml" }
       it "reports an error and returns false" do
-        expect(Yast::Report).to receive(:Error).with(/Invalid.*/).and_call_original
+        expect(Yast::Report).to receive(:Error).with(/Invalid.*/)
         expect(subject.ParseCmdLine(autoyast_profile_url)).to eq(false)
       end
     end

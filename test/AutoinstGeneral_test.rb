@@ -102,6 +102,8 @@ describe "Yast::AutoinstGeneral" do
         expect(Yast::SCR).to_not receive(:Execute)
           .with(path(".target.bash"), "/sbin/hwclock --systohc")
 
+        expect(Yast::Report).to receive(:Error)
+
         subject.Write
       end
     end
