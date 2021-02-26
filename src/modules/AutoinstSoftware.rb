@@ -916,6 +916,8 @@ module Yast
         end
       end
 
+      Packages.SelectSystemPatterns(false)
+
       #
       # Now remove all packages listed in remove-packages
       #
