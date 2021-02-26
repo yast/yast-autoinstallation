@@ -27,7 +27,9 @@ describe "Yast::ProfileLocation" do
           "download.opensuse.org",
           "/distribution/leap/15.1/repo/oss/autoinst.xml",
           "/tmp/123").and_return(false)
-          # ^^^ Intentionally kill Process after get as rest of method is not tested and has too much side effects
+        # ^^^ Intentionally kill Process after get as rest of method is not tested and has too much
+        # side effects
+
         subject.Process
       end
     end
