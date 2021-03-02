@@ -454,13 +454,13 @@ module Yast
 
     # Import security settings from profile
     def autosetup_security
-      security_config = Profile.current["security"]
-      if security_config
-        # Do not start it in second installation stage again.
-        # Writing will be called in inst_finish.
-        Profile.remove_sections("security")
-        Call.Function("security_auto", ["Import", security_config])
-      end
+      security_config = Profile.current["security"] || {}
+
+      # Do not start it in second installation stage again.
+      # Writing will be called in inst_finish.
+      Profile.remove_sections("security")
+
+      Call.Function("security_auto", ["Import", security_config])
     end
 
     # Add YaST2 packages dependencies
