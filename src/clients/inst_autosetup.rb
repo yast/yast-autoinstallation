@@ -69,9 +69,9 @@ module Yast
       @progress_stages = [
         _("Configure General Settings "),
         _("Set up language"),
-        _("Configure security settings"),
         _("Create partition plans"),
         _("Configure Bootloader"),
+        _("Configure security settings"),
         _("Registration"),
         _("Configure Software selections"),
         _("Configure Systemd Default Target"),
@@ -83,9 +83,9 @@ module Yast
       @progress_descriptions = [
         _("Configuring general settings..."),
         _("Setting up language..."),
-        _("Configuring security settings"),
         _("Creating partition plans..."),
         _("Configuring Bootloader..."),
+        _("Configuring security settings"),
         _("Registering the system..."),
         _("Configuring Software selections..."),
         _("Configuring Systemd Default Target..."),
@@ -251,10 +251,6 @@ module Yast
 
       Progress.NextStage
 
-      # Importing security settings
-      autosetup_security
-      return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
-
       #
       # Partitioning and Storage
       # //////////////////////////////////////////////////////////////////////
@@ -305,6 +301,10 @@ module Yast
         "bootloader_auto",
         ["Import", Ops.get_map(Profile.current, "bootloader", {})]
       )
+
+      # Importing security settings
+      autosetup_security
+      return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
 
       # Registration
       # FIXME: There is a lot of duplicate code with inst_autoupgrade.
