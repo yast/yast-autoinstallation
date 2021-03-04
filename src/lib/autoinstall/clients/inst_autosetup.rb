@@ -69,13 +69,16 @@ module Y2Autoinstallation
           _("Create partition plans"),
           _("Configure Bootloader"),
           _("Configure security settings"),
+          _("Set up configuration management system"),
           _("Registration"),
+          _("Configure Kdump"),
           _("Configure Software selections"),
           _("Configure Systemd Default Target"),
           _("Configure users and groups"),
           _("Import SSH keys/settings"),
           _("Set up user defined configuration files"),
-          _("Confirm License")
+          _("Confirm License"),
+          _("Configure firewall")
         ]
 
         @progress_descriptions = [
@@ -84,13 +87,16 @@ module Y2Autoinstallation
           _("Creating partition plans..."),
           _("Configuring Bootloader..."),
           _("Configuring security settings"),
+          _("Setting up configuration management system..."),
           _("Registering the system..."),
+          _("Configuring Kdump..."),
           _("Configuring Software selections..."),
           _("Configuring Systemd Default Target..."),
           _("Importing users and groups configuration..."),
           _("Importing SSH keys/settings..."),
           _("Setting up user defined configuration files..."),
-          _("Confirming License...")
+          _("Confirming License..."),
+          _("Configuring the firewall")
         ]
 
         Progress.New(
@@ -257,8 +263,12 @@ module Y2Autoinstallation
           Profile.remove_sections("configuration_management")
         end
 
+        return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
+        Progress.NextStage
+
         # Register system
         return :abort unless suse_register
+        Progress.NextStage
 
         # SLES only. Have to be run before software to add required packages to enable kdump
         if Builtins.haskey(Profile.current, "kdump")
@@ -365,6 +375,7 @@ module Y2Autoinstallation
           end
         end
 
+        Progress.NextStage
         #
         # Run firewall configuration according to the profile
         #
