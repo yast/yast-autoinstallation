@@ -249,7 +249,7 @@ module Yast
         end
       end
 
-      Progress.NextStage
+      return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
 
       #
       # Partitioning and Storage
@@ -302,13 +302,10 @@ module Yast
         ["Import", Ops.get_map(Profile.current, "bootloader", {})]
       )
 
+      Progress.NextStage
+
       # Importing security settings
       autosetup_security
-      return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
-
-      # Registration
-      # FIXME: There is a lot of duplicate code with inst_autoupgrade.
-
       return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
 
       Progress.NextStage
