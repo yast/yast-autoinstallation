@@ -66,9 +66,9 @@ module Y2Autoinstallation
         @progress_stages = [
           _("Configure General Settings "),
           _("Set up language"),
-          _("Configure security settings"),
           _("Create partition plans"),
           _("Configure Bootloader"),
+          _("Configure security settings"),
           _("Registration"),
           _("Configure Software selections"),
           _("Configure Systemd Default Target"),
@@ -81,9 +81,9 @@ module Y2Autoinstallation
         @progress_descriptions = [
           _("Configuring general settings..."),
           _("Setting up language..."),
-          _("Configuring security settings"),
           _("Creating partition plans..."),
           _("Configuring Bootloader..."),
+          _("Configuring security settings"),
           _("Registering the system..."),
           _("Configuring Software selections..."),
           _("Configuring Systemd Default Target..."),
@@ -184,12 +184,6 @@ module Y2Autoinstallation
           end
         end
 
-        Progress.NextStage
-
-        # Importing security settings
-        autosetup_security
-        return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
-
         #
         # Partitioning and Storage
         # //////////////////////////////////////////////////////////////////////
@@ -241,9 +235,10 @@ module Y2Autoinstallation
           ["Import", Ops.get_map(Profile.current, "bootloader", {})]
         )
 
-        # Registration
-        # FIXME: There is a lot of duplicate code with inst_autoupgrade.
+        Progress.NextStage
 
+        # Importing security settings
+        autosetup_security
         return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
 
         Progress.NextStage
