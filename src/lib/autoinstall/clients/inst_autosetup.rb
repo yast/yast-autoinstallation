@@ -264,10 +264,12 @@ module Y2Autoinstallation
         end
 
         return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
+
         Progress.NextStage
 
         # Register system
         return :abort unless suse_register
+
         Progress.NextStage
 
         # SLES only. Have to be run before software to add required packages to enable kdump
