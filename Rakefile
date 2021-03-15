@@ -29,4 +29,6 @@ task :install do
   make_dir "/var/lib/autoinstall/repository/classes"
   make_dir "/var/lib/autoinstall/autoconf"
   make_dir "/var/lib/autoinstall/tmp"
+  # remove git only readme
+  sh "rm #{Packaging::Configuration::YAST_DIR}/schema/autoyast/rnc/README.md"
 end

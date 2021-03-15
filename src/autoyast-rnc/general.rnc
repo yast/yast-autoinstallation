@@ -82,7 +82,8 @@ ask_ok_label = element ok_label { STRING }
 ask_back_label = element back_label { STRING }
 
 semi-automatic = element semi-automatic { LIST, semi-automatic-modules* }
-semi-automatic-modules = element module { STRING_ATTR, ( "networking" | "partitioning" | "scc" ) }
+# allow here both module which is original one and also semi-automatic_entry from documenation (bsc#1183512)
+semi-automatic-modules = element semi-automatic_entry | module { STRING_ATTR, ( "networking" | "partitioning" | "scc" ) }
 
 minimal-configuration = element minimal-configuration { BOOLEAN }
 
