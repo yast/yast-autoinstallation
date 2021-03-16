@@ -241,15 +241,6 @@ module Yast
         )
       end
 
-      # raise the network immediately after configuring it
-      if Builtins.haskey(@current, "networking") &&
-          !Builtins.haskey(
-            Ops.get_map(@current, "networking", {}),
-            "start_immediately"
-          )
-        Ops.set(@current, ["networking", "start_immediately"], true)
-        Builtins.y2milestone("start_immediately set to true")
-      end
       merge_resource_aliases!
       generalCompat # compatibility to new language,keyboard and timezone (SL10.1)
       softwareCompat

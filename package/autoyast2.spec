@@ -22,7 +22,7 @@
 %endif
 
 Name:           autoyast2
-Version:        4.3.72
+Version:        4.3.73
 Release:        0
 Summary:        YaST2 - Automated Installation
 License:        GPL-2.0-only
@@ -72,7 +72,8 @@ Requires:       yast2-core
 Requires:       yast2-country >= 3.1.13
 # Moving security module to first installation stage
 Requires:       yast2-security >= 4.1.1
-Requires:       yast2-network >= 3.1.145
+# Modify start_immediately default value
+Requires:       yast2-network >= 4.3.59
 Requires:       yast2-schema >= 4.0.6
 Requires:       yast2-transfer >= 2.21.0
 Requires:       yast2-xml
