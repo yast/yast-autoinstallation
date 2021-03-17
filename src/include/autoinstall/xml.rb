@@ -32,8 +32,10 @@ module Yast
         "device_map"               => "device_map_entry",
         "device_map_entry"         => "device",
         "device_order"             => "device",
+        # services-manager -> (hash) services -> (list) enable/disable -> service
         "disable"                  => "service",
         "dont_merge"               => "element",
+        # services-manager -> (hash) services -> (list) enable/disable -> service
         "enable"                   => "service",
         "fetchmail"                => "fetchmail_entry",
         "files"                    => "file",
@@ -92,7 +94,6 @@ module Yast
         "selection"                => "entry",
         "selections"               => "selection",
         "semi-automatic"           => "module",
-        # services-manager -> (hash) services -> (list) enable/disable -> service
         "services"                 => "service",
         "settings"                 => "settings_entry",
         "shares"                   => "share",
