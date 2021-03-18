@@ -149,8 +149,9 @@ module Yast
     def get_addon_config(profile, url)
       addon_config = addons_config(profile).find { |c| c["media_url"] == url } || {}
       general_config = profile.fetch("general", {})
-      general_config.fetch("signature-handling", {})
-        .merge(addon_config.fetch("signature-handling", {}))
+      signature_handling = general_config.fetch("signature-handling", {})
+      signature_handling = {} unless signature_handling.is_a?(Hash)
+      signature_handling.merge(addon_config.fetch("signature-handling", {}))
     end
 
     # Get add-ons configuration
