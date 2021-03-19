@@ -14,6 +14,70 @@ require "installation/autoinst_profile/element_path"
 require "ui/password_dialog"
 
 module Yast
+  # Wrapper class around Hash to hold the autoyast profile.
+  #
+  # Rationale:
+  #
+  # The profile parser returns an empty String for empty elements like
+  # <foo/> - and not nil. This breaks the code assumption that you can write
+  # xxx.fetch("foo", {}) in a lot of code locations.
+  #
+  # To make access to profile elements easier this class provides methods
+  # #fetch_as_hash and #fetch_as_array that check the expected type and
+  # return the default value also if there is a type mismatch.
+  #
+  # See bsc#1180968 for more details.
+  #
+  # The class constructor converts an existing Hash to a ProfileHash.
+  #
+  class ProfileHash < Hash
+    include Yast::Logger
+
+    # Replace Hash -> ProfileHash recursively.
+    def initialize(default = {})
+      default.each_pair do |key, value|
+        self[key] = value.is_a?(Hash) ? ProfileHash.new(value) : value
+      end
+    end
+
+    # Read element from ProfileHash.
+    #
+    # @param key [String] the key
+    # @param default [Hash] default value - returned if element does not exist or has wrong type
+    #
+    # @return [ProfileHash]
+    def fetch_as_hash(key, default = {})
+      fetch_as(key, Hash, default)
+    end
+
+    # Read element from ProfileHash.
+    #
+    # @param key [String] the key
+    # @param default [Array] default value - returned if element does not exist or has wrong type
+    #
+    # @return [Array]
+    def fetch_as_array(key, default = [])
+      fetch_as(key, Array, default)
+    end
+
+  private
+
+    # With an explicit default it's possible to check for the presence of an
+    # element vs. empty element, if needed.
+    def fetch_as(key, type, default = nil)
+      tmp = fetch(key, nil)
+      if !tmp.is_a?(type)
+        f = caller_locations(2, 1).first
+        if !tmp.nil?
+          log.warn "AutoYaST profile type mismatch (from #{f}): " \
+            "#{key}: expected #{type}, got #{tmp.class}"
+        end
+        tmp = default.is_a?(Hash) ? ProfileHash.new(default) : default
+      end
+      tmp
+    end
+  end
+
   class ProfileClass < Module
     include Yast::Logger
 
