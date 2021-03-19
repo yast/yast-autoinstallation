@@ -169,19 +169,19 @@ module Yast
     # @param [Hash] settings
     # @return booelan
     def Import(settings)
-      settings = deep_copy(settings)
+      settings = Yast::ProfileHash.new(settings)
       SetModified()
       log.info "General import: #{settings.inspect}"
-      @mode = settings.fetch("mode", {})
+      @mode = settings.fetch_as_hash("mode")
       @cio_ignore = settings.fetch("cio_ignore", true)
-      @signature_handling = settings.fetch("signature-handling", {})
-      @askList = settings.fetch("ask-list", [])
-      @proposals = settings.fetch("proposals", [])
+      @signature_handling = settings.fetch_as_hash("signature-handling")
+      @askList = settings.fetch_as_array("ask-list")
+      @proposals = settings.fetch_as_array("proposals")
       AutoinstStorage.import_general_settings(settings["storage"])
       @minimal_configuration = settings.fetch("minimal_configuration", false)
       @self_update = settings["self_update"] # no default as we want to know if it is explicit
       @self_update_url = settings["self_update_url"]
-      @wait = settings.fetch("wait", {})
+      @wait = settings.fetch_as_hash("wait")
 
       SetSignatureHandling()
 

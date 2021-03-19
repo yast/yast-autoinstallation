@@ -141,8 +141,8 @@ module Y2Autoinstallation
         # we need to import at least scripts if not all of them are imported
         if !@import_all
           Yast::Profile.ReadXML(filename)
-          Yast::AutoinstScripts.Import(Yast::Profile.current.fetch("scripts", {}))
-          log.info "importing scripts #{Yast::Profile.current.fetch("scripts", {})}"
+          Yast::AutoinstScripts.Import(Yast::Profile.current.fetch_as_hash("scripts"))
+          log.info "importing scripts #{Yast::Profile.current.fetch_as_hash("scripts")}"
         end
         SCRIPTS_PARAMS.each do |type, special|
           # pre-scripts has some expectations where profile lives

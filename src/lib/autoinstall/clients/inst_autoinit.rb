@@ -110,20 +110,20 @@ module Y2Autoinstallation
           return @ret if @ret == :abort
         end
 
-        if Yast::Profile.current["iscsi-client"]
+        if Yast::Profile.current.fetch_as_hash("iscsi-client", nil)
           log.info "iscsi-client found"
           Yast::WFM.CallFunction(
             "iscsi-client_auto",
-            ["Import", Yast::Profile.current["iscsi-client"]]
+            ["Import", Yast::Profile.current.fetch_as_hash("iscsi-client")]
           )
           Yast::WFM.CallFunction("iscsi-client_auto", ["Write"])
         end
 
-        if Yast::Profile.current["fcoe-client"]
+        if Yast::Profile.current.fetch_as_hash("fcoe-client", nil)
           log.info "fcoe-client found"
           Yast::WFM.CallFunction(
             "fcoe-client_auto",
-            ["Import", Yast::Profile.current["fcoe-client"]]
+            ["Import", Yast::Profile.current.fetch_as_hash("fcoe-client")]
           )
           Yast::WFM.CallFunction("fcoe-client_auto", ["Write"])
         end
@@ -153,7 +153,7 @@ module Y2Autoinstallation
       # many times as needed.
       def autoinit_scripts
         # Pre-Scripts
-        Yast::AutoinstScripts.Import(Yast::Profile.current["scripts"] || {})
+        Yast::AutoinstScripts.Import(Yast::Profile.current.fetch_as_hash("scripts"))
         Yast::AutoinstScripts.Write("pre-scripts", false)
 
         # Reread Profile in case it was modified in pre-script
@@ -167,7 +167,7 @@ module Y2Autoinstallation
         loop do
           askDialog
           # Pre-Scripts
-          Yast::AutoinstScripts.Import(Yast::Profile.current["scripts"] || {})
+          Yast::AutoinstScripts.Import(Yast::Profile.current.fetch_as_hash("scripts"))
           Yast::AutoinstScripts.Write("pre-scripts", false)
           ret = readModified
           return :abort if ret == :abort
@@ -184,9 +184,9 @@ module Y2Autoinstallation
       # Imports the initial profile configuration (report, general and
       # pre-scripts sections)
       def import_initial_config
-        Yast::Report.Import(Yast::Profile.current.fetch("report", {}))
-        Yast::AutoinstGeneral.Import(Yast::Profile.current.fetch("general", {}))
-        Yast::AutoinstScripts.Import(Yast::Profile.current.fetch("scripts", {}))
+        Yast::Report.Import(Yast::Profile.current.fetch_as_hash("report"))
+        Yast::AutoinstGeneral.Import(Yast::Profile.current.fetch_as_hash("general"))
+        Yast::AutoinstScripts.Import(Yast::Profile.current.fetch_as_hash("scripts"))
       end
 
       # Checking profile for unsupported sections.

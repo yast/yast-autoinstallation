@@ -121,8 +121,8 @@ module Y2Autoinstallation
         AutoinstSoftware.merge_product(AutoinstFunctions.selected_product)
 
         # configure general settings
-        general_section = Profile.current["general"] || {}
-        networking_section = Profile.current["networking"] || {}
+        general_section = Profile.current.fetch_as_hash("general")
+        networking_section = Profile.current.fetch_as_hash("networking")
         pkg_list = networking_section["managed"] ? ["NetworkManager"] : []
         AutoinstGeneral.Import(general_section)
         log.info("general: #{general_section}")
@@ -238,7 +238,7 @@ module Y2Autoinstallation
 
         return :abort unless WFM.CallFunction(
           "bootloader_auto",
-          ["Import", Ops.get_map(Profile.current, "bootloader", {})]
+          ["Import", Profile.current.fetch_as_hash("bootloader")]
         )
 
         Progress.NextStage
@@ -369,7 +369,7 @@ module Y2Autoinstallation
         # Checking Base Product licenses
         #
         Progress.NextStage
-        if general_section["mode"]&.fetch("confirm_base_product_license", false)
+        if general_section.fetch_as_hash("mode").fetch("confirm_base_product_license", false)
           result = nil
           while result != :next
             result = WFM.CallFunction("inst_product_license", [{ "enable_back"=>false }])
