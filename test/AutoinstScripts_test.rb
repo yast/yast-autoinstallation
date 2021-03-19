@@ -2,6 +2,7 @@
 
 require_relative "test_helper"
 
+Yast.import "Profile"
 Yast.import "AutoinstScripts"
 
 describe "Yast::AutoinstScripts" do
@@ -35,10 +36,12 @@ describe "Yast::AutoinstScripts" do
     shared_examples "resolve location" do
       # this examples expect to have defined type and key
       it "strip white spaces from location" do
-        data = { key => [
-          { "location" => "https://test.com/script  \n \t   " },
-          { "location" => "\n\t  https://test.com/script2" }
-        ] }
+        data = Yast::ProfileHash.new(
+          key => [
+            { "location" => "https://test.com/script  \n \t   " },
+            { "location" => "\n\t  https://test.com/script2" }
+          ]
+        )
         expected = [
           "https://test.com/script",
           "https://test.com/script2"
@@ -54,10 +57,12 @@ describe "Yast::AutoinstScripts" do
         end
 
         it "resolve relurl using autoyast profile url" do
-          data = { key => [
-            { "location" => "https://test.com/script" },
-            { "location" => "relurl://script2" }
-          ] }
+          data = Yast::ProfileHash.new(
+            key => [
+              { "location" => "https://test.com/script" },
+              { "location" => "relurl://script2" }
+            ]
+          )
           expected = [
             "https://test.com/script",
             "https://example.com/script2"
@@ -76,10 +81,12 @@ describe "Yast::AutoinstScripts" do
         end
 
         it "resolve relurl using ayrelurl from install.inf" do
-          data = { key => [
-            { "location" => "https://test.com/script" },
-            { "location" => "relurl://script2" }
-          ] }
+          data = Yast::ProfileHash.new(
+            key => [
+              { "location" => "https://test.com/script" },
+              { "location" => "relurl://script2" }
+            ]
+          )
           expected = ["https://test.com/script", "https://example2.com/ay/script2"]
 
           subject.Import(data)
@@ -121,11 +128,11 @@ describe "Yast::AutoinstScripts" do
 
   describe "#Export" do
     it "returns hash with defined scripts" do
-      data = {
+      data = Yast::ProfileHash.new(
         "pre-scripts" => [{ "location" => "http://test.com/new_script", "param-list" => [],
             "filename" => "script4", "source" => "", "interpreter" => "perl", "rerun" => false,
             "debug" => false, "feedback" => false, "feedback_type" => "", "notification" => "" }]
-      }
+      )
 
       subject.Import(data)
       expect(subject.Export).to eq data
@@ -134,11 +141,11 @@ describe "Yast::AutoinstScripts" do
 
   describe "#Summary" do
     it "returns richtext string with scripts summary" do
-      data = {
+      data = Yast::ProfileHash.new(
         "pre-scripts"  => [{ "location" => "http://test.com/script" }],
         "post-scripts" => [{ "location" => "http://test.com/script2" },
                            { "location" => "http://test.com/script3" }]
-      }
+      )
 
       subject.Import(data)
       expect(subject.Summary).to be_a(::String)
@@ -148,11 +155,11 @@ describe "Yast::AutoinstScripts" do
   describe "#AddEditScript" do
     context "given filename exists" do
       it "edits existing one" do
-        data = {
+        data = Yast::ProfileHash.new(
           "pre-scripts"  => [{ "location" => "http://test.com/script", "filename" => "script1" }],
           "post-scripts" => [{ "location" => "http://test.com/script2", "filename" => "script2" },
                              { "location" => "http://test.com/script3", "filename" => "script3" }]
-        }
+        )
 
         subject.Import(data)
 
@@ -170,11 +177,11 @@ describe "Yast::AutoinstScripts" do
 
     context "given filename does not exist" do
       it "adds new one to merged" do
-        data = {
+        data = Yast::ProfileHash.new(
           "pre-scripts"  => [{ "location" => "http://test.com/script", "filename" => "script1" }],
           "post-scripts" => [{ "location" => "http://test.com/script2", "filename" => "script2" },
                              { "location" => "http://test.com/script3", "filename" => "script3" }]
-        }
+        )
 
         subject.Import(data)
 
@@ -193,11 +200,11 @@ describe "Yast::AutoinstScripts" do
 
   describe "#deleteScript" do
     it "removes script with given filename from merged list" do
-      data = {
+      data = Yast::ProfileHash.new(
         "pre-scripts"  => [{ "location" => "http://test.com/script", "filename" => "script1" }],
         "post-scripts" => [{ "location" => "http://test.com/script2", "filename" => "script2" },
                            { "location" => "http://test.com/script3", "filename" => "script3" }]
-      }
+      )
 
       subject.Import(data)
 
@@ -230,9 +237,9 @@ describe "Yast::AutoinstScripts" do
 
     context "for pre-scripts" do
       it "downloads script from location if defined" do
-        data = {
+        data = Yast::ProfileHash.new(
           "pre-scripts" => [{ "location" => "http://test.com/script", "filename" => "script1" }]
-        }
+        )
 
         expect_any_instance_of(Yast::Transfer::FileFromUrl).to(
           receive(:get_file_from_url) do |_klass, map|
@@ -250,10 +257,10 @@ describe "Yast::AutoinstScripts" do
       end
 
       it "creates script file from source if location not defined" do
-        data = {
+        data = Yast::ProfileHash.new(
           "pre-scripts" => [{ "source"   => "echo krucifix > /home/dabel/body",
                               "filename" => "script1" }]
-        }
+        )
 
         expect(Yast::SCR).to receive(:Write).with(path(".target.string"),
           /pre-scripts\/script1$/, "echo krucifix > /home/dabel/body")
@@ -283,10 +290,10 @@ describe "Yast::AutoinstScripts" do
 
     context "for postpartitioning-scripts" do
       it "downloads script from location if defined" do
-        data = {
+        data = Yast::ProfileHash.new(
           "postpartitioning-scripts" => [{ "location" => "http://test.com/script",
                                            "filename" => "script1" }]
-        }
+        )
 
         expect_any_instance_of(Yast::Transfer::FileFromUrl).to(
           receive(:get_file_from_url) do |_klass, map|
@@ -304,10 +311,10 @@ describe "Yast::AutoinstScripts" do
       end
 
       it "creates script file from source if location not defined" do
-        data = {
+        data = Yast::ProfileHash.new(
           "postpartitioning-scripts" => [{ "source"   => "echo krucifix > /home/dabel/body",
                                            "filename" => "script1" }]
-        }
+        )
 
         expect(Yast::SCR).to receive(:Write).with(path(".target.string"),
           /script1$/, "echo krucifix > /home/dabel/body")
@@ -319,9 +326,9 @@ describe "Yast::AutoinstScripts" do
 
     context "for init-scripts" do
       it "downloads script from location if defined" do
-        data = {
+        data = Yast::ProfileHash.new(
           "init-scripts" => [{ "location" => "http://test.com/script", "filename" => "script1" }]
-        }
+        )
 
         expect_any_instance_of(Yast::Transfer::FileFromUrl).to(
           receive(:get_file_from_url) do |_klass, map|
@@ -339,10 +346,10 @@ describe "Yast::AutoinstScripts" do
       end
 
       it "creates script file from source if location not defined" do
-        data = {
+        data = Yast::ProfileHash.new(
           "init-scripts" => [{ "source"   => "echo krucifix > /home/dabel/body",
                                "filename" => "script1" }]
-        }
+        )
 
         expect(Yast::SCR).to receive(:Write).with(path(".target.string"),
           "/var/adm/autoinstall/init.d/script1", "echo krucifix > /home/dabel/body")
@@ -353,10 +360,10 @@ describe "Yast::AutoinstScripts" do
     end
 
     it "executes script" do
-      data = {
+      data = Yast::ProfileHash.new(
         "pre-scripts" => [{ "location" => "http://test.com/script", "filename" => "script1",
         "interpreter" => "shell", "rerun" => true }]
-      }
+      )
 
       expect(Yast::SCR).to receive(:Execute).with(path(".target.bash"), /\/bin\/sh/)
 
@@ -365,10 +372,10 @@ describe "Yast::AutoinstScripts" do
     end
 
     it "shows a feedback during script when notification is set for script" do
-      data = {
+      data = Yast::ProfileHash.new(
         "pre-scripts" => [{ "location" => "http://test.com/script", "filename" => "script1",
         "interpreter" => "shell", "rerun" => true, "notification" => "Script1!!!" }]
-      }
+      )
 
       expect(Yast::Popup).to receive(:ShowFeedback).with("", "Script1!!!")
       expect(Yast::Popup).to receive(:ClearFeedback)
@@ -378,10 +385,10 @@ describe "Yast::AutoinstScripts" do
     end
 
     it "shows a report if feedback parameter is set" do
-      data = {
+      data = Yast::ProfileHash.new(
         "pre-scripts" => [{ "location" => "http://test.com/script", "filename" => "script1",
         "interpreter" => "shell", "feedback" => true, "feedback_type" => "error", "rerun" => true }]
-      }
+      )
 
       allow(Yast::SCR).to receive(:Read).and_return("test")
       expect(Yast::Report).to receive(:Error)
