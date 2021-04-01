@@ -642,6 +642,7 @@ module Yast
           ret = :menu_saveas
         elsif ret == "menu_new" # NEW
           Profile.Reset
+          registry = Y2Autoinstallation::Entries::Registry.instance
           registry.descriptions.each { |d| resetModule(d.resource_name) }
           AutoinstConfig.currentFile = ""
           ShowSource() if UI.WidgetExists(Id(:class_source))
