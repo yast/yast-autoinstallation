@@ -505,7 +505,7 @@ module Yast
           modulename = getModule
           if modulename != ""
             registry = Y2Autoinstallation::Entries::Registry.instance
-            description = registry.descriptions.find { |d| d.resource_name == module_name }
+            description = registry.descriptions.find { |d| d.resource_name == modulename }
             if Popup.YesNo(
               Builtins.sformat(
                 _(
