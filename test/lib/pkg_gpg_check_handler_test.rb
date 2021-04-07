@@ -5,17 +5,23 @@ require_relative "../../src/lib/autoinstall/pkg_gpg_check_handler"
 
 require "yast"
 
+Yast.import "Profile"
+
 describe Yast::PkgGpgCheckHandler do
   subject(:handler) { Yast::PkgGpgCheckHandler.new(data, profile) }
 
   let(:data) do
-    { "CheckPackageResult" => result,
+    Yast::ProfileHash.new(
+      "CheckPackageResult" => result,
       "Package"            => "dummy-package",
       "Localpath"          => "/path/to/dummy-package.rpm",
-      "RepoMediaUrl"       => "http://dl.opensuse.org/repos/YaST:/Head" }
+      "RepoMediaUrl"       => "http://dl.opensuse.org/repos/YaST:/Head"
+    )
   end
   let(:result) { Yast::PkgGpgCheckHandler::CHK_OK }
-  let(:profile) { { "general" => { "signature-handling" => signature_handling } } }
+  let(:profile) do
+    Yast::ProfileHash.new("general" => { "signature-handling" => signature_handling })
+  end
   let(:signature_handling) { {} }
 
   describe "#accept?" do
@@ -265,19 +271,23 @@ describe Yast::PkgGpgCheckHandler do
       let(:result) { Yast::PkgGpgCheckHandler::CHK_NOTFOUND }
 
       let(:profile) do
-        { "general" => {
-          "signature-handling" => {
-            "accept_unsigned_file"   => true,
-            "accept_unknown_gpg_key" => true
-          }
-        },
+        Yast::ProfileHash.new(
+          "general" => {
+            "signature-handling" => {
+              "accept_unsigned_file"   => true,
+              "accept_unknown_gpg_key" => true
+            }
+          },
           "add-on"  => {
             "add_on_products" => [
-              { "media_url"          => "http://dl.opensuse.org/repos/YaST:/Head",
+              Yast::ProfileHash.new(
+                "media_url"          => "http://dl.opensuse.org/repos/YaST:/Head",
                 "name"               => "yast_head",
-                "signature-handling" => { "accept_unsigned_file" => false } }
+                "signature-handling" => { "accept_unsigned_file" => false }
+              )
             ]
-          } }
+          }
+        )
       end
 
       it "honors the add-on settings" do

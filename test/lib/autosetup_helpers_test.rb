@@ -54,7 +54,7 @@ describe Y2Autoinstallation::AutosetupHelpers do
   end
 
   describe "#suse_register" do
-    let(:profile_content) { { "general" => {} } }
+    let(:profile_content) { Yast::ProfileHash.new("general" => {}) }
     let(:reg_module_available) { true }
 
     before do
@@ -86,7 +86,9 @@ describe Y2Autoinstallation::AutosetupHelpers do
       end
 
       context "suse_register tag is defined in AY file" do
-        let(:profile_content) { { "suse_register" => { "reg_code" => "12345" } } }
+        let(:profile_content) do
+          Yast::ProfileHash.new("suse_register" => { "reg_code" => "12345" })
+        end
 
         before do
           allow(Yast::WFM).to receive(:CallFunction).with("inst_download_release_notes")
@@ -130,7 +132,9 @@ describe Y2Autoinstallation::AutosetupHelpers do
       end
 
       context "semi-automatic is defined in AY file" do
-        let(:profile_content) { { "general" => { "semi-automatic" => ["scc"] } } }
+        let(:profile_content) do
+          Yast::ProfileHash.new("general" => { "semi-automatic" => ["scc"] })
+        end
         it "shows registration screen mask and returns true" do
           # Showing registration screen mask
           expect(Yast::WFM).to receive(:CallFunction).with("inst_scc",
@@ -243,7 +247,7 @@ describe Y2Autoinstallation::AutosetupHelpers do
   end
 
   describe "#autosetup_firewall" do
-    let(:profile) { { "firewall" => firewall_section } }
+    let(:profile) { Yast::ProfileHash.new("firewall" => firewall_section) }
     let(:firewall_section) { { "default_zone" => "external" } }
 
     before(:each) do
@@ -284,7 +288,7 @@ describe Y2Autoinstallation::AutosetupHelpers do
   end
 
   describe "#autosetup_network" do
-    let(:profile) { networking_section }
+    let(:profile) { Yast::ProfileHash.new(networking_section) }
     let(:networking_section) { { "networking" => { "setup_before_proposal" => true } } }
     let(:host_section) { { "host" => { "hosts" => [] } } }
 
@@ -311,7 +315,7 @@ describe Y2Autoinstallation::AutosetupHelpers do
       end
 
       context "and the setup is defined to be run before the proposal" do
-        let(:profile) { networking_section.merge(host_section) }
+        let(:profile) { Yast::ProfileHash.new(networking_section.merge(host_section)) }
         let(:networking_section) { { "networking" => { "setup_before_proposal" => true } } }
 
         context "and a host section is defined" do
@@ -372,7 +376,7 @@ describe Y2Autoinstallation::AutosetupHelpers do
   end
 
   describe "#semi_auto?" do
-    let(:profile) { general_section }
+    let(:profile) { Yast::ProfileHash.new(general_section) }
     let(:general_section) { { "general" => { "semi-automatic" => ["networking"] } } }
 
     before do
@@ -391,7 +395,9 @@ describe Y2Autoinstallation::AutosetupHelpers do
   end
 
   describe "#autosetup_country" do
-    let(:profile) { language_section.merge(timezone_section).merge(keyboard_section) }
+    let(:profile) do
+      Yast::ProfileHash.new(language_section.merge(timezone_section).merge(keyboard_section))
+    end
     let(:language_section) { { "language" => { "language" => "de_DE", "languages" => "es_ES" } } }
     let(:timezone_section) { {} }
     let(:keyboard_section) { {} }

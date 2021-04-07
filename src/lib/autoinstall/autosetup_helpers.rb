@@ -117,7 +117,7 @@ module Y2Autoinstallation
     #
     # @return [Boolean]
     def semi_auto?(name)
-      general_section = Yast::Profile.current["general"] || {}
+      general_section = Yast::Profile.current.fetch_as_hash("general")
       !!general_section["semi-automatic"]&.include?(name)
     end
 
@@ -126,13 +126,13 @@ module Y2Autoinstallation
       # Prevent to be called twice in case of already configured
       return if @network_configured
 
-      networking_section = Yast::Profile.current.fetch("networking", {})
+      networking_section = Yast::Profile.current.fetch_as_hash("networking")
       Yast::WFM.CallFunction("lan_auto", ["Import", networking_section])
 
       # Import also the host section in order to resolve hosts only available
       # with the network configuration and the host entry
-      if Yast::Profile.current["host"]
-        Yast::WFM.CallFunction("host_auto", ["Import", Yast::Profile.current["host"]])
+      if Yast::Profile.current.fetch_as_hash("host", nil)
+        Yast::WFM.CallFunction("host_auto", ["Import", Yast::Profile.current.fetch_as_hash("host")])
       end
 
       if semi_auto?("networking")
@@ -158,7 +158,7 @@ module Y2Autoinstallation
     def network_before_proposal?
       return @network_before_proposal unless @network_before_proposal.nil?
 
-      networking_section = Yast::Profile.current["networking"] || {}
+      networking_section = Yast::Profile.current.fetch_as_hash("networking")
 
       @network_before_proposal = networking_section.fetch("setup_before_proposal", false)
     end
@@ -166,7 +166,7 @@ module Y2Autoinstallation
     # Import and configure country specific data (timezone, language and
     # keyboard)
     def autosetup_country
-      Yast::Language.Import(Yast::Profile.current["language"] || {})
+      Yast::Language.Import(Yast::Profile.current.fetch_as_hash("language"))
 
       # Set Console font
       Yast::Installation.encoding = Yast::Console.SelectFont(Yast::Language.language)
@@ -178,16 +178,16 @@ module Y2Autoinstallation
       end
 
       if Yast::Profile.current.key?("timezone")
-        Yast::Timezone.Import(Yast::Profile.current["timezone"] || {})
+        Yast::Timezone.Import(Yast::Profile.current.fetch_as_hash("timezone"))
         Yast::Profile.remove_sections("timezone")
       end
 
       # bnc#891808: infer keyboard from language if needed
       if Yast::Profile.current.key?("keyboard")
-        Yast::Keyboard.Import(Yast::Profile.current["keyboard"] || {}, :keyboard)
+        Yast::Keyboard.Import(Yast::Profile.current.fetch_as_hash("keyboard"), :keyboard)
         Yast::Profile.remove_sections("keyboard")
       elsif Yast::Profile.current.key?("language")
-        Yast::Keyboard.Import(Yast::Profile.current["language"] || {}, :language)
+        Yast::Keyboard.Import(Yast::Profile.current.fetch_as_hash("language"), :language)
       end
 
       Yast::Profile.remove_sections("language") if Yast::Profile.current.key?("language")
@@ -199,14 +199,14 @@ module Y2Autoinstallation
 
     # Invokes autoyast setup for firewall
     def autosetup_firewall
-      return if !Yast::Profile.current["firewall"]
+      return if !Yast::Profile.current.fetch_as_hash("firewall", nil)
 
       # in some cases we need to postpone firewall configuration to the second stage
       # we also have to guarantee that firewall is not blocking second stage in this case
       firewall_section = if need_second_stage_run?
         { "enable_firewall" => false }
       else
-        Yast::Profile.current["firewall"]
+        Yast::Profile.current.fetch_as_hash("firewall")
       end
 
       log.info("Importing Firewall settings from AY profile")

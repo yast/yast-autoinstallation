@@ -14,6 +14,70 @@ require "installation/autoinst_profile/element_path"
 require "ui/password_dialog"
 
 module Yast
+  # Wrapper class around Hash to hold the autoyast profile.
+  #
+  # Rationale:
+  #
+  # The profile parser returns an empty String for empty elements like
+  # <foo/> - and not nil. This breaks the code assumption that you can write
+  # xxx.fetch("foo", {}) in a lot of code locations.
+  #
+  # To make access to profile elements easier this class provides methods
+  # #fetch_as_hash and #fetch_as_array that check the expected type and
+  # return the default value also if there is a type mismatch.
+  #
+  # See bsc#1180968 for more details.
+  #
+  # The class constructor converts an existing Hash to a ProfileHash.
+  #
+  class ProfileHash < Hash
+    include Yast::Logger
+
+    # Replace Hash -> ProfileHash recursively.
+    def initialize(default = {})
+      default.each_pair do |key, value|
+        self[key] = value.is_a?(Hash) ? ProfileHash.new(value) : value
+      end
+    end
+
+    # Read element from ProfileHash.
+    #
+    # @param key [String] the key
+    # @param default [Hash] default value - returned if element does not exist or has wrong type
+    #
+    # @return [ProfileHash]
+    def fetch_as_hash(key, default = {})
+      fetch_as(key, Hash, default)
+    end
+
+    # Read element from ProfileHash.
+    #
+    # @param key [String] the key
+    # @param default [Array] default value - returned if element does not exist or has wrong type
+    #
+    # @return [Array]
+    def fetch_as_array(key, default = [])
+      fetch_as(key, Array, default)
+    end
+
+  private
+
+    # With an explicit default it's possible to check for the presence of an
+    # element vs. empty element, if needed.
+    def fetch_as(key, type, default = nil)
+      tmp = fetch(key, nil)
+      if !tmp.is_a?(type)
+        f = caller_locations(2, 1).first
+        if !tmp.nil?
+          log.warn "AutoYaST profile type mismatch (from #{f}): " \
+            "#{key}: expected #{type}, got #{tmp.class}"
+        end
+        tmp = default.is_a?(Hash) ? ProfileHash.new(default) : default
+      end
+      tmp
+    end
+  end
+
   class ProfileClass < Module
     include Yast::Logger
 
@@ -69,21 +133,22 @@ module Yast
     end
 
     def softwareCompat
-      Ops.set(@current, "software", Ops.get_map(@current, "software", {}))
+      @current["software"] = @current.fetch_as_hash("software")
 
       # We need to check if second stage was disabled in the profile itself
       # because AutoinstConfig is not initialized at this point
       # and InstFuntions#second_stage_required? depends on that module
       # to check if 2nd stage is required (chicken-and-egg problem).
-      mode = @current.fetch("general", {}).fetch("mode", {})
+      mode = @current.fetch_as_hash("general").fetch_as_hash("mode")
       second_stage_enabled = mode.key?("second_stage") ? mode["second_stage"] : true
+
       add_autoyast_packages if AutoinstFunctions.second_stage_required? && second_stage_enabled
 
       # workaround for missing "REQUIRES" in content file to stay backward compatible
       # FIXME: needs a more sophisticated or compatibility breaking solution after SLES11
-      if Builtins.size(Ops.get_list(@current, ["software", "patterns"], [])) == 0
-        Ops.set(@current, ["software", "patterns"], ["base"])
-      end
+      patterns = @current["software"].fetch_as_array("patterns")
+      patterns = ["base"] if patterns.empty?
+      @current["software"]["patterns"] = patterns
 
       nil
     end
@@ -201,14 +266,14 @@ module Yast
     end
 
     # Read Profile properties and Version
-    # @param properties [Hash] Profile Properties
+    # @param properties [ProfileHash] Profile Properties
     # @return [void]
     def check_version(properties)
       version = properties["version"]
       if version != "3.0"
-        Builtins.y2milestone("Wrong profile version '#{version}'")
+        log.info("Wrong profile version #{version}")
       else
-        Builtins.y2milestone("AutoYaST Profile Version  %1 Detected.", version)
+        log.info("AutoYaST Profile Version #{version} detected.")
       end
     end
 
@@ -216,11 +281,12 @@ module Yast
     # @param [Hash{String => Object}] profile
     # @return [void]
     def Import(profile)
-      profile = deep_copy(profile)
-      Builtins.y2milestone("importing profile")
-      @current = deep_copy(profile)
+      log.info("importing profile")
 
-      check_version(Ops.get_map(@current, "properties", {}))
+      profile = deep_copy(profile)
+      @current = Yast::ProfileHash.new(profile)
+
+      check_version(@current.fetch_as_hash("properties"))
 
       # old style
       if Builtins.haskey(profile, "configure") ||
@@ -243,9 +309,10 @@ module Yast
 
       merge_resource_aliases!
       generalCompat # compatibility to new language,keyboard and timezone (SL10.1)
+      @current = Yast::ProfileHash.new(@current)
       softwareCompat
+      log.info "Current Profile = #{@current}"
 
-      Builtins.y2debug("Current Profile=%1", @current)
       nil
     end
 
@@ -608,7 +675,7 @@ module Yast
     # @param profile [Hash] Initial profile
     # @return [Hash] Modified profile
     def setElementByList(path, value, profile)
-      profile = deep_copy(profile)
+      profile = Yast::ProfileHash.new(profile)
       merge_element_by_list(path, value, profile)
     end
 
@@ -659,8 +726,7 @@ module Yast
   private
 
     def add_autoyast_packages
-      @current["software"] ||= {}
-      @current["software"]["packages"] ||= []
+      @current["software"]["packages"] = @current["software"].fetch_as_array("packages")
       @current["software"]["packages"] << needed_second_stage_packages
       @current["software"]["packages"].flatten!.uniq!
     end
@@ -738,7 +804,7 @@ module Yast
         if remaining_path.empty?
           value
         elsif remaining_path.first.is_a?(::String)
-          merge_element_by_list(remaining_path, value, profile[current] || {})
+          merge_element_by_list(remaining_path, value, profile[current] || Yast::ProfileHash.new)
         else
           merge_element_by_list(remaining_path, value, profile[current] || [])
         end

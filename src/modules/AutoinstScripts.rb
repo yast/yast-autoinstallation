@@ -316,11 +316,11 @@ module Yast
   private
 
     # Checking if the script has the right format
-    # @param tree [Hash] scripts section of the AutoYast configuration
+    # @param tree [Yast::ProfileHash] scripts section of the AutoYast configuration
     # @param key [String] kind of script (pre, post,..)
     # @return [Array<String>] of scripts
     def valid_scripts_for(tree, key)
-      tree.fetch(key, []).select do |h|
+      tree.fetch_as_array(key).select do |h|
         next true if h.is_a?(Hash)
 
         log.warn "Cannot evaluate #{key}: #{h.inspect}"

@@ -32,7 +32,7 @@ describe Y2Autoinstallation::Clients::InstAutoinit do
     allow(Yast::Linuxrc).to receive(:InstallInf).and_return(nil)
     allow(Yast::ProfileLocation).to receive(:Process).and_return(true)
     allow(Yast::Profile).to receive(:ReadXML).and_return(true)
-    allow(Yast::Profile).to receive(:current).and_return({})
+    allow(Yast::Profile).to receive(:current).and_return(Yast::ProfileHash.new)
     allow(Yast::Mode).to receive(:autoupgrade).and_return(true)
     allow(Yast::AutoinstFunctions).to receive(:available_base_products).and_return([])
     allow(Y2Packager::MediumType).to receive(:online?).and_return(true)
@@ -79,7 +79,8 @@ describe Y2Autoinstallation::Clients::InstAutoinit do
 
     it "calls iscsci client import and write if profile contain it" do
       map = { "enabled" => false }
-      allow(Yast::Profile).to receive(:current).and_return("iscsi-client" => map)
+      allow(Yast::Profile).to receive(:current)
+        .and_return(Yast::ProfileHash.new("iscsi-client" => map))
       expect(Yast::WFM).to receive(:CallFunction).with("iscsi-client_auto", ["Import", map])
       expect(Yast::WFM).to receive(:CallFunction).with("iscsi-client_auto", ["Write"])
 
@@ -88,7 +89,8 @@ describe Y2Autoinstallation::Clients::InstAutoinit do
 
     it "calls fcoe client import and write if profile contain it" do
       map = { "enabled" => false }
-      allow(Yast::Profile).to receive(:current).and_return("fcoe-client" => map)
+      allow(Yast::Profile).to receive(:current)
+        .and_return(Yast::ProfileHash.new("fcoe-client" => map))
       expect(Yast::WFM).to receive(:CallFunction).with("fcoe-client_auto", ["Import", map])
       expect(Yast::WFM).to receive(:CallFunction).with("fcoe-client_auto", ["Write"])
 
@@ -111,10 +113,10 @@ describe Y2Autoinstallation::Clients::InstAutoinit do
       let(:do_registration) { false }
       let(:setup_before_proposal) { false }
       let(:profile) do
-        {
+        Yast::ProfileHash.new(
           "suse_register" => { "do_registration" => do_registration },
           "networking"    => { "setup_before_proposal" => setup_before_proposal }
-        }
+        )
       end
 
       before do

@@ -93,7 +93,7 @@ describe Yast::AutoinstFunctions do
 
         context "registration has not been defined in AY configuration file" do
           it "reports error to set registration" do
-            allow(Yast::Profile).to receive(:current).and_return({})
+            allow(Yast::Profile).to receive(:current).and_return(Yast::ProfileHash.new)
             expect(subject.check_second_stage_environment).to(
               include("configuring the registration")
             )
@@ -132,7 +132,7 @@ describe Yast::AutoinstFunctions do
         "and such base product exists on media" do
       allow(Yast::Profile)
         .to receive(:current)
-        .and_return("software" => { "products" => [selected_name] })
+        .and_return(Yast::ProfileHash.new("software" => { "products" => [selected_name] }))
 
       expect(subject.selected_product.name).to eql selected_name
     end
@@ -141,7 +141,9 @@ describe Yast::AutoinstFunctions do
         "such base product doesn't exist on media" do
       allow(Yast::Profile)
         .to receive(:current)
-        .and_return("software" => { "products" => { "product" => "Fedora" } })
+        .and_return(
+          Yast::ProfileHash.new("software" => { "products" => { "product" => "Fedora" } })
+        )
 
       expect(subject.selected_product).to be nil
     end
@@ -150,7 +152,7 @@ describe Yast::AutoinstFunctions do
         "if such base product exists on media" do
       allow(Yast::Profile)
         .to receive(:current)
-        .and_return("software" => { "patterns" => ["sles-base-32bit"] })
+        .and_return(Yast::ProfileHash.new("software" => { "patterns" => ["sles-base-32bit"] }))
 
       expect(subject.selected_product.name).to eql selected_name
     end
@@ -159,7 +161,7 @@ describe Yast::AutoinstFunctions do
         "if such base product exists on media" do
       allow(Yast::Profile)
         .to receive(:current)
-        .and_return("software" => { "packages" => ["sles-release"] })
+        .and_return(Yast::ProfileHash.new("software" => { "packages" => ["sles-release"] }))
 
       expect(subject.selected_product.name).to eql selected_name
     end
@@ -171,7 +173,7 @@ describe Yast::AutoinstFunctions do
         .and_return(double(available_base_products: [base_product("SLED")]))
       allow(Yast::Profile)
         .to receive(:current)
-        .and_return("software" => {})
+        .and_return(Yast::ProfileHash.new("software" => {}))
 
       expect(subject.selected_product.name).to eql "SLED"
     end
@@ -180,7 +182,7 @@ describe Yast::AutoinstFunctions do
       before do
         allow(Yast::Profile)
           .to receive(:current)
-          .and_return("software" => nil)
+          .and_return(Yast::ProfileHash.new("software" => nil))
       end
 
       it "returns nil" do

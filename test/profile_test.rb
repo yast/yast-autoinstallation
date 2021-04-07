@@ -38,7 +38,7 @@ describe Yast::Profile do
     let(:second_stage_required) { true }
 
     context "when autoyast2-installation is not selected to be installed" do
-      let(:profile) { { "software" => { "packages" => [] } } }
+      let(:profile) { Yast::ProfileHash.new("software" => { "packages" => [] }) }
 
       context "and second stage is required" do
         it "adds 'autoyast2-installation' to packages list" do
@@ -58,8 +58,10 @@ describe Yast::Profile do
 
       context "and second stage is disabled on the profile itself" do
         let(:profile) do
-          { "general"  => { "mode" => { "second_stage" => false } },
-            "software" => { "packages" => [] } }
+          Yast::ProfileHash.new(
+            "general"  => { "mode" => { "second_stage" => false } },
+            "software" => { "packages" => [] }
+          )
         end
 
         it "does not add 'autoyast2-installation' to packages list" do
@@ -70,7 +72,7 @@ describe Yast::Profile do
     end
 
     context "when some section handled by a client included in autoyast2 package is present" do
-      let(:profile) { { "scripts" => [] } }
+      let(:profile) { Yast::ProfileHash.new("scripts" => []) }
 
       context "and second stage is required" do
         it "adds 'autoyast2' to packages list" do
@@ -90,8 +92,10 @@ describe Yast::Profile do
 
       context "and second stage is disabled on the profile itself" do
         let(:profile) do
-          { "general" => { "mode" => { "second_stage" => false } },
-            "files"   => [] }
+          Yast::ProfileHash.new(
+            "general" => { "mode" => { "second_stage" => false } },
+            "files"   => []
+          )
         end
 
         it "does not add 'autoyast2' to packages list" do
@@ -102,7 +106,7 @@ describe Yast::Profile do
     end
 
     context "when the software patterns section is empty" do
-      let(:profile) { { "software" => { "patterns" => [] } } }
+      let(:profile) { Yast::ProfileHash.new("software" => { "patterns" => [] }) }
 
       it "adds 'base' pattern" do
         Yast::Profile.softwareCompat
@@ -111,7 +115,7 @@ describe Yast::Profile do
     end
 
     context "when the software patterns section is missing" do
-      let(:profile) { {} }
+      let(:profile) { Yast::ProfileHash.new }
 
       it "adds 'base' pattern" do
         Yast::Profile.softwareCompat
@@ -121,11 +125,11 @@ describe Yast::Profile do
   end
 
   describe "#Import" do
-    let(:profile) { {} }
+    let(:profile) { Yast::ProfileHash.new }
 
     context "when profile is given in the old format" do
       context "and 'install' key is present" do
-        let(:profile) { { "install" =>  { "section1" => ["val1"] } } }
+        let(:profile) { Yast::ProfileHash.new("install" => { "section1" => ["val1"] }) }
 
         it "move 'install' items to the root of the profile" do
           Yast::Profile.Import(profile)
@@ -135,7 +139,7 @@ describe Yast::Profile do
       end
 
       context "and 'configure' key is present" do
-        let(:profile) { { "configure" =>  { "section2" => ["val2"] } } }
+        let(:profile) { Yast::ProfileHash.new("configure" => { "section2" => ["val2"] }) }
 
         it "move 'configure' items to the root of the profile" do
           Yast::Profile.Import(profile)
@@ -146,8 +150,10 @@ describe Yast::Profile do
 
       context "when both keys are present" do
         let(:profile) do
-          { "configure" => { "section2" => ["val2"] },
-            "install"   => { "section1" => ["val1"] } }
+          Yast::ProfileHash.new(
+            "configure" => { "section2" => ["val2"] },
+            "install"   => { "section1" => ["val1"] }
+          )
         end
 
         it "merge them into the root of the profile" do
@@ -161,8 +167,10 @@ describe Yast::Profile do
 
       context "when both keys are present and some section is duplicated" do
         let(:profile) do
-          { "configure" => { "section1" => "val3", "section2" => ["val2"] },
-            "install"   => { "section1" => ["val1"] } }
+          Yast::ProfileHash.new(
+            "configure" => { "section1" => "val3", "section2" => ["val2"] },
+            "install"   => { "section1" => ["val1"] }
+          )
         end
 
         it "merges them into the root of the profile giving precedence to 'installation' section" do

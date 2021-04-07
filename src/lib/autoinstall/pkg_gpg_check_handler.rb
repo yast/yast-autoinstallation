@@ -143,15 +143,16 @@ module Yast
     # If the add-on has its own specific configuration, those settings
     # will override to general settings.
     #
-    # @param [Hash] profile AutoYaST profile
+    # @param [Yast::ProfileHash] profile AutoYaST profile
     # @param [String] url   Repository URL
-    # @return [Hash] Signature handling settings for the given add-on.
+    # @return [Yast::ProfileHash] Signature handling settings for the given add-on.
     def get_addon_config(profile, url)
-      addon_config = addons_config(profile).find { |c| c["media_url"] == url } || {}
-      general_config = profile.fetch("general", {})
-      signature_handling = general_config.fetch("signature-handling", {})
-      signature_handling = {} unless signature_handling.is_a?(Hash)
-      signature_handling.merge(addon_config.fetch("signature-handling", {}))
+      addon_config =
+        addons_config(profile).find { |c| c["media_url"] == url } ||
+        Yast::ProfileHash.new
+      general_config = profile.fetch_as_hash("general")
+      general_config.fetch_as_hash("signature-handling")
+        .merge(addon_config.fetch_as_hash("signature-handling"))
     end
 
     # Get add-ons configuration
@@ -159,10 +160,10 @@ module Yast
     # This is just a helper method that returns the //add-ons/add_on_products section
     # of an AutoYaST profile.
     #
-    # @param [Hash] profile AutoYaST profile.
-    # @return [Hash] Add-ons section from profile.
+    # @param [Yast::ProfileHash] profile AutoYaST profile.
+    # @return [Yast::ProfileHash] Add-ons section from profile.
     def addons_config(profile)
-      profile.fetch("add-on", {}).fetch("add_on_products", [])
+      profile.fetch_as_hash("add-on").fetch_as_array("add_on_products")
     end
 
     # Find the key ID for the package

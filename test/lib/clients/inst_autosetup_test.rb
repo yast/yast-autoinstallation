@@ -59,7 +59,7 @@ describe Y2Autoinstallation::Clients::InstAutosetup do
       allow(subject).to receive(:probe_storage)
       allow(Yast::AutoinstSoftware).to receive(:Write).and_return(true)
       allow(Yast::ServicesManager).to receive(:import)
-      Yast::Profile.current = profile
+      Yast::Profile.current = Yast::ProfileHash.new(profile)
     end
 
     it "sets up the network" do
