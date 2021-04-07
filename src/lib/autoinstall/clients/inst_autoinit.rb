@@ -165,7 +165,10 @@ module Y2Autoinstallation
         return :abort if Yast::UI.PollInput == :abort && Yast::Popup.ConfirmAbort(:painless)
 
         loop do
+          # ask-list
+          Yast::AutoinstGeneral.Import(Yast::Profile.current.fetch("general", {}))
           askDialog
+
           # Pre-Scripts
           Yast::AutoinstScripts.Import(Yast::Profile.current.fetch_as_hash("scripts"))
           Yast::AutoinstScripts.Write("pre-scripts", false)
