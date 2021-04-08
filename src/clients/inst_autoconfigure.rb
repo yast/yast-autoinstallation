@@ -144,7 +144,7 @@ module Yast
 
       end
       # Initialize scripts stack
-      AutoinstScripts.Import(Profile.current.fetch("scripts", {}))
+      AutoinstScripts.Import(Profile.current.fetch_as_hash("scripts"))
 
       # online update
       if Ops.get_boolean(
