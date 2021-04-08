@@ -23,6 +23,8 @@ module Y2Autoinstallation
   module Entries
     # Worker class for sorting description according their dependencies
     class DescriptionSorter
+      include Yast::Logger
+
       def initialize(descriptions)
         @descriptions = descriptions
         @descriptions_map = Hash[descriptions.map { |d| [d.module_name, d] }]
@@ -31,10 +33,21 @@ module Y2Autoinstallation
       # @return [Array<Description>] sorted module names. It should be written
       #   from first to the last.
       def sort
-        each_node = ->(&b) { @descriptions_map.each_key(&b) }
-        each_child = ->(n, &b) { @descriptions_map[n].required_modules.each(&b) }
+        each_node = lambda do |&b|
+          @descriptions_map.each_key(&b)
+        end
 
-        TSort.tsort(each_node, each_child).map { |mn| @descriptions_map[mn] }
+        each_child = lambda do |n, &b|
+          desc = @descriptions_map[n]
+          if desc
+            desc.required_modules.each(&b)
+          else
+            log.error "Unknown module description '#{n}'"
+          end
+        end
+
+        log.info "Sorting module descriptions: #{@descriptions.inspect}"
+        TSort.tsort(each_node, each_child).map { |mn| @descriptions_map[mn] }.compact
       end
     end
   end
