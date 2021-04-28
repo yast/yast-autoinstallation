@@ -19,6 +19,7 @@
 
 require "installation/autoinst_profile/section_with_attributes"
 require "autoinstall/autoinst_profile/ask_selection_entry"
+require "autoinstall/autoinst_profile/script_section"
 
 module Y2Autoinstall
   module AutoinstProfile
@@ -113,7 +114,7 @@ module Y2Autoinstall
       #   @return [String,nil] Frame title
 
       # @!attribute script
-      #   @return [String,nil] Script to run after the question is answered
+      #   @return [AskScript,nil] Script to run after the question is answered
 
       # @!attribute ok_label
       #   @return [String,nil] Label for the `Ok` button
@@ -140,6 +141,10 @@ module Y2Autoinstall
         super
         @pathlist = hash["pathlist"]
         @selection = hash["selection"]&.map { |e| AskSelectionEntry.new_from_hashes(e) }
+        @script = ScriptSection.new_from_hashes(hash["script"]) if hash["script"]
+        if hash["default_value_script"]
+          @default_value_script = ScriptSection.new_from_hashes(hash["default_value_script"])
+        end
       end
     end
   end

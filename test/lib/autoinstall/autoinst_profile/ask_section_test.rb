@@ -68,7 +68,7 @@ describe Y2Autoinstall::AutoinstProfile::AskSection do
     context "when a default value script is included" do
       let(:hash) do
         {
-          "question" => "Username",
+          "question"             => "Username",
           "default_value_script" => { "source" => "touch /tmp/test" }
         }
       end
@@ -87,7 +87,7 @@ describe Y2Autoinstall::AutoinstProfile::AskSection do
       let(:hash) do
         {
           "question" => "Username",
-          "script" => { "source" => "touch /tmp/test" }
+          "script"   => { "source" => "touch /tmp/test" }
         }
       end
 
