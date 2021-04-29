@@ -1,6 +1,7 @@
 require "autoinstall/autosetup_helpers"
 require "autoinstall/importer"
 require "y2packager/medium_type"
+require "autoinstall/ask/runner"
 
 Yast.import "AutoInstall"
 Yast.import "AutoInstallRules"
@@ -167,7 +168,7 @@ module Y2Autoinstallation
         loop do
           # ask-list
           Yast::AutoinstGeneral.Import(Yast::Profile.current.fetch("general", {}))
-          askDialog
+          Y2Autoinstall::Ask::Runner.new(Yast::Profile.current).run
 
           # Pre-Scripts
           Yast::AutoinstScripts.Import(Yast::Profile.current.fetch_as_hash("scripts"))
