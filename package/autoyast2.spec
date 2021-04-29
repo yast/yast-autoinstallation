@@ -270,6 +270,8 @@ done
 
 %{yast_libdir}/autoinstall/widgets
 %{yast_libdir}/autoinstall/presenters
+%{yast_libdir}/autoinstall/ask
+%{yast_libdir}/autoinstall/autoinst_profile
 
 %dir %{yast_libdir}/autoinstall/clients
 %{yast_libdir}/autoinstall/clients/*.rb
