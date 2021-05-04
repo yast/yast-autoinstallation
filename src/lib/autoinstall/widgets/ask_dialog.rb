@@ -74,6 +74,7 @@ module Y2Autoinstall
 
         # @param question [Y2Autoinstall::Ask::Question] Question to represent
         def initialize(question)
+          textdomain "autoinst"
           @question = question
         end
 
@@ -94,6 +95,7 @@ module Y2Autoinstall
 
         # @param question [Y2Autoinstall::Ask::Question] Question to represent
         def initialize(question)
+          textdomain "autoinst"
           @question = question
         end
 
@@ -108,6 +110,7 @@ module Y2Autoinstall
 
         # @param question [Y2Autoinstall::Ask::Question] Question to represent
         def initialize(question)
+          textdomain "autoinst"
           @question = question
         end
 
@@ -153,6 +156,7 @@ module Y2Autoinstall
         # @param widgets [Array<AbstractWidget>] Widgets to wrap
         # @param timeout [Integer,nil] Time limit. No time out if is set to 0 or nil.
         def initialize(widgets, timeout: 0)
+          textdomain "autoinst"
           @timeout = timeout || 0
           @remaining = @timeout
           @widgets = widgets
@@ -176,10 +180,11 @@ module Y2Autoinstall
 
         # Handles CWM events
         #
-        # * timeout: updates the counter
-        # * stop: stops the counter and ignore any further timeout event
+        # * timeout: updates the counter.
+        # * stop_counter or any "ValueChanged" event: stops the counter and
+        #   ignores any further timeout event.
         #
-        # @paran event [Hash] CWM event
+        # @param event [Hash] CWM event
         def handle(event)
           return if stopped?
 
@@ -227,6 +232,7 @@ module Y2Autoinstall
       # @param dialog [Y2Autoinstall::Ask::Dialog] Dialog specification to display
       # @param disable_back_button [Boolean] Whether the :back button should be disabled
       def initialize(dialog, disable_back_button: false)
+        textdomain "autoinst"
         @dialog = dialog
         @disable_buttons = disable_back_button ? ["back_button"] : []
       end
