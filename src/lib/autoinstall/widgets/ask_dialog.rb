@@ -18,8 +18,8 @@
 # find current contact information at www.suse.com.
 
 require "yast"
+require "cwm"
 require "cwm/popup"
-require "cwm/common_widgets"
 
 module Y2Autoinstall
   module Widgets
@@ -139,6 +139,86 @@ module Y2Autoinstall
         end
       end
 
+      # Handles the CWM timeout
+      #
+      # Yast::CWM.show uses a timeout only when some of the widgets has a
+      # "ui_timeout". However, it calls Yast::UI.WaitForEvent and there is no
+      # feedback while the time is running.
+      #
+      # This class wraps a set of widgets, adding a counter which is updated
+      # after each second.
+      class TimeoutWrapper < CWM::CustomWidget
+        attr_reader :timeout, :widgets, :remaining
+
+        # @param widgets [Array<AbstractWidget>] Widgets to wrap
+        # @param timeout [Integer,nil] Time limit. No time out if is set to 0 or nil.
+        def initialize(widgets, timeout: 0)
+          @timeout = timeout || 0
+          @remaining = @timeout
+          @widgets = widgets
+          @stopped = false
+          self.handle_all_events = true
+        end
+
+        # Determines whether the widget is stopped or not
+        #
+        # @return [Boolean]
+        def stopped?
+          @stopped
+        end
+
+        # Determines whether widget timed out
+        #
+        # @return [Boolean]
+        def timed_out?
+          @remaining.zero?
+        end
+
+        # Handles CWM events
+        #
+        # * timeout: updates the counter
+        # * stop: stops the counter and ignore any further timeout event
+        #
+        # @paran event [Hash] CWM event
+        def handle(event)
+          return if stopped?
+
+          if event["ID"] == :timeout
+            decrease_counter
+            return :next if timed_out?
+
+          elsif event["ID"] == :stop_counter || event["EventReason"] == "ValueChanged"
+            stop
+          end
+
+          nil
+        end
+
+        def contents
+          w = widgets.clone
+          w.concat([VStretch(), Label(Id(:counter), timeout.to_s)]) unless timeout.zero?
+          VBox(*w)
+        end
+
+        def cwm_definition
+          timeout.zero? ? super : super.merge("ui_timeout" => 1000)
+        end
+
+      private
+
+        # Decreases the time counter
+        def decrease_counter
+          @remaining -= 1
+          Yast::UI.ChangeWidget(Id(:counter), :Label, @remaining.to_s)
+        end
+
+        # Stops the counter
+        def stop
+          @stopped = true
+          Yast::UI.ChangeWidget(Id(:stop_counter), :Enabled, false)
+        end
+      end
+
       # @macro seeDialog
       attr_reader :disable_buttons
 
@@ -159,7 +239,7 @@ module Y2Autoinstall
       # @macro seeAbstractWidget
       def contents
         widgets = dialog.questions.each_with_index.map { |q| widget_for(q) }
-        VBox(*widgets)
+        TimeoutWrapper.new(widgets, timeout: dialog.timeout)
       end
 
       # @macro seeDialog
@@ -228,7 +308,9 @@ module Y2Autoinstall
       #
       # @return [Array<Yast::Term>]
       def buttons
-        [back_button, next_button]
+        b = [back_button, next_button]
+        b.insert(1, stop_button) if dialog.timeout.to_i > 0
+        b
       end
 
       # 'Next' button
@@ -237,6 +319,13 @@ module Y2Autoinstall
       def next_button
         next_label = dialog.ok_label || Yast::Label.NextButton
         PushButton(Id(:next), Opt(:default), next_label)
+      end
+
+      # 'Stop' button
+      #
+      # @return [Yast::Term]
+      def stop_button
+        PushButton(Id(:stop_counter), Yast::Label.StopButton)
       end
 
       # 'Back' button

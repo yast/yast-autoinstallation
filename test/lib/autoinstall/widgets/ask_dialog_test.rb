@@ -24,8 +24,8 @@ require "autoinstall/ask/question"
 require "autoinstall/ask/question_option"
 
 describe Y2Autoinstall::Widgets::AskDialog do
-  def widgets_from(term)
-    term.params
+  def widgets_from(parent)
+    parent.widgets
   end
 
   subject { described_class.new(dialog) }
@@ -34,12 +34,11 @@ describe Y2Autoinstall::Widgets::AskDialog do
 
   describe "#contents" do
     let(:dialog) { Y2Autoinstall::Ask::Dialog.new(1, [question]) }
+    let(:question) do
+      Y2Autoinstall::Ask::Question.new("Question 1")
+    end
 
     context "when the dialog includes a text field" do
-      let(:question) do
-        Y2Autoinstall::Ask::Question.new("Question 1")
-      end
-
       it "includes an input field" do
         widget = widgets_from(subject.contents).first
         expect(widget).to be_a(Y2Autoinstall::Widgets::AskDialog::InputField)
@@ -92,6 +91,25 @@ describe Y2Autoinstall::Widgets::AskDialog do
         expect(widget).to be_a(Y2Autoinstall::Widgets::AskDialog::ComboBox)
         texts = widget.items.map(&:to_a).map(&:last)
         expect(texts).to eq(["Option 1", "Option 2"])
+      end
+    end
+
+    context "when a timeout is specified" do
+      before do
+        dialog.timeout = 2
+        allow(Yast::UI).to receive(:WaitForEvent).with(1000).and_return("ID" => :timeout)
+      end
+
+      it "updates the timer after each second" do
+        expect(Yast::UI).to receive(:WaitForEvent).twice.with(1000).and_return("ID" => :timeout)
+        expect(Yast::UI).to receive(:ChangeWidget).with(Id(:counter), :Label, "1")
+        expect(Yast::UI).to receive(:ChangeWidget).with(Id(:counter), :Label, "0")
+        allow(Yast::UI).to receive(:ChangeWidget).and_call_original
+        subject.run
+      end
+
+      it "returns :next after the timeout" do
+        expect(subject.run).to eq(:next)
       end
     end
   end
