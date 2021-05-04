@@ -18,7 +18,7 @@
 # find current contact information at www.suse.com.
 
 require "yast"
-require "cwm/dialog"
+require "cwm/popup"
 require "cwm/common_widgets"
 
 module Y2Autoinstall
@@ -32,7 +32,7 @@ module Y2Autoinstall
     #   question = Y2Autoinstall::Ask::Question.new("Username")
     #   dialog = Y2Autoinstall::Ask::Dialog.new(1, [question])
     #   AskDialog.new(dialog).run
-    class AskDialog < CWM::Dialog
+    class AskDialog < CWM::Popup
       # Common methods for question widgets
       module AskWidget
         # Returns the widget_id, which is based in the type and the question's object_id
@@ -173,6 +173,26 @@ module Y2Autoinstall
 
       attr_reader :dialog
 
+      # Defines the dialog's layout
+      #
+      # It is redefined because the ButtonBox requires to have buttons with :ok and :cancel
+      # roles, and that's not the case in this dialog.
+      #
+      # @return [Yast::Term]
+      def layout
+        VBox(
+          Id(:WizardDialog),
+          HSpacing(50),
+          Left(Heading(Id(:title), title || "")),
+          VStretch(),
+          VSpacing(1),
+          MinSize(min_width, min_height, ReplacePoint(Id(:contents), Empty())),
+          VSpacing(1),
+          VStretch(),
+          HBox(*buttons)
+        )
+      end
+
       # Returns the proper widget for the given question
       #
       # @param question [Y2Autoinstall::Ask::Question]
@@ -190,23 +210,27 @@ module Y2Autoinstall
         end
       end
 
-      # @macro seeDialog
-      def abort_button
-        ""
+      # Dialog buttons
+      #
+      # @return [Array<Yast::Term>]
+      def buttons
+        [back_button, next_button]
       end
 
-      # @macro seeDialog
-      def back_button
-        return dialog.back_label if dialog.back_label
-
-        super
-      end
-
-      # @macro seeDialog
+      # 'Next' button
+      #
+      # @return [Yast::Term]
       def next_button
-        return dialog.ok_label if dialog.ok_label
+        next_label = dialog.ok_label || Yast::Label.NextButton
+        PushButton(Id(:next), Opt(:default), next_label)
+      end
 
-        super
+      # 'Back' button
+      #
+      # @return [Yast::Term]
+      def back_button
+        back_label = dialog.back_label || Yast::Label.BackButton
+        PushButton(Id(:back), back_label)
       end
     end
   end
