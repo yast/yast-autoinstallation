@@ -46,6 +46,18 @@ describe Y2Autoinstall::Widgets::AskDialog do
       end
     end
 
+    context "when the dialog includes a password field" do
+      let(:question) do
+        Y2Autoinstall::Ask::Question.new("Question 1").tap { |q| q.password = true }
+      end
+
+      it "includes a password field" do
+        widget = widgets_from(subject.contents).first
+        expect(widget).to be_a(Y2Autoinstall::Widgets::AskDialog::PasswordField)
+        expect(widget.label).to eq("Question 1")
+      end
+    end
+
     context "when the dialog includes a boolean question" do
       let(:question) do
         Y2Autoinstall::Ask::Question.new("Question 1").tap do |q|

@@ -21,6 +21,8 @@ require "yast"
 require "cwm"
 require "cwm/popup"
 
+Yast.import "Popup"
+
 module Y2Autoinstall
   module Widgets
     # Implements a CWM dialog for the {Y2Autoinstall::Ask::Dialog} class
@@ -105,7 +107,7 @@ module Y2Autoinstall
         end
       end
 
-      class Password < CWM::InputField
+      class PasswordField < CWM::CustomWidget
         include AskWidget
 
         # @param question [Y2Autoinstall::Ask::Question] Question to represent
@@ -114,9 +116,53 @@ module Y2Autoinstall
           @question = question
         end
 
+        # Sets the password value
+        #
+        # This method updates both password widgets
+        #
+        # @return [String]
+        def value=(val)
+          new_value = val.to_s
+          Yast::UI.ChangeWidget(Id(widget_id), :Value, new_value)
+          Yast::UI.ChangeWidget(Id(confirmation_widget_id), :Value, new_value)
+        end
+
+        # Returns the password value
+        #
+        # @return [String]
+        def value
+          Yast::UI.QueryWidget(Id(widget_id), :Value)
+        end
+
         # @macro seeAbstractWidget
         def opt
-          [:notify, :notifyContextMenu]
+          [:hstretch, :notify, :notifyContextMenu]
+        end
+
+        def contents
+          VBox(
+            Password(Id(widget_id), Opt(*opt), label),
+            Password(Id(confirmation_widget_id), Opt(*opt), "")
+          )
+        end
+
+        # @macro seeCustomWidget
+        def validate
+          return true if value == confirmation_value
+
+          Yast::Popup.Message(
+            format(_("%{field}: the passwords do not match."), field: label)
+          )
+        end
+
+      private
+
+        def confirmation_widget_id
+          "#{widget_id}_confirmation"
+        end
+
+        def confirmation_value
+          Yast::UI.QueryWidget(Id(confirmation_widget_id), :Value)
         end
       end
 
@@ -302,7 +348,7 @@ module Y2Autoinstall
         elsif question.type == "static_text"
           Label(Id("label_#{question.object_id}"), question.default)
         elsif question.password
-          Password.new(question)
+          PasswordField.new(question)
         elsif !question.options.empty?
           ComboBox.new(question)
         else
