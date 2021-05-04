@@ -193,6 +193,20 @@ module Y2Autoinstall
         )
       end
 
+      # Returns the minimum width for this dialog
+      #
+      # @return [Integer]
+      def min_width
+        dialog.width || super
+      end
+
+      # Returns the minimum height for this dialog
+      #
+      # @return [Integer]
+      def min_height
+        dialog.height || super
+      end
+
       # Returns the proper widget for the given question
       #
       # @param question [Y2Autoinstall::Ask::Question]
