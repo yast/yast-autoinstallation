@@ -27,7 +27,10 @@ describe Y2Autoinstall::Ask::Runner do
   subject(:runner) { described_class.new(profile) }
 
   let(:profile) do
-    { "general" => { "ask-list" => ask_list } }
+    {
+      "general" => { "ask-list" => ask_list },
+      "users"   => [{ "username" => "root", "user_password" => "ask" }]
+    }
   end
 
   let(:ask_list) do
@@ -66,6 +69,8 @@ describe Y2Autoinstall::Ask::Runner do
     before do
       allow(Y2Autoinstall::Ask::ProfileReader).to receive(:new)
         .and_return(profile_reader)
+      allow(Y2Autoinstall::Widgets::AskDialog).to receive(:new)
+        .and_return(ask_dialog1)
     end
 
     it "runs the dialogs from the given stage" do
@@ -73,6 +78,51 @@ describe Y2Autoinstall::Ask::Runner do
         .with(initial_dialog, stage: :initial, disable_back_button: true)
         .and_return(ask_dialog1)
       runner.run
+    end
+
+    context "when a profile path is set" do
+      let(:question1) do
+        Y2Autoinstall::Ask::Question.new("Root Password").tap do |question|
+          question.paths << "users,0,user_password"
+          question.value = "secret"
+        end
+      end
+
+      it "updates the profile with the value from the question" do
+        runner.run
+        expect(profile["users"][0]).to eq("username" => "root", "user_password" => "secret")
+      end
+    end
+
+    context "when a script is set" do
+      let(:script) { instance_double(Y2Autoinstall::AskScript) }
+
+      let(:question1) do
+        Y2Autoinstall::Ask::Question.new("Question 1").tap do |question|
+          question.script = script
+        end
+      end
+
+      it "runs the given script" do
+        expect(script).to receive(:execute)
+        runner.run
+      end
+    end
+
+    context "when a file is given" do
+      let(:script) { instance_double(Y2Autoinstall::AskScript) }
+
+      let(:question1) do
+        Y2Autoinstall::Ask::Question.new("MOTD").tap do |question|
+          question.file = "/etc/motd"
+          question.value = "Welcome!"
+        end
+      end
+
+      it "writes the value to the given file" do
+        expect(File).to receive(:write).with(question1.file, question1.value)
+        runner.run
+      end
     end
   end
 end
