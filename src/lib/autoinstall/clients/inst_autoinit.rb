@@ -168,7 +168,7 @@ module Y2Autoinstallation
         loop do
           # ask-list
           Yast::AutoinstGeneral.Import(Yast::Profile.current.fetch("general", {}))
-          Y2Autoinstall::Ask::Runner.new(Yast::Profile.current).run
+          Y2Autoinstall::Ask::Runner.new(Yast::Profile.current, stage: :initial).run
 
           # Pre-Scripts
           Yast::AutoinstScripts.Import(Yast::Profile.current.fetch_as_hash("scripts"))

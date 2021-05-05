@@ -22,8 +22,9 @@ module Y2Autoinstall
     # Represents a question related to an <ask> element
     class Question
       attr_accessor :text, :default, :help, :type, :password, :paths, :file,
-        :stage, :options, :element_id, :frametitle, :script, :default_value_script,
+        :options, :element_id, :frametitle, :script, :default_value_script,
         :value
+      attr_reader :stage
 
       # @!attribute text
       #   @return [String] Question text
@@ -41,15 +42,15 @@ module Y2Autoinstall
       # @!attribute password
       #   @return [Boolean,nil] When set to `true`, it is supposed to be a password
 
-      # @!attribute pathlist
-      #   @return [Array<String>,nil] Path of an element in the profile
+      # @!attribute paths
+      #   @return [Array<String>] Path of an element in the profile
 
       # @!attribute file
       #   @return [String,nil] Path to a file to store the answer to the question
 
       # @!attribute stage
-      #   @return [String,nil] Which stage should the question be presented ('initial' for
-      #   1st stage or 'cont' for the 2nd one).
+      #   @return [Symbol] Which stage should the question be presented (:initial for
+      #   1st stage or :cont for the 2nd one).
 
       # @!attribute options
       #   @return [Array<QuestionOption>] List of possible values to choose as answer
@@ -71,7 +72,16 @@ module Y2Autoinstall
       def initialize(text, element_id = nil)
         @text = text
         @element_id = element_id
+        @stage = :initial
         @options = []
+        @paths = []
+      end
+
+      # Sets the stage for the question
+      #
+      # @param new_stage [Symbol] :initial or :cont
+      def stage=(new_stage)
+        @stage = new_stage.to_sym if new_stage
       end
     end
   end

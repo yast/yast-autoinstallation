@@ -44,22 +44,25 @@ module Y2Autoinstall
     #
     # @example Ask questions from the profile during the 1st stage
     #   Yast::Profile.ReadXML("autoinst.xml")
-    #   runner = Runner.new(profile)
-    #   runner.run(:initial)
+    #   runner = Runner.new(profile, stage: :initial)
+    #   runner.run
     class Runner
       # @return [Hash] AutoYaST profile
       attr_reader :profile
+      # @return [Symbol] Stage to run
+      attr_reader :stage
 
       # @param profile [Hash] AutoYaST profile
-      def initialize(profile)
+      # @param stage [Symbol] :initial or :cont
+      def initialize(profile, stage: :initial)
         @profile = profile
         @indexes = []
+        @stage = stage
       end
 
       # Runs the dialogs and processes the user input
       #
-      # @param _stage [Symbol] :initial or :cont
-      def run(_stage = :initial)
+      def run
         current_dialog = go_next
         loop do
           break if current_dialog.nil?
@@ -94,7 +97,7 @@ module Y2Autoinstall
       # @return [Symbol] :next or :back
       def run_dialog(dialog)
         ask_dialog = Y2Autoinstall::Widgets::AskDialog.new(
-          dialog, disable_back_button: first?(dialog)
+          dialog, disable_back_button: first?(dialog), stage: stage
         )
         ask_dialog.run
       end
@@ -143,7 +146,7 @@ module Y2Autoinstall
       #
       # @return [Array<Dialog>] List of dialogs from the given profile
       def dialogs
-        @dialogs ||= ProfileReader.new(ask_list).dialogs
+        @dialogs ||= ProfileReader.new(ask_list).dialogs.select { |d| d.stages.include?(stage) }
       end
 
       # Determines whether the given dialog is the first or not

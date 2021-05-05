@@ -19,6 +19,8 @@
 
 require_relative "../../../test_helper"
 require "autoinstall/ask/runner"
+require "autoinstall/ask/dialog"
+require "autoinstall/ask/question"
 require "autoinstall/autoinst_profile/ask_section"
 
 describe Y2Autoinstall::Ask::Runner do
@@ -29,7 +31,31 @@ describe Y2Autoinstall::Ask::Runner do
   end
 
   let(:ask_list) do
-    [{ "dialog" => 1, "question" => "Question 1" }]
+    [
+      { "dialog" => 1, "question" => "Question 1" }
+    ]
+  end
+
+  let(:dialogs) { [initial_dialog, cont_dialog] }
+
+  let(:profile_reader) do
+    instance_double(Y2Autoinstall::Ask::ProfileReader, dialogs: dialogs)
+  end
+
+  let(:initial_dialog) do
+    Y2Autoinstall::Ask::Dialog.new(1, [question1])
+  end
+
+  let(:cont_dialog) do
+    Y2Autoinstall::Ask::Dialog.new(2, [question2])
+  end
+
+  let(:question1) do
+    Y2Autoinstall::Ask::Question.new("Question 1")
+  end
+
+  let(:question2) do
+    Y2Autoinstall::Ask::Question.new("Question 2").tap { |q| q.stage = :cont }
   end
 
   let(:ask_dialog1) do
@@ -38,12 +64,14 @@ describe Y2Autoinstall::Ask::Runner do
 
   describe "#run" do
     before do
-      allow(Y2Autoinstall::Widgets::AskDialog).to receive(:new)
-        .and_return(ask_dialog1)
+      allow(Y2Autoinstall::Ask::ProfileReader).to receive(:new)
+        .and_return(profile_reader)
     end
 
-    it "just runs" do
-      expect(ask_dialog1).to receive(:run).and_return(:next)
+    it "runs the dialogs from the given stage" do
+      expect(Y2Autoinstall::Widgets::AskDialog).to receive(:new)
+        .with(initial_dialog, stage: :initial, disable_back_button: true)
+        .and_return(ask_dialog1)
       runner.run
     end
   end

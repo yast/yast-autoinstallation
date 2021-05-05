@@ -70,7 +70,7 @@ module Yast
       Progress.NextStage
       Progress.Title(_("Checking for required packages..."))
 
-      Y2Autoinstall::Ask::Runner.new(Yast::Profile.current).run
+      Y2Autoinstall::Ask::Runner.new(Yast::Profile.current, stage: :cont).run
       # FIXME: too late here, even though it would be the better place
       # if (Profile::current["general"]:$[] != $[])
       #     AutoinstGeneral::Import(Profile::current["general"]:$[]);
