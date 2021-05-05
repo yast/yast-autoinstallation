@@ -21,9 +21,18 @@ require "autoinstall/script"
 
 module Y2Autoinstall
   # Scripts that are used when processing the <ask-list> section
-  class AskScript < Y2Autoinstallation::ExecutedScript
+  class AskDefaultValueScript < Y2Autoinstallation::ExecutedScript
     def self.type
-      "ask-script"
+      "ask_default_value_script"
+    end
+
+    # @return [String,nil] Script output or nil if the execution failed
+    def execute
+      cmd = INTERPRETER_MAP[interpreter] || interpreter
+
+      Yast::Execute.on_target(
+        cmd, script_path.shellescape, stdout: :capture
+      )
     end
   end
 end

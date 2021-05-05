@@ -20,6 +20,7 @@
 require "autoinstall/widgets/ask_dialog"
 require "autoinstall/ask/profile_reader"
 require "autoinstall/autoinst_profile/ask_list_section"
+require "autoinstall/script_runner"
 
 Yast.import "Profile"
 
@@ -199,7 +200,14 @@ module Y2Autoinstall
         return unless question.script
 
         question.script.create_script_file
-        question.script.execute
+        script_runner.run(question.script)
+      end
+
+      # Returns a ScriptRunner instance to run scripts
+      #
+      # @return [ScriptRunner]
+      def script_runner
+        @script_runner ||= Y2Autoinstall::ScriptRunner.new
       end
     end
   end

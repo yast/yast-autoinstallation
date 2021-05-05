@@ -18,10 +18,10 @@
 # find current contact information at www.suse.com.
 
 require_relative "../../test_helper"
-require "autoinstall/ask_script"
+require "autoinstall/ask_default_value_script"
 require "tmpdir"
 
-describe Y2Autoinstall::AskScript do
+describe Y2Autoinstall::AskDefaultValueScript do
   subject(:script) do
     described_class.new(
       "source"   => "echo -n 'test'",

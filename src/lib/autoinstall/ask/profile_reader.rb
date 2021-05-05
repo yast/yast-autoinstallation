@@ -21,6 +21,7 @@ require "autoinstall/ask/dialog"
 require "autoinstall/ask/question"
 require "autoinstall/ask/question_option"
 require "autoinstall/ask_script"
+require "autoinstall/ask_default_value_script"
 
 module Y2Autoinstall
   module Ask
@@ -83,17 +84,15 @@ module Y2Autoinstall
         end
         question.paths = ((entry.pathlist || []) + [entry.path]).compact
         question.options = (entry.selection || []).map { |s| QuestionOption.new(s.value, s.label) }
-        question.script = build_script(entry.script) if entry.script
+        question.script = Y2Autoinstall::AskScript.new(entry.script.to_hashes) if entry.script
+
         if entry.default_value_script
-          question.default_value_script = build_script(entry.default_value_script)
+          question.default_value_script = Y2Autoinstall::AskDefaultValueScript.new(
+            entry.default_value_script.to_hashes
+          )
         end
 
         question
-      end
-
-      # @param section [ScriptSection] Script section from the profile
-      def build_script(section)
-        Y2Autoinstall::AskScript.new(section.to_hashes)
       end
     end
   end
