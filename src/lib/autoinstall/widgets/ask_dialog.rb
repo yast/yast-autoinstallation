@@ -312,7 +312,25 @@ module Y2Autoinstall
 
       # @macro seeAbstractWidget
       def contents
-        widgets = dialog.questions.each_with_index.map { |q| widget_for(q) }
+        in_frame = []
+        frametitle = nil
+
+        widgets = dialog.questions.each_with_object([]) do |question, all|
+          if question.frametitle != frametitle && !in_frame.empty?
+            all << Frame(frametitle, VBox(*in_frame))
+            in_frame.clear
+          end
+
+          widget = widget_for(question)
+          if question.frametitle
+            frametitle = question.frametitle
+            in_frame << widget
+          else
+            all << widget
+          end
+        end
+        widgets << Frame(frametitle, VBox(*in_frame)) unless in_frame.empty?
+
         TimeoutWrapper.new(widgets, timeout: dialog.timeout)
       end
 

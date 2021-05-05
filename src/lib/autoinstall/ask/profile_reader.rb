@@ -79,7 +79,7 @@ module Y2Autoinstall
       def build_question(entry)
         question = Question.new(entry.question, entry.element)
 
-        [:stage, :default, :help, :type, :password, :file].each do |attr|
+        [:stage, :default, :help, :type, :password, :file, :frametitle].each do |attr|
           question.send("#{attr}=", entry.send(attr))
         end
         question.paths = ((entry.pathlist || []) + [entry.path]).compact
