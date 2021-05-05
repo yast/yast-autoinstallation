@@ -39,8 +39,6 @@ module Y2Autoinstallation
 
       def initialize
         textdomain "autoinst"
-
-        Yast.include self, "autoinstall/ask.rb"
       end
 
       def run

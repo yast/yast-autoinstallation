@@ -25,7 +25,6 @@ module Yast
       Yast.import "Progress"
       Yast.import "PackageSystem"
       Yast.import "AutoinstConfig"
-      Yast.include self, "autoinstall/ask.rb"
 
       Builtins.y2debug("Profile=%1", Profile.current)
       Report.Import(Ops.get_map(Profile.current, "report", {}))
