@@ -22,6 +22,7 @@ require "autoinstall/ask/runner"
 require "autoinstall/ask/dialog"
 require "autoinstall/ask/question"
 require "autoinstall/autoinst_profile/ask_list_section"
+require "tmpdir"
 
 describe Y2Autoinstall::Ask::Runner do
   subject(:runner) { described_class.new(profile) }
@@ -39,26 +40,18 @@ describe Y2Autoinstall::Ask::Runner do
     ]
   end
 
-  let(:dialogs) { [initial_dialog, cont_dialog] }
+  let(:dialogs) { [dialog1] }
 
   let(:profile_reader) do
     instance_double(Y2Autoinstall::Ask::ProfileReader, dialogs: dialogs)
   end
 
-  let(:initial_dialog) do
+  let(:dialog1) do
     Y2Autoinstall::Ask::Dialog.new(1, [question1])
-  end
-
-  let(:cont_dialog) do
-    Y2Autoinstall::Ask::Dialog.new(2, [question2])
   end
 
   let(:question1) do
     Y2Autoinstall::Ask::Question.new("Question 1")
-  end
-
-  let(:question2) do
-    Y2Autoinstall::Ask::Question.new("Question 2").tap { |q| q.stage = :cont }
   end
 
   let(:ask_dialog1) do
@@ -70,7 +63,7 @@ describe Y2Autoinstall::Ask::Runner do
       allow(Y2Autoinstall::Ask::ProfileReader).to receive(:new)
         .and_return(profile_reader)
       allow(Y2Autoinstall::Widgets::AskDialog).to receive(:new)
-        .and_return(ask_dialog1)
+        .with(dialog1, disable_back_button: true).and_return(ask_dialog1)
     end
 
     context "when no stage is given" do
@@ -135,6 +128,40 @@ describe Y2Autoinstall::Ask::Runner do
 
       it "writes the value to the given file" do
         expect(File).to receive(:write).with(question1.file, question1.value)
+        runner.run
+      end
+    end
+
+    context "when a /tmp/next_dialog exists" do
+      let(:dialogs) { [dialog1, dialog2] }
+
+      let(:dialog2) do
+        Y2Autoinstall::Ask::Dialog.new(2, [question2])
+      end
+
+      let(:question2) do
+        Y2Autoinstall::Ask::Question.new("Question 2")
+      end
+
+      let(:ask_dialog2) do
+        instance_double(Y2Autoinstall::Widgets::AskDialog, run: :next)
+      end
+
+      let(:tmp_dir) { Dir.mktmpdir }
+      let(:next_dialog_file) { File.join(tmp_dir, "next_dialog") }
+
+      before do
+        stub_const("Y2Autoinstall::Ask::Runner::NEXT_DIALOG_FILE", next_dialog_file)
+        File.write(next_dialog_file, "2\n")
+        allow(Y2Autoinstall::Widgets::AskDialog).to receive(:new)
+          .with(dialog2, disable_back_button: true).and_return(ask_dialog2)
+      end
+
+      after do
+        FileUtils.remove_entry(tmp_dir) if Dir.exist?(tmp_dir)
+      end
+
+      it "jumps to the dialog specified in the file" do
         runner.run
       end
     end

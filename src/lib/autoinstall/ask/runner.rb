@@ -97,7 +97,7 @@ module Y2Autoinstall
       # @return [Symbol] :next or :back
       def run_dialog(dialog)
         ask_dialog = Y2Autoinstall::Widgets::AskDialog.new(
-          dialog, disable_back_button: first?(dialog)
+          dialog, disable_back_button: first?
         )
         ask_dialog.run
       end
@@ -108,13 +108,17 @@ module Y2Autoinstall
       # of the following dialog. If it does not exist, it goes with the dialog after
       # the current one.
       #
-      # @return [Integer] Next dialog ID
-      def find_next_dialog
+      # @return [Integer,nil] Next dialog ID
+      def find_next_dialog_index
         return unless ::File.exist?(NEXT_DIALOG_FILE)
 
         next_dialog = File.read(NEXT_DIALOG_FILE)
         FileUtils.rm(NEXT_DIALOG_FILE)
-        next_dialog.to_i
+        dialog_id = next_dialog.to_i
+        return unless dialog_id
+
+        next_dialog = dialogs.find { |d| d.id == dialog_id }
+        dialogs.index(next_dialog)
       end
 
       # Index of the current dialog
@@ -136,8 +140,7 @@ module Y2Autoinstall
       #
       # @return [Dialog,nil] Returns the following dialog or `nil` if there are no more dialogs
       def go_next
-        # FIXME: find_next_dialog returns the ID, but we are using the index here.
-        next_index = find_next_dialog || (current_index + 1)
+        next_index = find_next_dialog_index || (current_index + 1)
         @indexes.push(next_index)
         dialogs[next_index]
       end
@@ -151,10 +154,9 @@ module Y2Autoinstall
 
       # Determines whether the given dialog is the first or not
       #
-      # @param dialog [Dialog]
       # @return [Boolean]
-      def first?(dialog)
-        dialogs.first == dialog
+      def first?
+        @indexes.size == 1
       end
 
       # Processes the answer for the given question
