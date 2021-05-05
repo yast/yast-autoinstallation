@@ -23,7 +23,7 @@ require "autoinstall/autoinst_profile/ask_section"
 require "autoinstall/autoinst_profile/ask_list_section"
 
 describe Y2Autoinstall::Ask::ProfileReader do
-  subject(:builder) { described_class.new(ask_list) }
+  subject(:reader) { described_class.new(ask_list) }
 
   let(:section0) do
     Y2Autoinstall::AutoinstProfile::AskSection.new_from_hashes(
@@ -42,7 +42,7 @@ describe Y2Autoinstall::Ask::ProfileReader do
 
   describe "#dialogs" do
     it "returns an array containing the dialogs" do
-      dialog = builder.dialogs.first
+      dialog = reader.dialogs.first
 
       question = dialog.questions.first
       expect(question.text).to eq("Question 1")
@@ -81,20 +81,69 @@ describe Y2Autoinstall::Ask::ProfileReader do
       let(:sections) { [section1, section0] }
 
       it "groups them into the same dialog" do
-        dialogs = builder.dialogs
+        dialogs = reader.dialogs
         expect(dialogs.size).to eq(1)
         texts = dialogs.first.questions.map(&:text)
         expect(texts).to eq(["Question 1", "Question 2"])
       end
 
       it "uses width, height, labels, timeout and title from the last question" do
-        dialog = builder.dialogs.first
+        dialog = reader.dialogs.first
         expect(dialog.width).to eq(320)
         expect(dialog.height).to eq(240)
         expect(dialog.ok_label).to eq("Next")
         expect(dialog.back_label).to eq("Back")
         expect(dialog.title).to eq("Title #2")
         expect(dialog.timeout).to eq(20)
+      end
+    end
+  end
+
+  context "stage selection" do
+    let(:initial0) do
+      Y2Autoinstall::AutoinstProfile::AskSection.new_from_hashes(
+        "question" => "Question 1",
+        "dialog"   => 1
+      )
+    end
+
+    let(:initial1) do
+      Y2Autoinstall::AutoinstProfile::AskSection.new_from_hashes(
+        "question" => "Question 2",
+        "dialog"   => 1,
+        "stage"    => "initial"
+      )
+    end
+
+    let(:cont0) do
+      Y2Autoinstall::AutoinstProfile::AskSection.new_from_hashes(
+        "question" => "Question 3",
+        "dialog"   => 1,
+        "stage"    => "cont"
+      )
+    end
+
+    let(:sections) { [initial0, initial1, cont0] }
+
+    context "when a stage is set" do
+      subject(:reader) { described_class.new(ask_list, stage: :cont) }
+
+      it "includes questions for the given stage" do
+        dialogs = reader.dialogs
+        expect(dialogs.size).to eq(1)
+        texts = dialogs.first.questions.map(&:text)
+        expect(texts).to eq(["Question 3"])
+      end
+    end
+
+    context "when no stage is set" do
+      subject(:reader) { described_class.new(ask_list) }
+
+      it "includes questions for the initial stage" do
+        dialogs = reader.dialogs
+        expect(dialogs.size).to eq(1)
+        texts = dialogs.first.questions.map(&:text)
+        expect(texts).to eq(["Question 1", "Question 2"])
       end
     end
   end
@@ -124,12 +173,12 @@ describe Y2Autoinstall::Ask::ProfileReader do
     end
 
     it "returns a separate dialog for each of those sections" do
-      dialogs = builder.dialogs
+      dialogs = reader.dialogs
       expect(dialogs.size).to eq(3)
     end
 
     it "respects the order in which they were declared" do
-      dialogs = builder.dialogs
+      dialogs = reader.dialogs
       texts = dialogs.map(&:questions).flatten.map(&:text)
       expect(texts).to eq(
         ["Question 1", "Question 2", "Question 3"]

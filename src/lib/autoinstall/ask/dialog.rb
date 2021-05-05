@@ -52,13 +52,6 @@ module Y2Autoinstall
         @id = id
         @questions = questions
       end
-
-      # Returns the stages where this dialog should be shown
-      #
-      # @return [Array<Symbol>]  List of stages (:initial for 1st stage; :cont for the 2nd one)
-      def stages
-        questions.map(&:stage).uniq
-      end
     end
   end
 end

@@ -124,27 +124,5 @@ describe Y2Autoinstall::Widgets::AskDialog do
         expect(subject.run).to eq(:next)
       end
     end
-
-    context "when a stage is given" do
-      subject { described_class.new(dialog, stage: :cont) }
-
-      let(:dialog) { Y2Autoinstall::Ask::Dialog.new(1, [initial_question, cont_question]) }
-
-      let(:initial_question) do
-        Y2Autoinstall::Ask::Question.new("Question 1")
-      end
-
-      let(:cont_question) do
-        Y2Autoinstall::Ask::Question.new("Question 2").tap { |q| q.stage = :cont }
-      end
-
-      it "includes an input field" do
-        widgets = widgets_from(subject.contents)
-        expect(widgets.size).to eq(1)
-        widget = widgets.first
-        expect(widget).to be_a(Y2Autoinstall::Widgets::AskDialog::InputField)
-        expect(widget.label).to eq("Question 2")
-      end
-    end
   end
 end

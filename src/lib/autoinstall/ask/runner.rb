@@ -97,7 +97,7 @@ module Y2Autoinstall
       # @return [Symbol] :next or :back
       def run_dialog(dialog)
         ask_dialog = Y2Autoinstall::Widgets::AskDialog.new(
-          dialog, disable_back_button: first?(dialog), stage: stage
+          dialog, disable_back_button: first?(dialog)
         )
         ask_dialog.run
       end
@@ -146,7 +146,7 @@ module Y2Autoinstall
       #
       # @return [Array<Dialog>] List of dialogs from the given profile
       def dialogs
-        @dialogs ||= ProfileReader.new(ask_list).dialogs.select { |d| d.stages.include?(stage) }
+        @dialogs ||= ProfileReader.new(ask_list, stage: stage).dialogs
       end
 
       # Determines whether the given dialog is the first or not

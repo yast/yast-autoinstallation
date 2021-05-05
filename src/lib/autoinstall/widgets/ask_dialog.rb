@@ -277,12 +277,10 @@ module Y2Autoinstall
       #
       # @param dialog [Y2Autoinstall::Ask::Dialog] Dialog specification
       # @param disable_back_button [Boolean] Whether the :back button should be disabled
-      # @param stage [Symbol] Include only questions from the given stage
-      def initialize(dialog, disable_back_button: false, stage: :initial)
+      def initialize(dialog, disable_back_button: false)
         textdomain "autoinst"
         @dialog = dialog
         @disable_buttons = disable_back_button ? ["back_button"] : []
-        @stage = stage
       end
 
       # @macro seeAbstractWidget
@@ -292,8 +290,7 @@ module Y2Autoinstall
 
       # @macro seeAbstractWidget
       def contents
-        stage_questions = dialog.questions.select { |q| q.stage == stage }
-        widgets = stage_questions.each_with_index.map { |q| widget_for(q) }
+        widgets = dialog.questions.each_with_index.map { |q| widget_for(q) }
         TimeoutWrapper.new(widgets, timeout: dialog.timeout)
       end
 
@@ -308,9 +305,6 @@ module Y2Autoinstall
 
       # Dialog specification
       attr_reader :dialog
-
-      # @return [Symbol] Stage to run the dialog
-      attr_reader :stage
 
       # Defines the dialog's layout
       #

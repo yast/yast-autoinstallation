@@ -29,15 +29,21 @@ module Y2Autoinstall
       # Constructor
       #
       # @param ask_list_section [AskListSection] <ask-list> section from the profiel
-      def initialize(ask_list_section)
+      # @param stage [Symbol] :initial or :cont
+      def initialize(ask_list_section, stage: :initial)
         @ask_list_section = ask_list_section
+        @stage = stage
       end
 
       # Returns the dialogs according to the given set of <ask> sections
       #
       # @return [Array<Dialog>] List of dialogs
       def dialogs
-        sorted_entries = ask_list_section.entries.sort_by { |s| s.dialog ? s.element.to_i : 0 }
+        sorted_entries = ask_list_section
+          .entries
+          .select { |s| (s.stage&.to_sym || :initial) == stage }
+          .sort_by { |s| s.dialog ? s.element.to_i : 0 }
+
         all_dialogs = sorted_entries.each_with_object([]) do |entry, dlgs|
           dialog = find_dialog(dlgs, entry.dialog)
           dialog.width = entry.width if entry.width
@@ -77,6 +83,9 @@ module Y2Autoinstall
 
       # @return [Array<AskListSection>]
       attr_reader :ask_list_section
+
+      # @return [Symbol]
+      attr_reader :stage
 
       def find_dialog(dialogs, id)
         dialog = dialogs.find { |d| d.id == id } if id

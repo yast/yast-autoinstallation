@@ -21,7 +21,7 @@ require_relative "../../../test_helper"
 require "autoinstall/ask/runner"
 require "autoinstall/ask/dialog"
 require "autoinstall/ask/question"
-require "autoinstall/autoinst_profile/ask_section"
+require "autoinstall/autoinst_profile/ask_list_section"
 
 describe Y2Autoinstall::Ask::Runner do
   subject(:runner) { described_class.new(profile) }
@@ -73,11 +73,24 @@ describe Y2Autoinstall::Ask::Runner do
         .and_return(ask_dialog1)
     end
 
-    it "runs the dialogs from the given stage" do
-      expect(Y2Autoinstall::Widgets::AskDialog).to receive(:new)
-        .with(initial_dialog, stage: :initial, disable_back_button: true)
-        .and_return(ask_dialog1)
-      runner.run
+    context "when no stage is given" do
+      it "runs the dialogs from the :initial stage" do
+        expect(Y2Autoinstall::Ask::ProfileReader).to receive(:new)
+          .with(Y2Autoinstall::AutoinstProfile::AskListSection, stage: :initial)
+          .and_return(profile_reader)
+        runner.run
+      end
+    end
+
+    context "when a stage is given" do
+      subject(:runner) { described_class.new(profile, stage: :cont) }
+
+      it "runs the dialogs from the given stage" do
+        expect(Y2Autoinstall::Ask::ProfileReader).to receive(:new)
+          .with(Y2Autoinstall::AutoinstProfile::AskListSection, stage: :cont)
+          .and_return(profile_reader)
+        runner.run
+      end
     end
 
     context "when a profile path is set" do
