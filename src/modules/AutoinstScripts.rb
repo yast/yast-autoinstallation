@@ -33,6 +33,9 @@ module Yast
   # #### Post Partitioning Scripts
   # Runs after partitioning from {Yast::InstKickoffClient}
   #
+
+  require "autoinstall/script_runner"
+
   class AutoinstScriptsClass < Module
     include Yast::Logger
 
@@ -255,47 +258,8 @@ module Yast
       # where post-scripts have been downloaded only.
       return true if type == "post-scripts" && special
 
-      target_scripts.each do |script|
-        Popup.ShowFeedback("", script.notification) unless script.notification.empty?
-
-        res = script.execute
-        next if res.nil? # the script was not executed
-
-        Popup.ClearFeedback unless script.notification.empty?
-
-        feedback = if script.feedback.value == :no
-          ""
-        else
-          SCR.Read(
-            path(".target.string"),
-            script.log_path
-          )
-        end
-
-        if !feedback.empty?
-          case script.feedback.value
-          when :popup
-            Popup.LongText("", RichText(Opt(:plainText), feedback), 50, 20)
-          when :message
-            Report.Message(feedback)
-          when :warning
-            Report.Warning(feedback)
-          when :error
-            Report.Error(feedback)
-          else
-            raise "Unexpected feedback_type #{script.feedback.inspect}"
-          end
-        # show warning if script return non-zero and no feedback is want
-        elsif !res
-          Report.Warning(
-            format(
-              _("User script %{script_name} failed.\nDetails:\n%{output}"),
-              script_name: script.filename,
-              output:      SCR.Read(path(".target.string"), script.log_path)
-            )
-          )
-        end
-      end
+      script_runner = Y2Autoinstall::ScriptRunner.new
+      target_scripts.each { |s| script_runner.run(s) }
 
       true
     end
