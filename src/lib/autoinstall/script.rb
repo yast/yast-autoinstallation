@@ -268,9 +268,12 @@ module Y2Autoinstallation
       "perl"   => "/usr/bin/perl",
       "python" => "/usr/bin/python"
     }.freeze
+
     # Runs the script
+    #
+    # @param env [Hash] hash representing a set of environment variables
     # @return [Boolean,nil] if exit code is zero; nil if the script was not executed
-    def execute
+    def execute(env = {})
       return if already_run? && !rerun
 
       # TODO: maybe own class for interpreters?
@@ -278,10 +281,12 @@ module Y2Autoinstallation
       debug_flag = debug ? (DEBUG_FLAG_MAP[interpreter] || "") : ""
       params_s = params.join(" ") # shell escaping is up to user, see documentation
 
+      cmd_line = "#{cmd} #{debug_flag} #{script_path.shellescape} #{params_s} " \
+          "&> #{log_path.shellescape}"
+      cmd_line = "#{env_vars(env)} #{cmd_line}" unless env.empty?
+
       bash_path = Yast::Path.new(".target.bash")
-      res = Yast::SCR.Execute(bash_path,
-        "#{cmd} #{debug_flag} #{script_path.shellescape} #{params_s} " \
-          "&> #{log_path.shellescape}")
+      res = Yast::SCR.Execute(bash_path, cmd_line)
       Yast::SCR.Execute(bash_path, "/bin/touch #{run_file.shellescape}")
 
       res == 0
@@ -303,6 +308,14 @@ module Y2Autoinstallation
     # flag file if script was run
     def run_file
       script_path + "-run"
+    end
+
+    # Returns a set of environment variables into a string to be used when calling the script
+    #
+    # @param env [Hash] Environment variables
+    # @return [String] String in the form "val1=var1 val2=var2"
+    def env_vars(env)
+      env.map { |k, v| "#{k}=#{v.to_s.shellescape}" }.join(" ")
     end
   end
 

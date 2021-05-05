@@ -37,9 +37,9 @@ module Y2Autoinstall
     # Runs the script displaying notifications, feedback and reporting errors
     #
     # @param script [ExecutedScript] Script to execute
-    def run(script)
+    def run(script, env: {})
       show_notification(script)
-      result = script.execute
+      result = script.execute(env)
       clear_notification(script)
       return if result.nil? # the script was not executed
 

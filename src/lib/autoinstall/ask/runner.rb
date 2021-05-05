@@ -200,7 +200,8 @@ module Y2Autoinstall
         return unless question.script
 
         question.script.create_script_file
-        script_runner.run(question.script)
+        env = question.script.environment ? { "VAL" => question.value } : {}
+        script_runner.run(question.script, env: env)
       end
 
       # Returns a ScriptRunner instance to run scripts

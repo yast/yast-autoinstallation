@@ -22,8 +22,19 @@ require "autoinstall/script"
 module Y2Autoinstall
   # Scripts that are used when processing the <ask-list> section
   class AskScript < Y2Autoinstallation::ExecutedScript
+    attr_reader :environment
+
     def self.type
       "ask-script"
+    end
+
+    def initialize(hash)
+      super
+      @environment = !!hash["environment"]
+    end
+
+    def to_hash
+      super.merge("environment" => environment)
     end
   end
 end

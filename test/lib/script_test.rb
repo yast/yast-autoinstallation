@@ -248,6 +248,18 @@ describe Y2Autoinstallation::ExecutedScript do
         subject.execute
       end
 
+      context "when env variables are given" do
+        it "runs script" do
+          expect(Yast::SCR).to receive(:Execute).with(
+            path(".target.bash"),
+            "LOGFILE=/var/log/my\\ script.log /bin/sh -x /var/adm/autoinstall/scripts/test.sh  " \
+            "&> /var/adm/autoinstall/logs/test.sh.log"
+          )
+
+          subject.execute(LOGFILE: "/var/log/my script.log")
+        end
+      end
+
       it "creates flag file that script already run" do
         expect(Yast::SCR).to receive(:Execute).with(
           path(".target.bash"),

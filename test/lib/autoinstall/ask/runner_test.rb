@@ -101,18 +101,41 @@ describe Y2Autoinstall::Ask::Runner do
     end
 
     context "when a script is set" do
-      let(:script) { instance_double(Y2Autoinstall::AskScript) }
+      let(:script) do
+        instance_double(Y2Autoinstall::AskScript, environment: environment?)
+      end
+
+      let(:script_runner) do
+        instance_double(Y2Autoinstall::ScriptRunner)
+      end
+
+      let(:environment?) { false }
 
       let(:question1) do
         Y2Autoinstall::Ask::Question.new("Question 1").tap do |question|
           question.script = script
+          question.value = "value"
         end
+      end
+
+      before do
+        allow(Y2Autoinstall::ScriptRunner).to receive(:new).and_return(script_runner)
       end
 
       it "runs the given script" do
         expect(script).to receive(:create_script_file)
-        expect(script).to receive(:execute)
+        expect(script_runner).to receive(:run).with(script, env: {})
         runner.run
+      end
+
+      context "when the 'environment' attribute is set to 'true'" do
+        let(:environment?) { true }
+
+        it "passes the question value to the script" do
+          expect(script).to receive(:create_script_file)
+          expect(script_runner).to receive(:run).with(script, env: { "VAL" => question1.value })
+          runner.run
+        end
       end
     end
 
