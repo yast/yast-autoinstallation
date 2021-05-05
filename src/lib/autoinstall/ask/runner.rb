@@ -176,9 +176,10 @@ module Y2Autoinstall
       #
       # @param question [Question]
       def update_profile(question)
-        # FIXME: convert to the proper type (:symbol, string, boolean and so on)
         question.paths.each do |path|
-          Yast::Profile.set_element_by_path(path, question.value.to_s, profile)
+          next if question.value.nil?
+
+          Yast::Profile.set_element_by_path(path, question.value, profile)
         end
       end
 

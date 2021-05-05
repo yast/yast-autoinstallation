@@ -28,4 +28,71 @@ describe Y2Autoinstall::Ask::Question do
       expect(question.element_id).to eq(1)
     end
   end
+
+  describe "#value=" do
+    subject(:question) do
+      described_class.new(1, "Question 1").tap { |q| q.type = type }
+    end
+
+    context "when the question's type is an integer" do
+      let(:type) { "integer" }
+
+      it "sets the value as 'integer'" do
+        question.value = "1"
+        expect(question.value).to eq(1)
+      end
+    end
+
+    context "when the question's type is 'boolean'" do
+      let(:type) { "boolean" }
+
+      it "sets the value as a boolean" do
+        question.value = true
+        expect(question.value).to eq(true)
+      end
+
+      context "when the value is 'true'" do
+        it "sets the value to 'true'" do
+          question.value = "true"
+          expect(question.value).to eq(true)
+        end
+      end
+
+      context "when the value is not true" do
+        it "sets the value to false" do
+          question.value = "false"
+          expect(question.value).to eq(false)
+        end
+      end
+    end
+
+    context "when the question's type is 'symbol'" do
+      let(:type) { "symbol" }
+
+      it "sets the value as an integer" do
+        question.value = "sym"
+        expect(question.value).to eq(:sym)
+      end
+    end
+
+    context "when the question's type is 'string'" do
+      let(:type) { "string" }
+
+      it "sets the value as an string" do
+        question.value = "1"
+        expect(question.value).to eq("1")
+      end
+    end
+
+    context "when the question's type is not set" do
+      subject(:question) do
+        described_class.new(1, "Question 1")
+      end
+
+      it "sets the value as an string" do
+        question.value = "1"
+        expect(question.value).to eq("1")
+      end
+    end
+  end
 end

@@ -22,9 +22,8 @@ module Y2Autoinstall
     # Represents a question related to an <ask> element
     class Question
       attr_accessor :text, :default, :help, :type, :password, :paths, :file,
-        :options, :element_id, :frametitle, :script, :default_value_script,
-        :value
-      attr_reader :stage
+        :options, :element_id, :frametitle, :script, :default_value_script
+      attr_reader :stage, :value
 
       # @!attribute text
       #   @return [String] Question text
@@ -67,6 +66,9 @@ module Y2Autoinstall
       # @!attribute default_value_script
       #   @return [AskScript,nil] Script to get the default value for the question
 
+      # @!attribute value
+      #   @return [Object,nil] Question value (usually from user)
+
       # @param text       [String] Question text
       # @param element_id [Integer,nil] Question order within its corresponding dialog
       def initialize(text, element_id = nil)
@@ -82,6 +84,25 @@ module Y2Autoinstall
       # @param new_stage [Symbol] :initial or :cont
       def stage=(new_stage)
         @stage = new_stage.to_sym if new_stage
+      end
+
+      # Sets the question answer
+      #
+      # This method casts the given value to the proper class according to the
+      # 'type' attribute.
+      #
+      # @param val [Object] Question answer
+      def value=(val)
+        @value = case type
+        when "integer"
+          val.to_i
+        when "boolean"
+          [true, "true"].include?(val)
+        when "symbol"
+          val.to_sym
+        else
+          val.to_s
+        end
       end
     end
   end

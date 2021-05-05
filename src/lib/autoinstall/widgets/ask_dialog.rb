@@ -59,10 +59,15 @@ module Y2Autoinstall
         # Use the question's value or the default one.
         # @macro seeAbstractWidget
         def init
+          if !@question.value.nil?
+            self.value = @question.value.to_s
+            return
+          end
+
           if @question.default_value_script
             default_from_script = run_script(@question.default_value_script)
           end
-          self.value = @question.value || default_from_script || @question.default
+          self.value = default_from_script || @question.default.to_s
         end
 
         # Stores the widget's value in the question
@@ -97,8 +102,15 @@ module Y2Autoinstall
 
         # @macro seeAbstractWidget
         def init
-          checked = @question.value.nil? ? @question.default == "true" : @question.value
-          self.value = checked
+          if !@question.value.nil?
+            self.value = @question.value
+            return
+          end
+
+          if @question.default_value_script
+            default_from_script = run_script(@question.default_value_script)
+          end
+          self.value = default_from_script == "true" || @question.default == "true"
         end
       end
 
