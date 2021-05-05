@@ -117,6 +117,7 @@ describe Y2Autoinstall::Ask::Runner do
       end
 
       it "runs the given script" do
+        expect(script).to receive(:create_script_file)
         expect(script).to receive(:execute)
         runner.run
       end

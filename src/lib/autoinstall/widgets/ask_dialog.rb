@@ -59,7 +59,10 @@ module Y2Autoinstall
         # Use the question's value or the default one.
         # @macro seeAbstractWidget
         def init
-          self.value = @question.value || @question.default
+          if @question.default_value_script
+            default_from_script = run_script(@question.default_value_script)
+          end
+          self.value = @question.value || default_from_script || @question.default
         end
 
         # Stores the widget's value in the question
@@ -67,6 +70,13 @@ module Y2Autoinstall
         # @macro seeAbstractWidget
         def store
           @question.value = value
+        end
+
+      private
+
+        def run_script(script)
+          script.create_script_file
+          script.execute
         end
       end
 

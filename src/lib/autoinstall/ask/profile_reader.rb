@@ -46,33 +46,11 @@ module Y2Autoinstall
 
         all_dialogs = sorted_entries.each_with_object([]) do |entry, dlgs|
           dialog = find_dialog(dlgs, entry.dialog)
-          dialog.width = entry.width if entry.width
-          dialog.height = entry.height  if entry.height
-          dialog.ok_label = entry.ok_label if entry.ok_label
-          dialog.back_label = entry.back_label if entry.back_label
-          dialog.timeout = entry.timeout if entry.timeout
-          dialog.title = entry.title if entry.title
-
-          question = Question.new(entry.question, entry.element).tap do |q|
-            q.stage = entry.stage
-            q.default = entry.default
-            q.help = entry.help
-            q.type = entry.type
-            q.password = entry.password
-            q.paths = ((entry.pathlist || []) + [entry.path]).compact
-            q.file = entry.file
-            q.script = Y2Autoinstall::AskScript.new(entry.script.to_hashes) if entry.script
-            if entry.default_value_script
-              q.default_value_script = Y2Autoinstall::AskScript.new(
-                entry.default_value_script.to_hashes
-              )
-            end
-            q.options = (entry.selection || []).map do |s|
-              QuestionOption.new(s.value, s.label)
-            end
+          [:width, :height, :ok_label, :back_label, :timeout, :title].each do |attr|
+            dialog.send("#{attr}=", entry.send(attr)) if entry.send(attr)
           end
 
-          dialog.questions << question
+          dialog.questions << build_question(entry)
         end
 
         wo_id, with_id = all_dialogs.partition { |d| d.id.nil? }
@@ -94,6 +72,28 @@ module Y2Autoinstall
         new_dialog = Dialog.new(id)
         dialogs << new_dialog
         new_dialog
+      end
+
+      # @param entry [AskSection] Section from the profile
+      def build_question(entry)
+        question = Question.new(entry.question, entry.element)
+
+        [:stage, :default, :help, :type, :password, :file].each do |attr|
+          question.send("#{attr}=", entry.send(attr))
+        end
+        question.paths = ((entry.pathlist || []) + [entry.path]).compact
+        question.options = (entry.selection || []).map { |s| QuestionOption.new(s.value, s.label) }
+        question.script = build_script(entry.script) if entry.script
+        if entry.default_value_script
+          question.default_value_script = build_script(entry.default_value_script)
+        end
+
+        question
+      end
+
+      # @param section [ScriptSection] Script section from the profile
+      def build_script(section)
+        Y2Autoinstall::AskScript.new(section.to_hashes)
       end
     end
   end

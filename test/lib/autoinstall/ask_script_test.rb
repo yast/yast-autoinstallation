@@ -17,22 +17,33 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "autoinstall/script"
+require_relative "../../test_helper"
+require "autoinstall/ask_script"
+require "tmpdir"
 
-module Y2Autoinstall
-  # Scripts that are used when processing the <ask-list> section
-  class AskScript < Y2Autoinstallation::ExecutedScript
-    def self.type
-      "ask-script"
+describe Y2Autoinstall::AskScript do
+  subject(:script) do
+    described_class.new(
+      "source"   => "echo -n 'test'",
+      "filename" => "test.sh"
+    )
+  end
+
+  describe "#execute" do
+    let(:tmp_dir) { Dir.mktmpdir }
+
+    before do
+      allow(script).to receive(:script_path)
+        .and_return(File.join(tmp_dir, script.script_name))
     end
 
-    # @return [String,nil] Script output or nil if the execution failed
-    def execute
-      cmd = INTERPRETER_MAP[interpreter] || interpreter
+    after do
+      FileUtils.remove_entry(tmp_dir) if Dir.exist?(tmp_dir)
+    end
 
-      Yast::Execute.on_target(
-        cmd, script_path.shellescape, *params, stdout: :capture
-      )
+    it "returns the script output" do
+      script.create_script_file
+      expect(script.execute).to eq("test")
     end
   end
 end

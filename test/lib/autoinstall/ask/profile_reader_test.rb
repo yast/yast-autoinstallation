@@ -97,92 +97,124 @@ describe Y2Autoinstall::Ask::ProfileReader do
         expect(dialog.timeout).to eq(20)
       end
     end
-  end
 
-  context "stage selection" do
-    let(:initial0) do
-      Y2Autoinstall::AutoinstProfile::AskSection.new_from_hashes(
-        "question" => "Question 1",
-        "dialog"   => 1
-      )
-    end
+    context "stage selection" do
+      let(:initial0) do
+        Y2Autoinstall::AutoinstProfile::AskSection.new_from_hashes(
+          "question" => "Question 1",
+          "dialog"   => 1
+        )
+      end
 
-    let(:initial1) do
-      Y2Autoinstall::AutoinstProfile::AskSection.new_from_hashes(
-        "question" => "Question 2",
-        "dialog"   => 1,
-        "stage"    => "initial"
-      )
-    end
+      let(:initial1) do
+        Y2Autoinstall::AutoinstProfile::AskSection.new_from_hashes(
+          "question" => "Question 2",
+          "dialog"   => 1,
+          "stage"    => "initial"
+        )
+      end
 
-    let(:cont0) do
-      Y2Autoinstall::AutoinstProfile::AskSection.new_from_hashes(
-        "question" => "Question 3",
-        "dialog"   => 1,
-        "stage"    => "cont"
-      )
-    end
+      let(:cont0) do
+        Y2Autoinstall::AutoinstProfile::AskSection.new_from_hashes(
+          "question" => "Question 3",
+          "dialog"   => 1,
+          "stage"    => "cont"
+        )
+      end
 
-    let(:sections) { [initial0, initial1, cont0] }
+      let(:sections) { [initial0, initial1, cont0] }
 
-    context "when a stage is set" do
-      subject(:reader) { described_class.new(ask_list, stage: :cont) }
+      context "when a stage is set" do
+        subject(:reader) { described_class.new(ask_list, stage: :cont) }
 
-      it "includes questions for the given stage" do
-        dialogs = reader.dialogs
-        expect(dialogs.size).to eq(1)
-        texts = dialogs.first.questions.map(&:text)
-        expect(texts).to eq(["Question 3"])
+        it "includes questions for the given stage" do
+          dialogs = reader.dialogs
+          expect(dialogs.size).to eq(1)
+          texts = dialogs.first.questions.map(&:text)
+          expect(texts).to eq(["Question 3"])
+        end
+      end
+
+      context "when no stage is set" do
+        subject(:reader) { described_class.new(ask_list) }
+
+        it "includes questions for the initial stage" do
+          dialogs = reader.dialogs
+          expect(dialogs.size).to eq(1)
+          texts = dialogs.first.questions.map(&:text)
+          expect(texts).to eq(["Question 1", "Question 2"])
+        end
       end
     end
 
-    context "when no stage is set" do
-      subject(:reader) { described_class.new(ask_list) }
+    context "when an <ask> section does not specify a dialog" do
+      let(:sections) { [section_no_id0, section_no_id1, section1] }
 
-      it "includes questions for the initial stage" do
+      let(:section1) do
+        Y2Autoinstall::AutoinstProfile::AskSection.new_from_hashes(
+          "question" => "Question 3",
+          "dialog"   => 1
+        )
+      end
+
+      let(:section_no_id0) do
+        Y2Autoinstall::AutoinstProfile::AskSection.new_from_hashes(
+          "question" => "Question 1",
+          "element"  => 2
+        )
+      end
+
+      let(:section_no_id1) do
+        Y2Autoinstall::AutoinstProfile::AskSection.new_from_hashes(
+          "question" => "Question 2",
+          "element"  => 1
+        )
+      end
+
+      it "returns a separate dialog for each of those sections" do
         dialogs = reader.dialogs
-        expect(dialogs.size).to eq(1)
-        texts = dialogs.first.questions.map(&:text)
-        expect(texts).to eq(["Question 1", "Question 2"])
+        expect(dialogs.size).to eq(3)
+      end
+
+      it "respects the order in which they were declared" do
+        dialogs = reader.dialogs
+        texts = dialogs.map(&:questions).flatten.map(&:text)
+        expect(texts).to eq(
+          ["Question 1", "Question 2", "Question 3"]
+        )
       end
     end
-  end
 
-  context "when an <ask> section does not specify a dialog" do
-    let(:sections) { [section_no_id0, section_no_id1, section1] }
+    context "when the <ask> section includes a script" do
+      let(:section0) do
+        Y2Autoinstall::AutoinstProfile::AskSection.new_from_hashes(
+          "question" => "Question 1",
+          "script"   => { "source" => "touch /tmp/result" }
+        )
+      end
 
-    let(:section1) do
-      Y2Autoinstall::AutoinstProfile::AskSection.new_from_hashes(
-        "question" => "Question 3",
-        "dialog"   => 1
-      )
+      it "creates an AskScript object" do
+        dialog = reader.dialogs.first
+        question = dialog.questions.first
+        script = question.script
+        expect(script.source).to eq(section0.script.source)
+      end
     end
 
-    let(:section_no_id0) do
-      Y2Autoinstall::AutoinstProfile::AskSection.new_from_hashes(
-        "question" => "Question 1",
-        "element"  => 2
-      )
-    end
+    context "when the <ask> section includes a script to get the default value" do
+      let(:section0) do
+        Y2Autoinstall::AutoinstProfile::AskSection.new_from_hashes(
+          "question"             => "Question 1",
+          "default_value_script" => { "source" => "touch /tmp/result" }
+        )
+      end
 
-    let(:section_no_id1) do
-      Y2Autoinstall::AutoinstProfile::AskSection.new_from_hashes(
-        "question" => "Question 2",
-        "element"  => 1
-      )
-    end
-
-    it "returns a separate dialog for each of those sections" do
-      dialogs = reader.dialogs
-      expect(dialogs.size).to eq(3)
-    end
-
-    it "respects the order in which they were declared" do
-      dialogs = reader.dialogs
-      texts = dialogs.map(&:questions).flatten.map(&:text)
-      expect(texts).to eq(
-        ["Question 1", "Question 2", "Question 3"]
-      )
+      it "creates an AskScript object" do
+        dialog = reader.dialogs.first
+        question = dialog.questions.first
+        script = question.default_value_script
+        expect(script.source).to eq(section0.default_value_script.source)
+      end
     end
   end
 end

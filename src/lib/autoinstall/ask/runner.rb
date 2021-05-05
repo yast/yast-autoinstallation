@@ -193,7 +193,10 @@ module Y2Autoinstall
       #
       # @param question [Question]
       def run_script(question)
-        question.script&.execute
+        return unless question.script
+
+        question.script.create_script_file
+        question.script.execute
       end
     end
   end
