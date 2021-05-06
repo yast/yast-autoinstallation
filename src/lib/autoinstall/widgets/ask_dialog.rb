@@ -390,7 +390,7 @@ module Y2Autoinstall
           Label(Id("label_#{question.object_id}"), question.default)
         elsif question.password
           PasswordField.new(question)
-        elsif !question.options.empty?
+        elsif question.type == "symbol" || !question.options.empty?
           ComboBox.new(question)
         else
           InputField.new(question)

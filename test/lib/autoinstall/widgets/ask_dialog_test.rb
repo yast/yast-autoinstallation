@@ -88,6 +88,19 @@ describe Y2Autoinstall::Widgets::AskDialog do
       end
     end
 
+    context "when the question includes a symbol field" do
+      let(:question) do
+        Y2Autoinstall::Ask::Question.new("Question 1").tap do |q|
+          q.type = "symbol"
+        end
+      end
+
+      it "includes a ComboBox" do
+        widget = widgets_from(subject.contents).first
+        expect(widget).to be_a(Y2Autoinstall::Widgets::AskDialog::ComboBox)
+      end
+    end
+
     context "when the question includes some options to choose from" do
       let(:question) do
         Y2Autoinstall::Ask::Question.new("Question 1").tap do |q|
