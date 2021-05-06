@@ -20,6 +20,7 @@
 
 require_relative "../test_helper"
 require "autoinstall/script"
+require "tmpdir"
 
 describe Y2Autoinstallation::Script do
   subject do
@@ -378,6 +379,81 @@ describe Y2Autoinstallation::InitScript do
   describe "#script_path" do
     it "returns script_path in init scripts dir" do
       expect(subject.script_path).to eq "/var/adm/autoinstall/init.d/test.sh"
+    end
+  end
+end
+
+describe Y2Autoinstallation::AskScript do
+  subject(:script) do
+    described_class.new(
+      "source"   => "echo -n 'test'",
+      "filename" => "test.sh"
+    )
+  end
+
+  describe "#execute" do
+    let(:tmp_dir) { Dir.mktmpdir }
+
+    before do
+      allow(Yast::AutoinstConfig).to receive(:tmpDir).and_return(tmp_dir)
+    end
+
+    after do
+      FileUtils.remove_entry(tmp_dir) if Dir.exist?(tmp_dir)
+    end
+
+    describe "#logs_dir" do
+      it "returns path to logs in temporary directory" do
+        expect(subject.logs_dir).to eq(File.join(tmp_dir, "ask-scripts", "logs"))
+      end
+    end
+
+    describe "#script_path" do
+      it "returns path to script in temporary directory" do
+        expect(subject.script_path).to eq(File.join(tmp_dir, "ask-scripts", "test.sh"))
+      end
+    end
+  end
+end
+
+describe Y2Autoinstallation::AskDefaultValueScript do
+  subject(:script) do
+    described_class.new(
+      "source"   => "echo -n 'test'",
+      "filename" => "test.sh"
+    )
+  end
+
+  describe "#execute" do
+    let(:tmp_dir) { Dir.mktmpdir }
+
+    before do
+      allow(Yast::AutoinstConfig).to receive(:tmpDir).and_return(tmp_dir)
+    end
+
+    after do
+      FileUtils.remove_entry(tmp_dir) if Dir.exist?(tmp_dir)
+    end
+
+    describe "#logs_dir" do
+      it "returns path to logs in temporary directory" do
+        expect(subject.logs_dir).to eq(File.join(tmp_dir, "ask-default-value-scripts", "logs"))
+      end
+    end
+
+    describe "#script_path" do
+      it "returns path to script in temporary directory" do
+        expect(subject.script_path).to eq(
+          File.join(tmp_dir, "ask-default-value-scripts", "test.sh")
+        )
+      end
+    end
+
+    describe "#execute" do
+      it "returns the script output" do
+        script.create_script_file
+        expect(script.execute).to eq("test")
+      end
     end
   end
 end

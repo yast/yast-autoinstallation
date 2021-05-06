@@ -421,6 +421,62 @@ module Y2Autoinstallation
     end
   end
 
-  # List of known script
+  # Scripts that are used when processing the <ask-list> section
+  class AskScript < Y2Autoinstallation::ExecutedScript
+    attr_reader :environment
+
+    def self.type
+      "ask-scripts"
+    end
+
+    def initialize(hash)
+      super
+      @environment = !!hash["environment"]
+    end
+
+    def to_hash
+      super.merge("environment" => environment)
+    end
+
+    # @see Y2Autoinstallation::Script
+    def logs_dir
+      File.join(Yast::AutoinstConfig.tmpDir, self.class.type, "logs")
+    end
+
+    # Overrides script path as it is expected to live in tmpdir from which script is copied
+    def script_path
+      File.join(Yast::AutoinstConfig.tmpDir, self.class.type, script_name)
+    end
+  end
+
+  # Scripts that are used when processing the <ask-list> section
+  class AskDefaultValueScript < Y2Autoinstallation::ExecutedScript
+    def self.type
+      "ask-default-value-scripts"
+    end
+
+    # @see Y2Autoinstallation::Script
+    def logs_dir
+      File.join(Yast::AutoinstConfig.tmpDir, self.class.type, "logs")
+    end
+
+    # Overrides script path as it is expected to live in tmpdir from which script is copied
+    def script_path
+      File.join(Yast::AutoinstConfig.tmpDir, self.class.type, script_name)
+    end
+
+    # @return [String,nil] Script output or nil if the execution failed
+    # @see Y2Autoinstallation::ExecutedScript
+    def execute
+      cmd = INTERPRETER_MAP[interpreter] || interpreter
+
+      Yast::Execute.on_target(
+        cmd, script_path.shellescape, stdout: :capture
+      )
+    end
+  end
+
+  # List of known script. It does not include Ask scripts, as they are handled in a different
+  # way.
   SCRIPT_TYPES = [PreScript, PostScript, InitScript, ChrootScript, PostPartitioningScript].freeze
 end

@@ -22,6 +22,7 @@ require "autoinstall/ask/runner"
 require "autoinstall/ask/dialog"
 require "autoinstall/ask/question"
 require "autoinstall/autoinst_profile/ask_list_section"
+require "autoinstall/script"
 require "tmpdir"
 
 describe Y2Autoinstall::Ask::Runner do
@@ -102,7 +103,7 @@ describe Y2Autoinstall::Ask::Runner do
 
     context "when a script is set" do
       let(:script) do
-        instance_double(Y2Autoinstall::AskScript, environment: environment?)
+        instance_double(Y2Autoinstallation::AskScript, environment: environment?)
       end
 
       let(:script_runner) do
