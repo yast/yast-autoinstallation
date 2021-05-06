@@ -260,7 +260,6 @@ done
 %{yast_clientdir}/clone_system.rb
 
 %{yast_yncludedir}/autoinstall/xml.rb
-%{yast_yncludedir}/autoinstall/ask.rb
 
 %dir %{yast_libdir}/autoinstall
 %{yast_libdir}/autoinstall/*.rb
