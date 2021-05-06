@@ -24,8 +24,11 @@ require "autoinstall/ask/question"
 require "autoinstall/ask/question_option"
 
 describe Y2Autoinstall::Widgets::AskDialog do
+  # Helper to get dialog widgets getting rid of alignment widgets (e.g., Left())
+  #
+  # @param parent [CWM::AbstractWidget]
   def widgets_from(parent)
-    parent.widgets
+    parent.widgets.map(&:params).flatten
   end
 
   subject { described_class.new(dialog) }

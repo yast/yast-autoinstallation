@@ -317,11 +317,12 @@ module Y2Autoinstall
 
         widgets = dialog.questions.each_with_object([]) do |question, all|
           if question.frametitle != frametitle && !in_frame.empty?
-            all << Frame(frametitle, VBox(*in_frame))
+            all << Left(Frame(frametitle, VBox(*in_frame)))
+            all << VSpacing(1)
             in_frame.clear
           end
 
-          widget = widget_for(question)
+          widget = Left(widget_for(question))
           if question.frametitle
             frametitle = question.frametitle
             in_frame << widget
