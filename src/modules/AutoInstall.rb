@@ -224,17 +224,20 @@ module Yast
       # copying ask-scripts and corresponding log files
       # to /var/adm/autoinstall
       SCR.Execute(path(".target.bash"),
-        "/bin/cp #{AutoinstConfig.tmpDir}/ask_scripts_log/*"\
+        "/bin/cp #{AutoinstConfig.tmpDir}/ask-scripts/logs/*"\
         " #{destdir}#{AutoinstConfig.logs_dir}")
       SCR.Execute(path(".target.bash"),
-        "/bin/cp #{AutoinstConfig.tmpDir}/*.sh"\
+        "/bin/cp #{AutoinstConfig.tmpDir}/ask-scripts/*"\
+        " #{destdir}#{AutoinstConfig.scripts_dir}")
+      SCR.Execute(path(".target.bash"),
+        "/bin/cp #{AutoinstConfig.tmpDir}/ask-default-value-scripts/*"\
         " #{destdir}#{AutoinstConfig.scripts_dir}")
 
       SCR.Execute(
         path(".target.bash"),
         Builtins.sformat(
           "/bin/cp %1 %2%3",
-          "/tmp/profile/autoinst.xml",
+          "#{AutoinstConfig.tmpDir}/profile/autoinst.xml",
           destdir,
           AutoinstConfig.xml_file
         )

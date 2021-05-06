@@ -470,9 +470,7 @@ module Y2Autoinstallation
     def execute
       cmd = INTERPRETER_MAP[interpreter] || interpreter
 
-      Yast::Execute.on_target(
-        cmd, script_path.shellescape, stdout: :capture
-      )
+      Yast::Execute.on_target(cmd, script_path.shellescape, stdout: :capture)
     end
   end
 
