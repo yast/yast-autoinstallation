@@ -126,7 +126,7 @@ module Y2Autoinstall
 
         # @macro seeAbstractWidget
         def opt
-          [:hstretch, :notify, :notifyContextMenu]
+          [:hstretch, :notify]
         end
       end
 
@@ -159,7 +159,7 @@ module Y2Autoinstall
 
         # @macro seeAbstractWidget
         def opt
-          [:hstretch, :notify, :notifyContextMenu]
+          [:hstretch, :notify]
         end
 
         def contents
@@ -176,6 +176,8 @@ module Y2Autoinstall
           Yast::Popup.Message(
             format(_("%{field}: the passwords do not match."), field: label)
           )
+          Yast::UI.SetFocus(Id(widget_id))
+          nil
         end
 
       private

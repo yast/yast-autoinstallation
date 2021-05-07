@@ -281,9 +281,8 @@ module Y2Autoinstallation
       debug_flag = debug ? (DEBUG_FLAG_MAP[interpreter] || "") : ""
       params_s = params.join(" ") # shell escaping is up to user, see documentation
 
-      cmd_line = "#{cmd} #{debug_flag} #{script_path.shellescape} #{params_s} " \
-          "&> #{log_path.shellescape}"
-      cmd_line = "#{env_vars(env)} #{cmd_line}" unless env.empty?
+      cmd_line = "#{env_vars(env)} #{cmd} #{debug_flag} #{script_path.shellescape} " \
+        "#{params_s} &> #{log_path.shellescape}"
 
       bash_path = Yast::Path.new(".target.bash")
       res = Yast::SCR.Execute(bash_path, cmd_line)

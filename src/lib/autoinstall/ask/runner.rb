@@ -48,6 +48,8 @@ module Y2Autoinstall
     #   runner = Runner.new(Yast::Profile.current, stage: Stage::INITIIAL)
     #   runner.run
     class Runner
+      include Yast::Logger
+
       # @return [Hash] AutoYaST profile
       attr_reader :profile
       # @return [Stage] Stage to run; only the dialogs/questions for the given
@@ -179,7 +181,10 @@ module Y2Autoinstall
       # @param question [Question]
       def update_profile(question)
         question.paths.each do |path|
-          next if question.value.nil?
+          if question.value.nil?
+            log.error "Question '#{question.text}' does not have any value."
+            next
+          end
 
           Yast::Profile.set_element_by_path(path, question.value, profile)
         end

@@ -54,19 +54,18 @@ module Y2Autoinstall
           dialog.questions << build_question(entry)
         end
 
-        wo_id, with_id = all_dialogs.partition { |d| d.id.nil? }
-        wo_id + with_id.sort_by(&:id)
+        all_dialogs.sort_by { |d| d.id || -1 }
       end
 
     private
 
-      # @return [Array<AskListSection>]
+      # @return [AskListSection]
       attr_reader :ask_list_section
 
       # @return [Stage]
       attr_reader :stage
 
-      def find_dialog(dialogs, id)
+      def find_or_build_dialog(dialogs, id)
         dialog = dialogs.find { |d| d.id == id } if id
         return dialog if dialog
 
