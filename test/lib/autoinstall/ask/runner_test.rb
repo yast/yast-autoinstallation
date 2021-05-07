@@ -175,18 +175,51 @@ describe Y2Autoinstall::Ask::Runner do
       let(:next_dialog_file) { File.join(tmp_dir, "next_dialog") }
 
       before do
-        stub_const("Y2Autoinstall::Ask::Runner::NEXT_DIALOG_FILE", next_dialog_file)
-        File.write(next_dialog_file, "2\n")
+        stub_const("Y2Autoinstall::Ask::Runner::DIALOG_FILE", next_dialog_file)
         allow(Y2Autoinstall::Widgets::AskDialog).to receive(:new)
-          .with(dialog2, disable_back_button: true).and_return(ask_dialog2)
+          .with(dialog2, any_args).and_return(ask_dialog2)
       end
 
       after do
         FileUtils.remove_entry(tmp_dir) if Dir.exist?(tmp_dir)
       end
 
-      it "jumps to the dialog specified in the file" do
-        runner.run
+      context "and it is a regular file" do
+        before do
+          File.write(next_dialog_file, "2\n")
+        end
+
+        it "jumps to the dialog specified in the file" do
+          expect(ask_dialog1).to_not receive(:run)
+          expect(ask_dialog2).to receive(:run)
+          runner.run
+        end
+      end
+
+      context "but it is not a regular file" do
+        let(:linked_file) { File.join(tmp_dir, "some-file") }
+
+        before do
+          FileUtils.ln_s(linked_file, next_dialog_file)
+        end
+
+        it "ignores the content and goes to the following dialog" do
+          expect(ask_dialog1).to receive(:run)
+          expect(ask_dialog2).to receive(:run)
+          runner.run
+        end
+      end
+
+      context "but it too big" do
+        before do
+          allow(File).to receive(:size).with(next_dialog_file).and_return(2048)
+        end
+
+        it "ignores the content and goes to the following dialog" do
+          expect(ask_dialog1).to receive(:run)
+          expect(ask_dialog2).to receive(:run)
+          runner.run
+        end
       end
     end
   end

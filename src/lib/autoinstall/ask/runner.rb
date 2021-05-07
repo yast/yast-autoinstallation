@@ -93,8 +93,6 @@ module Y2Autoinstall
         @ask_list = Y2Autoinstall::AutoinstProfile::AskListSection.new_from_hashes(section)
       end
 
-      NEXT_DIALOG_FILE = "/tmp/next_dialog".freeze
-
       # Run the given dialog
       #
       # @param dialog [Y2Autoinstall::Ask::Dialog] Ask dialog specification
@@ -106,18 +104,26 @@ module Y2Autoinstall
         ask_dialog.run
       end
 
+      DIALOG_FILE = "/tmp/next_dialog".freeze
+      MAX_DIALOG_FILE_SIZE = 1024
+      private_constant :MAX_DIALOG_FILE_SIZE
+
       # Finds the ID of the next dialog
       #
-      # It checks for a file located at {NEXT_DIALOG_FILE} which contains the number
-      # of the following dialog. If it does not exist, it goes with the dialog after
-      # the current one.
+      # It checks for a regular file located at {DIALOG_FILE} which contains
+      # the number of the following dialog. If it does not exist, it goes with
+      # the dialog after the current one.
+      #
+      # For security reasons, it checks whether the size of the file makes
+      # sense for this use case, to not load a big chunk of data into memory by
+      # mistake.
       #
       # @return [Integer,nil] Next dialog ID
       def find_next_dialog_index
-        return unless ::File.exist?(NEXT_DIALOG_FILE)
+        return unless File.file?(DIALOG_FILE) && File.size(DIALOG_FILE) <= MAX_DIALOG_FILE_SIZE
 
-        next_dialog = File.read(NEXT_DIALOG_FILE)
-        FileUtils.rm(NEXT_DIALOG_FILE)
+        next_dialog = File.read(DIALOG_FILE)
+        FileUtils.rm(DIALOG_FILE)
         dialog_id = next_dialog.to_i
         return unless dialog_id
 
