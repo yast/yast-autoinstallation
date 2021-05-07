@@ -125,7 +125,7 @@ describe Y2Autoinstall::Ask::ProfileReader do
       let(:sections) { [initial0, initial1, cont0] }
 
       context "when a stage is set" do
-        subject(:reader) { described_class.new(ask_list, stage: :cont) }
+        subject(:reader) { described_class.new(ask_list, stage: Y2Autoinstall::Ask::Stage::CONT) }
 
         it "includes questions for the given stage" do
           dialogs = reader.dialogs

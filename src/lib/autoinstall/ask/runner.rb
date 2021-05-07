@@ -45,17 +45,18 @@ module Y2Autoinstall
     #
     # @example Ask questions from the profile during the 1st stage
     #   Yast::Profile.ReadXML("autoinst.xml")
-    #   runner = Runner.new(profile, stage: :initial)
+    #   runner = Runner.new(Yast::Profile.current, stage: Stage::INITIIAL)
     #   runner.run
     class Runner
       # @return [Hash] AutoYaST profile
       attr_reader :profile
-      # @return [Symbol] Stage to run
+      # @return [Stage] Stage to run; only the dialogs/questions for the given
+      #   stage are shown.
       attr_reader :stage
 
       # @param profile [Hash] AutoYaST profile
-      # @param stage [Symbol] :initial or :cont
-      def initialize(profile, stage: :initial)
+      # @param stage [Stage] Consider dialogs/questions from the given stage
+      def initialize(profile, stage:)
         @profile = profile
         @indexes = []
         @stage = stage

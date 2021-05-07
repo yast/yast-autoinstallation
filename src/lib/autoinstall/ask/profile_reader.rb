@@ -21,6 +21,7 @@ require "autoinstall/ask/dialog"
 require "autoinstall/ask/question"
 require "autoinstall/ask/question_option"
 require "autoinstall/script"
+require "autoinstall/ask/stage"
 
 module Y2Autoinstall
   module Ask
@@ -29,8 +30,8 @@ module Y2Autoinstall
       # Constructor
       #
       # @param ask_list_section [AskListSection] <ask-list> section from the profiel
-      # @param stage [Symbol] :initial or :cont
-      def initialize(ask_list_section, stage: :initial)
+      # @param stage [Stage] Consider dialogs/questions from the given stage
+      def initialize(ask_list_section, stage: Stage::INITIAL)
         @ask_list_section = ask_list_section
         @stage = stage
       end
@@ -41,11 +42,11 @@ module Y2Autoinstall
       def dialogs
         sorted_entries = ask_list_section
           .entries
-          .select { |s| (s.stage&.to_sym || :initial) == stage }
+          .select { |s| (Stage.from_name(s.stage) || Stage::INITIAL) == stage }
           .sort_by { |s| s.dialog ? s.element.to_i : 0 }
 
         all_dialogs = sorted_entries.each_with_object([]) do |entry, dlgs|
-          dialog = find_dialog(dlgs, entry.dialog)
+          dialog = find_or_build_dialog(dlgs, entry.dialog)
           [:width, :height, :ok_label, :back_label, :timeout, :title].each do |attr|
             dialog.send("#{attr}=", entry.send(attr)) if entry.send(attr)
           end
@@ -62,7 +63,7 @@ module Y2Autoinstall
       # @return [Array<AskListSection>]
       attr_reader :ask_list_section
 
-      # @return [Symbol]
+      # @return [Stage]
       attr_reader :stage
 
       def find_dialog(dialogs, id)

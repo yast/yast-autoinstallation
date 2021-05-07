@@ -92,8 +92,9 @@ module Y2Autoinstall
       #   @return [String,nil] Path to a file to store the answer to the question
 
       # @!attribute stage
-      #   @return [String,nil] Which stage should the question be presented ('initial' for
+      #   @return [String,nil] In which stage the question should be presented ('initial' for
       #   1st stage or 'cont' for the 2nd one).
+      #   @see Stage
 
       # @!attribute selection
       #   @return [Array<AskSelectionEntry>,nil] List of possible values to choose as answer

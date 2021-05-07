@@ -9,6 +9,7 @@
 require "autoinstall/entries/registry"
 require "autoinstall/importer"
 require "autoinstall/ask/runner"
+require "autoinstall/ask/stage"
 
 module Yast
   class InstAutopostClient < Client
@@ -69,7 +70,9 @@ module Yast
       Progress.NextStage
       Progress.Title(_("Checking for required packages..."))
 
-      Y2Autoinstall::Ask::Runner.new(Yast::Profile.current, stage: :cont).run
+      Y2Autoinstall::Ask::Runner.new(
+        Yast::Profile.current, stage: Y2Autoinstall::Ask::Stage::CONT
+      ).run
       # FIXME: too late here, even though it would be the better place
       # if (Profile::current["general"]:$[] != $[])
       #     AutoinstGeneral::Import(Profile::current["general"]:$[]);
