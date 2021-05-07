@@ -27,15 +27,19 @@ module Y2Autoinstall
 
       # @!attribute id
       #   @return [Integer,nil] Dialog number to place the question
+      #     A integer (and positive) number or nil.
 
       # @!attribute title
       #   @return [String,nil] A title to be shown above the questions
 
+      # @!attribute height
+      #   @return [Integer,nil] Dialog height
+
       # @!attribute width
       #   @return [Integer,nil] Dialog width
 
-      # @!attribute height
-      #   @return [Integer,nil] Dialog height
+      # @!attribute timeout
+      #   @return [Integer,nil] Timeout
 
       # @!attribute ok_label
       #   @return [String,nil] Label for the `Ok` button
@@ -43,8 +47,8 @@ module Y2Autoinstall
       # @!attribute back_label
       #   @return [String,nil] Label for the `Back` button
 
-      # @!attribute timeout
-      #   @return [Integer,nil] Timeout
+      # @!attribute questions
+      #   @return [Array<Question>] Questions that are included in the dialog
 
       # @param id [Integer,nil] Dialog identifier
       # @param questions [Array<Question>] Questions included in the dialog

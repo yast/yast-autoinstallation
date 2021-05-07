@@ -42,7 +42,7 @@ module Y2Autoinstall
       #   @return [Boolean,nil] When set to `true`, it is supposed to be a password
 
       # @!attribute paths
-      #   @return [Array<String>] Path of an element in the profile
+      #   @return [Array<String>] Paths of elements to update in the profile
 
       # @!attribute file
       #   @return [String,nil] Path to a file to store the answer to the question.

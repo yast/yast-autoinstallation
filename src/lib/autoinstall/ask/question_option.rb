@@ -22,6 +22,9 @@ module Y2Autoinstall
     class QuestionOption
       attr_reader :value, :label
 
+      # @param value [String] Question value
+      # @param label [String,nil] Human readable representation. Used instead of the
+      #   'value' if defined.
       def initialize(value, label = nil)
         @value = value
         @label = label
