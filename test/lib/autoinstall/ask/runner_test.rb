@@ -26,13 +26,13 @@ require "autoinstall/script"
 require "tmpdir"
 
 describe Y2Autoinstall::Ask::Runner do
-  subject(:runner) { described_class.new(profile) }
+  subject(:runner) { described_class.new(profile, stage: :initial) }
 
   let(:profile) do
-    {
+    Yast::ProfileHash.new(
       "general" => { "ask-list" => ask_list },
       "users"   => [{ "username" => "root", "user_password" => "ask" }]
-    }
+    )
   end
 
   let(:ask_list) do
@@ -67,7 +67,7 @@ describe Y2Autoinstall::Ask::Runner do
         .with(dialog1, disable_back_button: true).and_return(ask_dialog1)
     end
 
-    context "when no stage is given" do
+    context "when :initial stage is given" do
       it "runs the dialogs from the :initial stage" do
         expect(Y2Autoinstall::Ask::ProfileReader).to receive(:new)
           .with(Y2Autoinstall::AutoinstProfile::AskListSection, stage: :initial)
@@ -76,10 +76,10 @@ describe Y2Autoinstall::Ask::Runner do
       end
     end
 
-    context "when a stage is given" do
+    context "when :cont stage is given" do
       subject(:runner) { described_class.new(profile, stage: :cont) }
 
-      it "runs the dialogs from the given stage" do
+      it "runs the dialogs from the :cont stage" do
         expect(Y2Autoinstall::Ask::ProfileReader).to receive(:new)
           .with(Y2Autoinstall::AutoinstProfile::AskListSection, stage: :cont)
           .and_return(profile_reader)

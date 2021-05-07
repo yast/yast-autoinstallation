@@ -86,7 +86,7 @@ module Y2Autoinstall
       def ask_list
         return @ask_list if @ask_list
 
-        section = profile.fetch("general", {}).fetch("ask-list", [])
+        section = profile.fetch_as_hash("general").fetch_as_array("ask-list")
         @ask_list = Y2Autoinstall::AutoinstProfile::AskListSection.new_from_hashes(section)
       end
 
