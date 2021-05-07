@@ -79,9 +79,14 @@ module Y2Autoinstall
 
       private
 
+        # Runs a script and returns the stdout unless it failed
+        #
+        # @param script [Y2Autoinstallation::ExecutedScript]
+        # @return [String,nil]
         def run_script(script)
           script.create_script_file
-          script.execute
+          return nil unless script.execute
+
           script.stdout || ""
         end
       end
@@ -111,7 +116,12 @@ module Y2Autoinstall
           if @question.default_value_script
             default_from_script = run_script(@question.default_value_script)
           end
-          self.value = default_from_script == "true" || @question.default == "true"
+
+          self.value = if default_from_script.nil?
+            @question.default == "true"
+          else
+            default_from_script == "true"
+          end
         end
       end
 
