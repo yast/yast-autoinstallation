@@ -22,16 +22,15 @@ require "autoinstall/ask/question"
 
 describe Y2Autoinstall::Ask::Question do
   describe ".new" do
-    it "returns an instance with the given text and element_id" do
-      question = described_class.new("Question 1", 1)
+    it "returns an instance with the given text" do
+      question = described_class.new("Question 1")
       expect(question.text).to eq("Question 1")
-      expect(question.element_id).to eq(1)
     end
   end
 
   describe "#value=" do
     subject(:question) do
-      described_class.new(1, "Question 1").tap { |q| q.type = type }
+      described_class.new("Question 1").tap { |q| q.type = type }
     end
 
     context "when the question's type is an integer" do
@@ -86,7 +85,7 @@ describe Y2Autoinstall::Ask::Question do
 
     context "when the question's type is not set" do
       subject(:question) do
-        described_class.new(1, "Question 1")
+        described_class.new("Question 1")
       end
 
       it "sets the value as an string" do

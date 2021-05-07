@@ -77,10 +77,10 @@ module Y2Autoinstall
 
       # @param entry [AskSection] Section from the profile
       def build_question(entry)
-        question = Question.new(entry.question, entry.element)
+        question = Question.new(entry.question)
 
-        [:stage, :default, :help, :type, :password, :file, :frametitle].each do |attr|
-          question.send("#{attr}=", entry.send(attr))
+        [:default, :help, :type, :password, :file, :frametitle].each do |attr|
+          question.send("#{attr}=", entry.send(attr)) if entry.send(attr)
         end
         question.paths = ((entry.pathlist || []) + [entry.path]).compact
         question.options = (entry.selection || []).map { |s| QuestionOption.new(s.value, s.label) }

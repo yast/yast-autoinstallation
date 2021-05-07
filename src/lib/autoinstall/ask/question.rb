@@ -22,8 +22,8 @@ module Y2Autoinstall
     # Represents a question related to an <ask> element
     class Question
       attr_accessor :text, :default, :help, :type, :password, :paths, :file,
-        :options, :element_id, :frametitle, :script, :default_value_script
-      attr_reader :stage, :value
+        :options, :frametitle, :script, :default_value_script
+      attr_reader :value
 
       # @!attribute text
       #   @return [String] Question text
@@ -45,17 +45,13 @@ module Y2Autoinstall
       #   @return [Array<String>] Path of an element in the profile
 
       # @!attribute file
-      #   @return [String,nil] Path to a file to store the answer to the question
-
-      # @!attribute stage
-      #   @return [Symbol] Which stage should the question be presented (:initial for
-      #   1st stage or :cont for the 2nd one).
+      #   @return [String,nil] Path to a file to store the answer to the question.
+      #     If nil, the value is not stored.
 
       # @!attribute options
-      #   @return [Array<QuestionOption>] List of possible values to choose as answer
-
-      # @!attribute element_id
-      #   @return [Integer,nil] Question order when there are more than one in the same dialog
+      #   @return [Array<QuestionOption>] List of possible values to choose as answer. If it
+      #     is not empty, it limits the possible answers to the question. It is usually
+      #     represented with a ComboBox.
 
       # @!attribute frametitle
       #   @return [String,nil] Frame title
@@ -70,20 +66,10 @@ module Y2Autoinstall
       #   @return [Object,nil] Question value (usually from user)
 
       # @param text       [String] Question text
-      # @param element_id [Integer,nil] Question order within its corresponding dialog
-      def initialize(text, element_id = nil)
+      def initialize(text)
         @text = text
-        @element_id = element_id
-        @stage = :initial
         @options = []
         @paths = []
-      end
-
-      # Sets the stage for the question
-      #
-      # @param new_stage [Symbol] :initial or :cont
-      def stage=(new_stage)
-        @stage = new_stage.to_sym if new_stage
       end
 
       # Sets the question answer
