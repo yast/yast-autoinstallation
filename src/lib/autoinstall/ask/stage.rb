@@ -24,7 +24,7 @@ module Y2Autoinstall
       #
       # @raise UnknownStage
       def self.from_name(name)
-        stage = KNOWN_STAGES.find { |s| s.name == name }
+        KNOWN_STAGES.find { |s| s.name == name }
       end
 
       # Stage name
@@ -45,7 +45,7 @@ module Y2Autoinstall
       INITIAL = new("initial").freeze
       CONT = new("cont").freeze
 
-      KNOWN_STAGES = [INITIAL, CONT]
+      KNOWN_STAGES = [INITIAL, CONT].freeze
       private_constant :KNOWN_STAGES
     end
   end
