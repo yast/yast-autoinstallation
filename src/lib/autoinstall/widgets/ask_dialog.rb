@@ -82,6 +82,7 @@ module Y2Autoinstall
         def run_script(script)
           script.create_script_file
           script.execute
+          script.output || ""
         end
       end
 

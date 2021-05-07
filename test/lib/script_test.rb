@@ -435,12 +435,6 @@ describe Y2Autoinstallation::AskDefaultValueScript do
       FileUtils.remove_entry(tmp_dir) if Dir.exist?(tmp_dir)
     end
 
-    describe "#logs_dir" do
-      it "returns path to logs in temporary directory" do
-        expect(subject.logs_dir).to eq(File.join(tmp_dir, "ask-default-value-scripts", "logs"))
-      end
-    end
-
     describe "#script_path" do
       it "returns path to script in temporary directory" do
         expect(subject.script_path).to eq(
@@ -450,9 +444,44 @@ describe Y2Autoinstallation::AskDefaultValueScript do
     end
 
     describe "#execute" do
-      it "returns the script output" do
-        script.create_script_file
-        expect(script.execute).to eq("test")
+      context "when it runs successfully" do
+        it "returns true" do
+          script.create_script_file
+          expect(script.execute).to eq(true)
+        end
+      end
+
+      context "when it failed" do
+        subject(:script) do
+          described_class.new(
+            "source"   => "exit 1",
+            "filename" => "test.sh"
+          )
+        end
+
+        it "returns false" do
+          script.create_script_file
+          expect(script.execute).to eq(false)
+        end
+      end
+    end
+
+    describe "#stdout" do
+      context "when the script has not been executed" do
+        it "returns nil" do
+          expect(script.stdout).to be_nil
+        end
+      end
+
+      context "when the script has been successfully executed" do
+        before do
+          script.create_script_file
+          script.execute
+        end
+
+        it "returns nil" do
+          expect(script.stdout).to eq("test")
+        end
       end
     end
   end

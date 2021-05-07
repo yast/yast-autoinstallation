@@ -451,13 +451,10 @@ module Y2Autoinstallation
 
   # Scripts that are used when processing the <ask-list> section
   class AskDefaultValueScript < Y2Autoinstallation::ExecutedScript
+    # @return [String,nil] Standard output from the last execution
+    attr_reader :stdout
     def self.type
       "ask-default-value-scripts"
-    end
-
-    # @see Y2Autoinstallation::Script
-    def logs_dir
-      File.join(Yast::AutoinstConfig.tmpDir, self.class.type, "logs")
     end
 
     # Overrides script path as it is expected to live in tmpdir from which script is copied
@@ -467,10 +464,13 @@ module Y2Autoinstallation
 
     # @return [String,nil] Script output or nil if the execution failed
     # @see Y2Autoinstallation::ExecutedScript
-    def execute
+    def execute(_env = {})
       cmd = INTERPRETER_MAP[interpreter] || interpreter
 
-      Yast::Execute.on_target(cmd, script_path.shellescape, stdout: :capture)
+      @stdout = Yast::Execute.on_target!(cmd, script_path.shellescape, stdout: :capture)
+      true
+    rescue Cheetah::ExecutionFailed
+      false
     end
   end
 
