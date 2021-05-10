@@ -82,8 +82,15 @@ module Y2Autoinstallation
       return true unless registration_module_available? # do nothing
 
       general_section = Yast::Profile.current["general"] || {}
+      register_section = Yast::Profile.current[REGISTER_SECTION]
+      disabled_registration = (register_section || {})["do_registration"] == false
+
+      # remove the registration section to not run it again in the 2nd when it is explicitly
+      # disabled (no autoupgrade detection is needed in this case)
+      Yast::Profile.remove_sections(REGISTER_SECTION) if disabled_registration
+
       # autoupgrade detects itself if system is registered and if needed do migration via scc
-      if Yast::Profile.current[REGISTER_SECTION] || Yast::Mode.autoupgrade
+      if !disabled_registration && (register_section || Yast::Mode.autoupgrade)
         Yast::WFM.CallFunction(
           "scc_auto",
           ["Import", Yast::Profile.current[REGISTER_SECTION]]
