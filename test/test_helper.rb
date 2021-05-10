@@ -91,6 +91,7 @@ end
 
 require "y2packager/medium_type"
 require_relative "support/storage_helpers"
+require_relative "support/ask_helpers"
 
 def reset_singleton(klass)
   Singleton.__init__(klass)

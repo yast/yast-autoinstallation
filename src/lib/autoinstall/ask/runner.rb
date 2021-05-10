@@ -17,7 +17,7 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "autoinstall/widgets/ask_dialog"
+require "autoinstall/widgets/ask/dialog"
 require "autoinstall/ask/profile_reader"
 require "autoinstall/autoinst_profile/ask_list_section"
 require "autoinstall/script_runner"
@@ -98,7 +98,7 @@ module Y2Autoinstall
       # @param dialog [Y2Autoinstall::Ask::Dialog] Ask dialog specification
       # @return [Symbol] :next or :back
       def run_dialog(dialog)
-        ask_dialog = Y2Autoinstall::Widgets::AskDialog.new(
+        ask_dialog = Y2Autoinstall::Widgets::Ask::Dialog.new(
           dialog, disable_back_button: first?
         )
         ask_dialog.run

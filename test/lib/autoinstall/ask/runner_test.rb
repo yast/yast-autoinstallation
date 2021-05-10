@@ -23,6 +23,7 @@ require "autoinstall/ask/dialog"
 require "autoinstall/ask/question"
 require "autoinstall/autoinst_profile/ask_list_section"
 require "autoinstall/script"
+require "autoinstall/widgets/ask/dialog"
 require "tmpdir"
 
 describe Y2Autoinstall::Ask::Runner do
@@ -56,14 +57,14 @@ describe Y2Autoinstall::Ask::Runner do
   end
 
   let(:ask_dialog1) do
-    instance_double(Y2Autoinstall::Widgets::AskDialog, run: :next)
+    instance_double(Y2Autoinstall::Widgets::Ask::Dialog, run: :next)
   end
 
   describe "#run" do
     before do
       allow(Y2Autoinstall::Ask::ProfileReader).to receive(:new)
         .and_return(profile_reader)
-      allow(Y2Autoinstall::Widgets::AskDialog).to receive(:new)
+      allow(Y2Autoinstall::Widgets::Ask::Dialog).to receive(:new)
         .with(dialog1, disable_back_button: true).and_return(ask_dialog1)
     end
 
@@ -168,7 +169,7 @@ describe Y2Autoinstall::Ask::Runner do
       end
 
       let(:ask_dialog2) do
-        instance_double(Y2Autoinstall::Widgets::AskDialog, run: :next)
+        instance_double(Y2Autoinstall::Widgets::Ask::Dialog, run: :next)
       end
 
       let(:tmp_dir) { Dir.mktmpdir }
@@ -176,7 +177,7 @@ describe Y2Autoinstall::Ask::Runner do
 
       before do
         stub_const("Y2Autoinstall::Ask::Runner::DIALOG_FILE", next_dialog_file)
-        allow(Y2Autoinstall::Widgets::AskDialog).to receive(:new)
+        allow(Y2Autoinstall::Widgets::Ask::Dialog).to receive(:new)
           .with(dialog2, any_args).and_return(ask_dialog2)
       end
 
