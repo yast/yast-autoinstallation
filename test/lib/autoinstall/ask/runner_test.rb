@@ -222,6 +222,17 @@ describe Y2Autoinstall::Ask::Runner do
           runner.run
         end
       end
+
+      context "and the content is '-1'" do
+        before do
+          File.write(next_dialog_file, "-1\n")
+        end
+
+        it "finishes the sequence" do
+          expect(ask_dialog1).to_not receive(:run)
+          runner.run
+        end
+      end
     end
   end
 end

@@ -125,7 +125,7 @@ module Y2Autoinstall
         next_dialog = File.read(DIALOG_FILE)
         FileUtils.rm(DIALOG_FILE)
         dialog_id = next_dialog.to_i
-        return unless dialog_id
+        return dialog_id if dialog_id.nil? || dialog_id == -1
 
         next_dialog = dialogs.find { |d| d.id == dialog_id }
         dialogs.index(next_dialog)
@@ -150,7 +150,10 @@ module Y2Autoinstall
       #
       # @return [Dialog,nil] Returns the following dialog or `nil` if there are no more dialogs
       def go_next
-        next_index = find_next_dialog_index || (current_index + 1)
+        next_index = find_next_dialog_index
+        return nil if next_index == -1
+
+        next_index ||= current_index + 1
         @indexes.push(next_index)
         dialogs[next_index]
       end
