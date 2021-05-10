@@ -22,6 +22,8 @@ require "autoinstall/widgets/ask_dialog"
 require "autoinstall/ask/dialog"
 require "autoinstall/ask/question"
 require "autoinstall/ask/question_option"
+require "autoinstall/script"
+require "cwm/rspec"
 
 describe Y2Autoinstall::Widgets::AskDialog do
   # Helper to get dialog widgets getting rid of alignment widgets (e.g., Left())
@@ -138,6 +140,185 @@ describe Y2Autoinstall::Widgets::AskDialog do
 
       it "returns :next after the timeout" do
         expect(subject.run).to eq(:next)
+      end
+    end
+  end
+end
+
+shared_examples "ask dialog widget initialization" do
+  describe "#init" do
+    before do
+      question.default = "default-value"
+    end
+
+    context "when the question has a value" do
+      before do
+        question.value = "some-value"
+      end
+
+      it "sets widget's value" do
+        expect(subject).to receive(:value=).with("some-value")
+        subject.init
+      end
+    end
+
+    context "when the question has not a value" do
+      context "and it has a default_value_script" do
+        let(:script) do
+          instance_double(
+            Y2Autoinstallation::AskDefaultValueScript,
+            create_script_file: nil, execute: result, stdout: stdout
+          )
+        end
+
+        let(:result) { true }
+        let(:stdout) { "some-value" }
+
+        before do
+          question.default_value_script = script
+        end
+
+        it "uses the script output as the widget's value" do
+          expect(subject).to receive(:value=).with(stdout)
+          subject.init
+        end
+
+        context "but the script fails" do
+          let(:result) { false }
+
+          it "uses the default value" do
+            expect(subject).to receive(:value=).with(question.default)
+            subject.init
+          end
+        end
+      end
+
+      context "and there is no default_value_script" do
+        it "uses the question default value as the widget's value" do
+          expect(subject).to receive(:value=).with(question.default)
+          subject.init
+        end
+      end
+    end
+  end
+end
+
+shared_examples "ask dialog widget" do
+  describe "#store" do
+    before do
+      subject.value = "some-value"
+    end
+
+    it "sets the question's value" do
+      expect(question).to receive(:value=).with(subject.value)
+      subject.store
+    end
+  end
+
+  describe "#label" do
+    it "returns the question text" do
+      expect(subject.label).to eq(question.text)
+    end
+  end
+end
+
+describe Y2Autoinstall::Widgets::AskDialog::InputField do
+  subject { described_class.new(question) }
+
+  let(:question) do
+    Y2Autoinstall::Ask::Question.new("Question 1")
+  end
+
+  include_examples "CWM::InputField"
+  include_examples "ask dialog widget"
+  include_examples "ask dialog widget initialization"
+end
+
+describe Y2Autoinstall::Widgets::AskDialog::CheckBox do
+  subject { described_class.new(question) }
+
+  let(:question) do
+    Y2Autoinstall::Ask::Question.new("Question 1").tap do |question|
+      question.type = "boolean"
+    end
+  end
+
+  include_examples "CWM::CheckBox"
+  include_examples "ask dialog widget"
+
+  describe "#init"
+end
+
+describe Y2Autoinstall::Widgets::AskDialog::ComboBox do
+  subject { described_class.new(question) }
+
+  let(:question) do
+    Y2Autoinstall::Ask::Question.new("Question 1").tap do |question|
+      question.options = [option1, option2]
+    end
+  end
+
+  let(:option1) { Y2Autoinstall::Ask::QuestionOption.new("dhcp", "Automatic") }
+  let(:option2) { Y2Autoinstall::Ask::QuestionOption.new("manual") }
+
+  include_examples "CWM::ComboBox"
+
+  describe "#items" do
+    it "returns question options" do
+      expect(subject.items).to eq(
+        [["dhcp", "Automatic"], ["manual", "manual"]]
+      )
+    end
+  end
+
+  include_examples "ask dialog widget"
+  include_examples "ask dialog widget initialization"
+end
+
+describe Y2Autoinstall::Widgets::AskDialog::PasswordField do
+  subject { described_class.new(question) }
+
+  let(:question) do
+    Y2Autoinstall::Ask::Question.new("Question 1").tap do |question|
+      question.password = true
+    end
+  end
+
+  include_examples "CWM::CustomWidget"
+  include_examples "ask dialog widget"
+  include_examples "ask dialog widget initialization"
+
+  describe "#validate" do
+    before do
+      allow(subject).to receive(:value).and_return(value)
+      allow(subject).to receive(:confirmation_value).and_return(confirmation_value)
+    end
+
+    let(:value) { "pass1" }
+
+    context "when passwords match" do
+      let(:confirmation_value) { "pass1" }
+
+      it "returns true" do
+        expect(subject.validate).to eq(true)
+      end
+    end
+
+    context "when passwords do not match" do
+      let(:confirmation_value) { "pass2" }
+
+      it "reports the problem to the user" do
+        expect(Yast::Popup).to receive(:Message).with(/the passwords/)
+        subject.validate
+      end
+
+      it "sets focus on the first password field" do
+        expect(Yast::UI).to receive(:SetFocus).with(Id(subject.widget_id))
+        subject.validate
+      end
+
+      it "returns false" do
+        expect(subject.validate).to eq(false)
       end
     end
   end

@@ -187,7 +187,7 @@ module Y2Autoinstall
             format(_("%{field}: the passwords do not match."), field: label)
           )
           Yast::UI.SetFocus(Id(widget_id))
-          nil
+          false
         end
 
       private
