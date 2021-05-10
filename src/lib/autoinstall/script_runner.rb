@@ -45,6 +45,7 @@ module Y2Autoinstall
 
       show_feedback(script)
       report_error(script) unless result
+      result
     end
 
   private

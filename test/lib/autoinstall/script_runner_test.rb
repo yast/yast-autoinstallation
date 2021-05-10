@@ -40,6 +40,10 @@ describe Y2Autoinstall::ScriptRunner do
       runner.run(script)
     end
 
+    it "returns true" do
+      expect(runner.run(script)).to eq(true)
+    end
+
     context "when a notification is defined" do
       let(:spec) do
         { "notification" => "A script is running..." }
@@ -110,6 +114,10 @@ describe Y2Autoinstall::ScriptRunner do
         expect(Yast::Report).to receive(:Warning)
           .with(/User script/, any_args)
         runner.run(script)
+      end
+
+      it "returns false" do
+        expect(runner.run(script)).to eq(false)
       end
     end
   end

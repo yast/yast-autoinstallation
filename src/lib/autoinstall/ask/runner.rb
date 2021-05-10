@@ -75,8 +75,8 @@ module Y2Autoinstall
           if result == :back
             current_dialog = go_back
           elsif result == :next
-            current_dialog.questions.each { |q| process_question(q) }
-            current_dialog = go_next
+            results = current_dialog.questions.map { |q| process_question(q) }
+            current_dialog = go_next unless results.any? { |r| r == :repeat }
           end
         end
       end
@@ -179,6 +179,9 @@ module Y2Autoinstall
       # 3. Runs the script
       #
       # @param question [Question] Question to process
+      # @return [Symbol] Action to perform depending on this question.
+      #   :next to continue; :repeat to run the question (and the whole dialog) again.
+      # @see #run_script
       def process_question(question)
         update_profile(question)
         write_value(question)
@@ -210,13 +213,19 @@ module Y2Autoinstall
 
       # Runs the associated script if defined
       #
+      # If the script fails but the `rerun_on_error` attribute is set to true,
+      # the dialog should run again.
+      #
       # @param question [Question]
+      # @return [Symbol] Action to perform depending on this script.
+      #   :next to continue; :repeat to run the question (and the whole dialog) again.
       def run_script(question)
-        return unless question.script
+        return :next unless question.script
 
         question.script.create_script_file
         env = question.script.environment ? { "VAL" => question.value } : {}
-        script_runner.run(question.script, env: env)
+        result = script_runner.run(question.script, env: env)
+        (result || !question.script.rerun_on_error) ? :next : :repeat
       end
 
       # Returns a ScriptRunner instance to run scripts

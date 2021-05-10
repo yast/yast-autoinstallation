@@ -104,7 +104,10 @@ describe Y2Autoinstall::Ask::Runner do
 
     context "when a script is set" do
       let(:script) do
-        instance_double(Y2Autoinstallation::AskScript, environment: environment?)
+        instance_double(
+          Y2Autoinstallation::AskScript,
+          environment: environment?, rerun_on_error: rerun_on_error?
+        )
       end
 
       let(:script_runner) do
@@ -112,6 +115,7 @@ describe Y2Autoinstall::Ask::Runner do
       end
 
       let(:environment?) { false }
+      let(:rerun_on_error?) { false }
 
       let(:question1) do
         Y2Autoinstall::Ask::Question.new("Question 1").tap do |question|
@@ -128,6 +132,36 @@ describe Y2Autoinstall::Ask::Runner do
         expect(script).to receive(:create_script_file)
         expect(script_runner).to receive(:run).with(script, env: {})
         runner.run
+      end
+
+      context "and if it fails but the 'rerun_on_error' is set to 'true'" do
+        let(:rerun_on_error?) { true }
+
+        before do
+          allow(script).to receive(:create_script_file)
+          allow(script_runner).to receive(:run).with(script, env: {})
+            .and_return(false, true)
+        end
+
+        it "runs the dialog again" do
+          expect(ask_dialog1).to receive(:run).twice
+          runner.run
+        end
+      end
+
+      context "and if it fails but the 'rerun_on_error' is set to 'true'" do
+        let(:rerun_on_error?) { false }
+
+        before do
+          allow(script).to receive(:create_script_file)
+          allow(script_runner).to receive(:run).with(script, env: {})
+            .and_return(false)
+        end
+
+        it "runs the dialog again" do
+          expect(ask_dialog1).to receive(:run).once
+          runner.run
+        end
       end
 
       context "when the 'environment' attribute is set to 'true'" do

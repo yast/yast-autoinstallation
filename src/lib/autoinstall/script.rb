@@ -422,7 +422,7 @@ module Y2Autoinstallation
 
   # Scripts that are used when processing the <ask-list> section
   class AskScript < Y2Autoinstallation::ExecutedScript
-    attr_reader :environment
+    attr_reader :environment, :rerun_on_error
 
     def self.type
       "ask-scripts"
@@ -431,6 +431,7 @@ module Y2Autoinstallation
     def initialize(hash)
       super
       @environment = !!hash["environment"]
+      @rerun_on_error = !!hash["rerun_on_error"]
     end
 
     def to_hash
