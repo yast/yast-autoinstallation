@@ -37,9 +37,9 @@ module Y2Autoinstall
           { name: :feedback },
           { name: :feedback_type },
           { name: :rerun },
+          { name: :rerun_on_error },
           { name: :notification },
-          { name: :param_list, xml_name: "param-list" },
-          { name: :environment }
+          { name: :param_list, xml_name: "param-list" }
         ]
       end
 

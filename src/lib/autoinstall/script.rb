@@ -428,10 +428,14 @@ module Y2Autoinstallation
       "ask-scripts"
     end
 
+    # Constructor
+    #
+    # @note The 'rerun' key is ignored.
     def initialize(hash)
       super
       @environment = !!hash["environment"]
       @rerun_on_error = !!hash["rerun_on_error"]
+      @rerun = true
     end
 
     def to_hash
