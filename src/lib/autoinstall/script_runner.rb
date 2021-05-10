@@ -86,6 +86,8 @@ module Y2Autoinstall
     end
 
     def report_error(script)
+      return unless script.feedback.value == :no
+
       Yast::Report.Warning(
         format(
           _("User script %{script_name} failed.\nDetails:\n%{output}"),

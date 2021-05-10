@@ -106,14 +106,35 @@ describe Y2Autoinstall::ScriptRunner do
     end
 
     context "when the script failed" do
+      let(:spec) do
+        { "feedback" => true, "feedback_type" => "error" }
+      end
+
       before do
         allow(script).to receive(:execute).and_return(false)
       end
 
-      it "reports the error" do
-        expect(Yast::Report).to receive(:Warning)
-          .with(/User script/, any_args)
-        runner.run(script)
+      context "and the feedback is disabled" do
+        let(:spec) do
+          { "feedback" => false }
+        end
+
+        it "reports the error as a warning" do
+          expect(Yast::Report).to receive(:Warning)
+            .with(/User script/, any_args)
+          runner.run(script)
+        end
+      end
+
+      context "and the feedback is enabled" do
+        let(:spec) do
+          { "feedback" => true, "feedback_type" => "message" }
+        end
+
+        it "does not report the error but the feedback" do
+          expect(Yast::Report).to_not receive(:Warning)
+          runner.run(script)
+        end
       end
 
       it "returns false" do
