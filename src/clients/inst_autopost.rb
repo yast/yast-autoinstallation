@@ -8,6 +8,8 @@
 
 require "autoinstall/entries/registry"
 require "autoinstall/importer"
+require "autoinstall/ask/runner"
+require "autoinstall/ask/stage"
 
 module Yast
   class InstAutopostClient < Client
@@ -24,7 +26,6 @@ module Yast
       Yast.import "Progress"
       Yast.import "PackageSystem"
       Yast.import "AutoinstConfig"
-      Yast.include self, "autoinstall/ask.rb"
 
       Builtins.y2debug("Profile=%1", Profile.current)
       Report.Import(Ops.get_map(Profile.current, "report", {}))
@@ -69,7 +70,9 @@ module Yast
       Progress.NextStage
       Progress.Title(_("Checking for required packages..."))
 
-      askDialog
+      Y2Autoinstall::Ask::Runner.new(
+        Yast::Profile.current, stage: Y2Autoinstall::Ask::Stage::CONT
+      ).run
       # FIXME: too late here, even though it would be the better place
       # if (Profile::current["general"]:$[] != $[])
       #     AutoinstGeneral::Import(Profile::current["general"]:$[]);

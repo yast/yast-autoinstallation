@@ -1,6 +1,8 @@
 require "autoinstall/autosetup_helpers"
 require "autoinstall/importer"
 require "y2packager/medium_type"
+require "autoinstall/ask/runner"
+require "autoinstall/ask/stage"
 
 Yast.import "AutoInstall"
 Yast.import "AutoInstallRules"
@@ -38,8 +40,6 @@ module Y2Autoinstallation
 
       def initialize
         textdomain "autoinst"
-
-        Yast.include self, "autoinstall/ask.rb"
       end
 
       def run
@@ -167,7 +167,9 @@ module Y2Autoinstallation
         loop do
           # ask-list
           Yast::AutoinstGeneral.Import(Yast::Profile.current.fetch("general", {}))
-          askDialog
+          Y2Autoinstall::Ask::Runner.new(
+            Yast::Profile.current, stage: Y2Autoinstall::Ask::Stage::INITIAL
+          ).run
 
           # Pre-Scripts
           Yast::AutoinstScripts.Import(Yast::Profile.current.fetch_as_hash("scripts"))

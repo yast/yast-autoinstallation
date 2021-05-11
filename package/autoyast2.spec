@@ -22,7 +22,7 @@
 %endif
 
 Name:           autoyast2
-Version:        4.4.3
+Version:        4.4.4
 Release:        0
 Summary:        YaST2 - Automated Installation
 License:        GPL-2.0-only
@@ -260,7 +260,6 @@ done
 %{yast_clientdir}/clone_system.rb
 
 %{yast_yncludedir}/autoinstall/xml.rb
-%{yast_yncludedir}/autoinstall/ask.rb
 
 %dir %{yast_libdir}/autoinstall
 %{yast_libdir}/autoinstall/*.rb
@@ -270,6 +269,8 @@ done
 
 %{yast_libdir}/autoinstall/widgets
 %{yast_libdir}/autoinstall/presenters
+%{yast_libdir}/autoinstall/ask
+%{yast_libdir}/autoinstall/autoinst_profile
 
 %dir %{yast_libdir}/autoinstall/clients
 %{yast_libdir}/autoinstall/clients/*.rb

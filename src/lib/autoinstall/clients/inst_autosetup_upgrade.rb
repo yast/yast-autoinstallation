@@ -42,8 +42,6 @@ module Y2Autoinstallation
       def main
         textdomain "autoinst"
 
-        Yast.include self, "autoinstall/ask.rb"
-
         Progress.New(
           _("Preparing System for Automated Installation"),
           "", # progress_title

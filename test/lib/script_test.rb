@@ -20,6 +20,7 @@
 
 require_relative "../test_helper"
 require "autoinstall/script"
+require "tmpdir"
 
 describe Y2Autoinstallation::Script do
   subject do
@@ -241,11 +242,23 @@ describe Y2Autoinstallation::ExecutedScript do
       it "runs script" do
         expect(Yast::SCR).to receive(:Execute).with(
           path(".target.bash"),
-          "/bin/sh -x /var/adm/autoinstall/scripts/test.sh  " \
+          " /bin/sh -x /var/adm/autoinstall/scripts/test.sh  " \
             "&> /var/adm/autoinstall/logs/test.sh.log"
         )
 
         subject.execute
+      end
+
+      context "when env variables are given" do
+        it "runs script" do
+          expect(Yast::SCR).to receive(:Execute).with(
+            path(".target.bash"),
+            "LOGFILE=/var/log/my\\ script.log /bin/sh -x /var/adm/autoinstall/scripts/test.sh  " \
+            "&> /var/adm/autoinstall/logs/test.sh.log"
+          )
+
+          subject.execute(LOGFILE: "/var/log/my script.log")
+        end
       end
 
       it "creates flag file that script already run" do
@@ -366,6 +379,110 @@ describe Y2Autoinstallation::InitScript do
   describe "#script_path" do
     it "returns script_path in init scripts dir" do
       expect(subject.script_path).to eq "/var/adm/autoinstall/init.d/test.sh"
+    end
+  end
+end
+
+describe Y2Autoinstallation::AskScript do
+  subject(:script) do
+    described_class.new(
+      "source"   => "echo -n 'test'",
+      "filename" => "test.sh"
+    )
+  end
+
+  describe "#execute" do
+    let(:tmp_dir) { Dir.mktmpdir }
+
+    before do
+      allow(Yast::AutoinstConfig).to receive(:tmpDir).and_return(tmp_dir)
+    end
+
+    after do
+      FileUtils.remove_entry(tmp_dir) if Dir.exist?(tmp_dir)
+    end
+
+    describe "#logs_dir" do
+      it "returns path to logs in temporary directory" do
+        expect(subject.logs_dir).to eq(File.join(tmp_dir, "ask-scripts", "logs"))
+      end
+    end
+
+    describe "#script_path" do
+      it "returns path to script in temporary directory" do
+        expect(subject.script_path).to eq(File.join(tmp_dir, "ask-scripts", "test.sh"))
+      end
+    end
+  end
+end
+
+describe Y2Autoinstallation::AskDefaultValueScript do
+  subject(:script) do
+    described_class.new(
+      "source"   => "echo -n 'test'",
+      "filename" => "test.sh"
+    )
+  end
+
+  describe "#execute" do
+    let(:tmp_dir) { Dir.mktmpdir }
+
+    before do
+      allow(Yast::AutoinstConfig).to receive(:tmpDir).and_return(tmp_dir)
+    end
+
+    after do
+      FileUtils.remove_entry(tmp_dir) if Dir.exist?(tmp_dir)
+    end
+
+    describe "#script_path" do
+      it "returns path to script in temporary directory" do
+        expect(subject.script_path).to eq(
+          File.join(tmp_dir, "ask-default-value-scripts", "test.sh")
+        )
+      end
+    end
+
+    describe "#execute" do
+      context "when it runs successfully" do
+        it "returns true" do
+          script.create_script_file
+          expect(script.execute).to eq(true)
+        end
+      end
+
+      context "when it failed" do
+        subject(:script) do
+          described_class.new(
+            "source"   => "exit 1",
+            "filename" => "test.sh"
+          )
+        end
+
+        it "returns false" do
+          script.create_script_file
+          expect(script.execute).to eq(false)
+        end
+      end
+    end
+
+    describe "#stdout" do
+      context "when the script has not been executed" do
+        it "returns nil" do
+          expect(script.stdout).to be_nil
+        end
+      end
+
+      context "when the script has been successfully executed" do
+        before do
+          script.create_script_file
+          script.execute
+        end
+
+        it "returns nil" do
+          expect(script.stdout).to eq("test")
+        end
+      end
     end
   end
 end

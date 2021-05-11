@@ -4,6 +4,7 @@ require_relative "test_helper"
 require "installation/autoinst_issues"
 require "autoinstall/dialogs/question"
 require "installation/autoinst_profile/section_with_attributes"
+require "tmpdir"
 
 Yast.import "AutoInstall"
 Yast.import "UI"
@@ -96,6 +97,41 @@ describe "Yast::AutoInstall" do
           .and_return(:ok)
         expect(subject.valid_imported_values).to eq(true)
       end
+    end
+  end
+
+  describe "#Finish" do
+    let(:destdir) { Dir.mktmpdir }
+    let(:logs_dir) { "/logs" }
+    let(:scripts_dir) { "/scripts" }
+
+    before do
+      allow(Yast::AutoinstConfig).to receive(:tmpDir)
+        .and_return(FIXTURES_PATH.join("instsys", "tmp").to_s)
+      allow(Yast::AutoinstConfig).to receive(:logs_dir).and_return(logs_dir)
+      allow(Yast::AutoinstConfig).to receive(:scripts_dir).and_return(scripts_dir)
+      FileUtils.mkdir(File.join(destdir, logs_dir))
+      FileUtils.mkdir(File.join(destdir, scripts_dir))
+      FileUtils.mkdir_p(File.join(destdir, "var", "adm", "autoinstall", "cache"))
+    end
+
+    after do
+      FileUtils.remove_entry(destdir) if Dir.exist?(destdir)
+    end
+
+    it "copies scripts files" do
+      subject.Finish(destdir)
+
+      expect(File).to exist(File.join(destdir, "scripts", "ask.sh"))
+      expect(File).to exist(File.join(destdir, "scripts", "ask-value.sh"))
+      expect(File).to exist(File.join(destdir, "scripts", "pre.sh"))
+
+      expect(File).to exist(File.join(destdir, "logs", "ask.sh.log"))
+      expect(File).to exist(File.join(destdir, "logs", "pre.sh.log"))
+
+      expect(File).to exist(
+        File.join(destdir, "var", "adm", "autoinstall", "cache", "installedSystem.xml")
+      )
     end
   end
 end

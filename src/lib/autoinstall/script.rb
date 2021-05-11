@@ -268,9 +268,12 @@ module Y2Autoinstallation
       "perl"   => "/usr/bin/perl",
       "python" => "/usr/bin/python"
     }.freeze
+
     # Runs the script
+    #
+    # @param env [Hash] hash representing a set of environment variables
     # @return [Boolean,nil] if exit code is zero; nil if the script was not executed
-    def execute
+    def execute(env = {})
       return if already_run? && !rerun
 
       # TODO: maybe own class for interpreters?
@@ -278,10 +281,11 @@ module Y2Autoinstallation
       debug_flag = debug ? (DEBUG_FLAG_MAP[interpreter] || "") : ""
       params_s = params.join(" ") # shell escaping is up to user, see documentation
 
+      cmd_line = "#{env_vars(env)} #{cmd} #{debug_flag} #{script_path.shellescape} " \
+        "#{params_s} &> #{log_path.shellescape}"
+
       bash_path = Yast::Path.new(".target.bash")
-      res = Yast::SCR.Execute(bash_path,
-        "#{cmd} #{debug_flag} #{script_path.shellescape} #{params_s} " \
-          "&> #{log_path.shellescape}")
+      res = Yast::SCR.Execute(bash_path, cmd_line)
       Yast::SCR.Execute(bash_path, "/bin/touch #{run_file.shellescape}")
 
       res == 0
@@ -303,6 +307,14 @@ module Y2Autoinstallation
     # flag file if script was run
     def run_file
       script_path + "-run"
+    end
+
+    # Returns a set of environment variables into a string to be used when calling the script
+    #
+    # @param env [Hash] Environment variables
+    # @return [String] String in the form "val1=var1 val2=var2"
+    def env_vars(env)
+      env.map { |k, v| "#{k}=#{v.to_s.shellescape}" }.join(" ")
     end
   end
 
@@ -408,6 +420,65 @@ module Y2Autoinstallation
     end
   end
 
-  # List of known script
+  # Scripts that are used when processing the <ask-list> section
+  class AskScript < Y2Autoinstallation::ExecutedScript
+    attr_reader :environment, :rerun_on_error
+
+    def self.type
+      "ask-scripts"
+    end
+
+    # Constructor
+    #
+    # @note The 'rerun' key is ignored.
+    def initialize(hash)
+      super
+      @environment = !!hash["environment"]
+      @rerun_on_error = !!hash["rerun_on_error"]
+      @rerun = true
+    end
+
+    def to_hash
+      super.merge("environment" => environment)
+    end
+
+    # @see Y2Autoinstallation::Script
+    def logs_dir
+      File.join(Yast::AutoinstConfig.tmpDir, self.class.type, "logs")
+    end
+
+    # Overrides script path as it is expected to live in tmpdir from which script is copied
+    def script_path
+      File.join(Yast::AutoinstConfig.tmpDir, self.class.type, script_name)
+    end
+  end
+
+  # Scripts that are used when processing the <ask-list> section
+  class AskDefaultValueScript < Y2Autoinstallation::ExecutedScript
+    # @return [String,nil] Standard output from the last execution
+    attr_reader :stdout
+    def self.type
+      "ask-default-value-scripts"
+    end
+
+    # Overrides script path as it is expected to live in tmpdir from which script is copied
+    def script_path
+      File.join(Yast::AutoinstConfig.tmpDir, self.class.type, script_name)
+    end
+
+    # @return [String,nil] Script output or nil if the execution failed
+    # @see Y2Autoinstallation::ExecutedScript
+    def execute(_env = {})
+      cmd = INTERPRETER_MAP[interpreter] || interpreter
+
+      @stdout = Yast::Execute.on_target!(cmd, script_path.shellescape, stdout: :capture)
+      true
+    rescue Cheetah::ExecutionFailed
+      false
+    end
+  end
+
+  # List of known script. It does not include Ask scripts, as they are handled in a different
+  # way.
   SCRIPT_TYPES = [PreScript, PostScript, InitScript, ChrootScript, PostPartitioningScript].freeze
 end
