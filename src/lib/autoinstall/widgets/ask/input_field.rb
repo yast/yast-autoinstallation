@@ -37,6 +37,8 @@ module Y2Autoinstall
         end
 
         # @macro seeAbstractWidget
+        # This options are needed to notify the timer when the value changes
+        # @see Y2Autoinstall::Widgets::Ask::Dialog::TimeoutWrapper
         def opt
           [:hstretch, :notify]
         end

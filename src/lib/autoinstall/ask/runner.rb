@@ -120,7 +120,15 @@ module Y2Autoinstall
       #
       # @return [Integer,nil] Next dialog ID
       def find_next_dialog_index
-        return unless File.file?(DIALOG_FILE) && File.size(DIALOG_FILE) <= MAX_DIALOG_FILE_SIZE
+        return unless File.exist?(DIALOG_FILE)
+
+        is_file = File.file?(DIALOG_FILE)
+        file_size = File.size(DIALOG_FILE)
+        if !is_file || file_size > MAX_DIALOG_FILE_SIZE
+          log.error "Ignoring #{DIALOG_FILE} because it is not a file (#{is_file}) or " \
+            "it is too big (#{file_size}."
+          return
+        end
 
         next_dialog = File.read(DIALOG_FILE)
         FileUtils.rm(DIALOG_FILE)

@@ -86,6 +86,8 @@ module Y2Autoinstall
           [true, "true"].include?(val)
         when "symbol"
           val.to_sym
+        when "static_text"
+          nil
         else
           val.to_s
         end

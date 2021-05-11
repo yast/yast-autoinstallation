@@ -83,6 +83,15 @@ describe Y2Autoinstall::Ask::Question do
       end
     end
 
+    context "when the question's type is 'static_text'" do
+      let(:type) { "static_text" }
+
+      it "does not set the value" do
+        question.value = "1"
+        expect(question.value).to be_nil
+      end
+    end
+
     context "when the question's type is not set" do
       subject(:question) do
         described_class.new("Question 1")
