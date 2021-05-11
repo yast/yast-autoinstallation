@@ -89,8 +89,15 @@ module Y2Autoinstallation
     def suse_register
       return true unless registration_module_available? # do nothing
 
+      register_section = Yast::Profile.current.fetch_as_hash(REGISTER_SECTION, nil)
+      disabled_registration = (register_section || {})["do_registration"] == false
+
+      # remove the registration section to not run it again in the 2nd when it is explicitly
+      # disabled (no autoupgrade detection is needed in this case)
+      Yast::Profile.remove_sections(REGISTER_SECTION) if disabled_registration
+
       # autoupgrade detects itself if system is registered and if needed do migration via scc
-      if Yast::Profile.current[REGISTER_SECTION] || Yast::Mode.autoupgrade
+      if !disabled_registration && (register_section || Yast::Mode.autoupgrade)
         Yast::WFM.CallFunction(
           "scc_auto",
           ["Import", Yast::Profile.current[REGISTER_SECTION]]
@@ -111,7 +118,7 @@ module Y2Autoinstallation
       true
     end
 
-    # Convenienve method to check whether a particular client should be run to
+    # Convenience method to check whether a particular client should be run to
     # be configured manually during the autoinstallation according to the
     # semi-automatic section
     #

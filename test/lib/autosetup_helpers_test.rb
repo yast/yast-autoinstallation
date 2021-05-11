@@ -61,8 +61,8 @@ describe Y2Autoinstallation::AutosetupHelpers do
       allow_any_instance_of(Y2Autoinstallation::AutosetupHelpers).to receive(
         :registration_module_available?
       ).and_return(reg_module_available)
-      allow(Yast::Profile).to receive(:current).and_return(profile_content)
       allow(Yast::Profile).to receive(:remove_sections).with("suse_register")
+      Yast::Profile.Import(profile_content)
     end
 
     context "yast2-register is not available" do
@@ -86,47 +86,57 @@ describe Y2Autoinstallation::AutosetupHelpers do
       end
 
       context "suse_register tag is defined in AY file" do
-        let(:profile_content) do
-          Yast::ProfileHash.new("suse_register" => { "reg_code" => "12345" })
+        context "and the registration is disabled explicitly" do
+          let(:profile_content) { { "suse_register" => { "do_registration" => false } } }
+
+          it "does not call any client and returns true." do
+            # no scc_auto call at all
+            expect(Yast::WFM).not_to receive(:CallFunction)
+            expect(client.suse_register).to eq(true)
+          end
         end
 
-        before do
-          allow(Yast::WFM).to receive(:CallFunction).with("inst_download_release_notes")
-            .and_return(true)
-          allow(Yast::WFM).to receive(:CallFunction).with("scc_auto", anything).and_return(true)
-          Yast::Profile.Import(profile_content)
-        end
+        context "and the registration is not disabled explicitly" do
+          let(:profile_content) { { "suse_register" => { "reg_code" => "12345" } } }
 
-        it "imports the registration settings from the profile" do
-          expect(Yast::WFM).to receive(:CallFunction).with("scc_auto",
-            ["Import", profile_content["suse_register"]]).and_return(true)
-          expect(Yast::WFM).to receive(:CallFunction).with("scc_auto", ["Write"])
-            .and_return(true)
-          client.suse_register
-        end
-
-        it "downloads release notes" do
-          expect(Yast::WFM).to receive(:CallFunction).with("inst_download_release_notes")
-          client.suse_register
-        end
-
-        # bsc#1153293
-        it "removes the registration section to not run it again in the 2nd stage" do
-          expect(Yast::Profile).to receive(:remove_sections).with("suse_register")
-          client.suse_register
-        end
-
-        it "returns true" do
-          expect(client.suse_register).to eq(true)
-        end
-
-        context "when something goes wrong" do
           before do
-            allow(Yast::WFM).to receive(:CallFunction).with("scc_auto", ["Write"]).and_return(false)
+            allow(Yast::WFM).to receive(:CallFunction).with("inst_download_release_notes")
+              .and_return(true)
+            allow(Yast::WFM).to receive(:CallFunction).with("scc_auto", anything).and_return(true)
           end
 
-          it "returns false" do
-            expect(client.suse_register).to eq(false)
+          it "imports the registration settings from the profile" do
+            expect(Yast::WFM).to receive(:CallFunction).with("scc_auto",
+              ["Import", profile_content["suse_register"]]).and_return(true)
+            expect(Yast::WFM).to receive(:CallFunction).with("scc_auto", ["Write"])
+              .and_return(true)
+            client.suse_register
+          end
+
+          it "downloads release notes" do
+            expect(Yast::WFM).to receive(:CallFunction).with("inst_download_release_notes")
+            client.suse_register
+          end
+
+          # bsc#1153293
+          it "removes the registration section to not run it again in the 2nd stage" do
+            expect(Yast::Profile).to receive(:remove_sections).with("suse_register")
+            client.suse_register
+          end
+
+          it "returns true" do
+            expect(client.suse_register).to eq(true)
+          end
+
+          context "when something goes wrong" do
+            before do
+              allow(Yast::WFM).to receive(:CallFunction).with("scc_auto", ["Write"])
+                .and_return(false)
+            end
+
+            it "returns false" do
+              expect(client.suse_register).to eq(false)
+            end
           end
         end
       end
