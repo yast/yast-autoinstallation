@@ -98,20 +98,40 @@ import_gpg_key = element import_gpg_key { BOOLEAN }
 ask_script = element script {
     MAP,
     (
-      element filename { STRING }? &
-      element source   { STRING }? &
-      element debug    { BOOLEAN }? &
-      element feedback { BOOLEAN }? &
-      element environment { BOOLEAN }? &
+      element filename       { STRING }? &
+      element interpreter    { STRING }? &
+      element location       { STRING }? &
+      element source         { STRING }? &
+      element debug          { BOOLEAN }? &
+      element feedback       { BOOLEAN }? &
+      element feedback_type  { STRING }? &
+      ask-param-list? &
+      element rerun          { BOOLEAN }? &
+      element notification   { STRING }? &
+      element environment    { BOOLEAN }? &
       element rerun_on_error { BOOLEAN }?
     )
 }
+
 ask_default_value_script = element default_value_script {
     MAP,
     (
-      element source { STRING } &
-      element interpreter { STRING }?
+      element filename       { STRING }? &
+      element interpreter    { STRING }? &
+      element location       { STRING }? &
+      element source         { STRING }? &
+      element debug          { BOOLEAN }? &
+      element feedback       { BOOLEAN }? &
+      element feedback_type  { STRING }? &
+      ask-param-list? &
+      element rerun          { BOOLEAN }? &
+      element notification   { STRING }?
     )
+}
+
+ask-param-list = element param-list {
+  LIST,
+  element param { STRING }*
 }
 
 confirm =
