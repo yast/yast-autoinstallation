@@ -117,5 +117,18 @@ describe Y2Autoinstallation::Clients::InstAutosetupUpgrade do
 
       expect(Yast::AutoinstConfig.Confirm).to eq true
     end
+
+    context "when a package is proposed for installation" do
+      before do
+        allow(Yast::WFM).to receive(:CallFunction).with("bootloader_auto", any_args) do
+          Yast::PackagesProposal.AddResolvables("yast2-bootloader", :package, ["shim"])
+        end
+      end
+
+      it "install those packages" do
+        expect(Yast::Pkg).to receive(:ResolvableInstall).with("shim", :package)
+        subject.main
+      end
+    end
   end
 end
