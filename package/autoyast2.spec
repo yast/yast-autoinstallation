@@ -134,6 +134,8 @@ Requires:       yast2-xml
 # RPM dependencies in Pkg.Resolvables
 Requires:       yast2-pkg-bindings >= 4.3.0
 Requires:       yast2-ruby-bindings >= 1.0.0
+# bsc#1185095
+Recommends:     (icewm if libyui-qt)
 
 Provides:       yast2-trans-autoinst
 Obsoletes:      yast2-trans-autoinst
