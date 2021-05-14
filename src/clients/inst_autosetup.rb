@@ -77,6 +77,7 @@ module Yast
         _("Configure Systemd Default Target"),
         _("Configure users and groups"),
         _("Import SSH keys/settings"),
+        _("Set up user defined configuration files"),
         _("Confirm License")
       ]
 
@@ -91,6 +92,7 @@ module Yast
         _("Configuring Systemd Default Target..."),
         _("Importing users and groups configuration..."),
         _("Importing SSH keys/settings..."),
+        _("Setting up user defined configuration files..."),
         _("Confirming License...")
       ]
 
@@ -415,6 +417,12 @@ module Yast
       end
 
       #
+      # Import profile settings for creating configuration files.
+      #
+      Progress.NextStage
+      autosetup_files
+
+      #
       # Checking Base Product licenses
       #
       Progress.NextStage
@@ -436,6 +444,17 @@ module Yast
       return :finish if @ret == :next
 
       @ret
+    end
+
+    # Import Files section from profile
+    def autosetup_files
+      files_config = Profile.current["files"] || []
+
+      # Do not start it in the second instalation stage again
+      # Writing will be called in inst_finish.
+      Profile.remove_sections("files")
+
+      Call.Function("files_auto", ["Import", files_config])
     end
 
     # Import Users configuration from profile
