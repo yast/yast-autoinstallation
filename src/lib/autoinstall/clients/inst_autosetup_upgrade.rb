@@ -18,6 +18,7 @@ Yast.import "Keyboard"
 Yast.import "Language"
 Yast.import "PackageCallbacks"
 Yast.import "Packages"
+Yast.import "PackagesProposal"
 Yast.import "Pkg"
 Yast.import "Popup"
 Yast.import "Product"
@@ -167,12 +168,6 @@ module Y2Autoinstallation
         Progress.NextStage
         return :abort unless suse_register
 
-        software_upgrade
-
-        return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
-
-        Progress.NextStage
-
         # Bootloader
         # FIXME: De-duplicate with inst_autosetup
         # Bootloader import / proposal is necessary to match changes done for manual
@@ -194,6 +189,12 @@ module Y2Autoinstallation
           "bootloader_auto",
           ["Import", Ops.get_map(Profile.current, "bootloader", {})]
         )
+
+        Progress.NextStage
+
+        return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
+
+        software_upgrade
 
         # SLES only, the only way to have kdump configured immediately after upgrade
         if Builtins.haskey(Profile.current, "kdump")
@@ -281,8 +282,8 @@ module Y2Autoinstallation
           _("Configure General Settings "),
           _("Set up language"),
           _("Registration"),
-          _("Configure Software selections"),
           _("Configure Bootloader"),
+          _("Configure Software selections"),
           _("Confirm License")
         ]
       end
@@ -292,8 +293,8 @@ module Y2Autoinstallation
           _("Configuring general settings..."),
           _("Setting up language..."),
           _("Registering the system..."),
-          _("Configuring Software selections..."),
           _("Configuring Bootloader..."),
+          _("Configuring Software selections..."),
           _("Confirming License...")
         ]
       end
@@ -365,8 +366,10 @@ module Y2Autoinstallation
         Builtins.foreach(sys_patterns) do |pat|
           Pkg.ResolvableInstall(pat, :pattern)
         end
+
         # this is new, (de)select stuff from the profile
         packages = Profile.current["software"]&.public_send(:[], "packages") || []
+        packages += Yast::PackagesProposal.GetAllResolvables(:package)
         patterns = Profile.current["software"]&.public_send(:[], "patterns") || []
         products = Profile.current["software"]&.public_send(:[], "products") || []
         remove_packages = Profile.current["software"]&.public_send(:[], "remove-packages") || []
