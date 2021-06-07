@@ -21,6 +21,28 @@ require "yast"
 require "autoinstall/entries/registry"
 
 module Y2Autoinstallation
+  # This class holds the result of importing an entry
+  #
+  # @see Importer#import_entry
+  class ImportResult
+    # @return [Array<String>] List of imported sections
+    attr_reader :sections
+
+    # @param sections [Array<String>] List of imported sections
+    # @param result [Boolean,nil] Result of the import process
+    def initialize(sections, result)
+      @sections = sections
+      @result = result
+    end
+
+    # Whether the import process was successful
+    #
+    # This method considers `false` as the only failing value.
+    def success?
+      @result != false
+    end
+  end
+
   # Worker class that handles importing of profile section using info from {Entries::Description}.
   # Its ability is beside calling import on auto client also detecting unhandled
   # or obsolete sections.
@@ -85,7 +107,7 @@ module Y2Autoinstallation
 
     # Import just sections for given entry
     # @param entry [String | Entries::Description] to import
-    # @return [Array<String>] sections that are imported
+    # @return [ImportResult] Import result
     def import_entry(entry)
       res = []
 
@@ -103,7 +125,7 @@ module Y2Autoinstallation
             profile[description.managed_keys.first]
           else
             key = description.aliases.find { |a| profile.key?(a) }
-            return res unless key
+            return ImportResult.new(res, nil) unless key
 
             res << key
             profile[key]
@@ -114,18 +136,18 @@ module Y2Autoinstallation
           selection
         end
 
-        Yast::WFM.CallFunction(description.client_name, ["Import", data]) if data
+        success = Yast::WFM.CallFunction(description.client_name, ["Import", data]) if data
       else
         raise "Unknown entry #{entry}" unless Yast::WFM.ClientExists("#{entry}_auto")
 
         data = profile[entry]
         if data
-          Yast::WFM.CallFunction("#{entry}_auto", ["Import", data])
+          success = Yast::WFM.CallFunction("#{entry}_auto", ["Import", data])
           res << entry
         end
       end
 
-      res
+      ImportResult.new(res, success)
     end
 
   private

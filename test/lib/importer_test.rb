@@ -121,8 +121,10 @@ describe Y2Autoinstallation::Importer do
       }
     end
 
+    let(:success?) { true }
+
     before do
-      allow(Yast::WFM).to receive(:CallFunction)
+      allow(Yast::WFM).to receive(:CallFunction).and_return(success?)
     end
 
     it "accepts string or Description parameter" do
@@ -154,8 +156,34 @@ describe Y2Autoinstallation::Importer do
       subject.import_entry("users")
     end
 
-    it "returns all imported keys" do
-      expect(subject.import_entry("users")).to match_array(["users", "groups"])
+    it "returns a result containing all imported keys" do
+      result = subject.import_entry("users")
+      expect(result.sections).to match_array(["users", "groups"])
+    end
+
+    context "when the call to the auto client works" do
+      it "returns a successful result" do
+        result = subject.import_entry("bootloader")
+        expect(result).to be_success
+      end
+    end
+
+    context "when the call to the auto client returns nothing" do
+      let(:success?) { nil }
+
+      it "returns a successful result" do
+        result = subject.import_entry("bootloader")
+        expect(result).to be_success
+      end
+    end
+
+    context "when the call to the auto client fails" do
+      let(:success?)  { false }
+
+      it "the contains a failing result" do
+        result = subject.import_entry("bootloader")
+        expect(result).to_not be_success
+      end
     end
   end
 end
