@@ -135,7 +135,7 @@ module Yast
         result = importer.import_entry(description)
         log.info "Imported #{result.inspect}"
 
-        Call.Function(description.client_name, ["Write"]) unless result.empty?
+        Call.Function(description.client_name, ["Write"]) unless result.sections.empty?
 
         processWait(description.module_name, "post-modules")
 

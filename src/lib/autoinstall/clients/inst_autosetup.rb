@@ -343,7 +343,7 @@ module Y2Autoinstallation
         # Import users configuration from the profile
         #
         Progress.NextStage
-        autosetup_users
+        return :abort unless autosetup_users
 
         #
         # Import profile settings for copying SSH keys from a
@@ -363,7 +363,7 @@ module Y2Autoinstallation
         # Import profile settings for creating configuration files.
         #
         Progress.NextStage
-        autosetup_files
+        return :abort unless autosetup_files
 
         #
         # Checking Base Product licenses
@@ -396,24 +396,30 @@ module Y2Autoinstallation
       end
 
       # Import Files section from profile
+      #
+      # @return [Boolean] Determine whether the import was successful
       def autosetup_files
-        importer.import_entry("files").each do |e|
-          Profile.remove_sections(e)
-        end
+        result = importer.import_entry("files")
+        result.sections.each { |e| Profile.remove_sections(e) }
+        result.success?
       end
 
       # Import Users configuration from profile
+      #
+      # @return [Boolean] Determine whether the import was successful
       def autosetup_users
-        importer.import_entry("users").each do |e|
-          Profile.remove_sections(e)
-        end
+        result = importer.import_entry("users")
+        result.sections.each { |e| Profile.remove_sections(e) }
+        result.success?
       end
 
       # Import security settings from profile
+      #
+      # @return [Boolean] Determine whether the import was successful
       def autosetup_security
-        importer.import_entry("security").each do |e|
-          Profile.remove_sections(e)
-        end
+        result = importer.import_entry("security")
+        result.sections.each { |e| Profile.remove_sections(e) }
+        result.success?
       end
 
       # Add YaST2 packages dependencies

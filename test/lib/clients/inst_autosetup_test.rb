@@ -28,12 +28,15 @@ describe Y2Autoinstallation::Clients::InstAutosetup do
 
     let(:cmdline) { "" }
     let(:s390_arch) { false }
-    let(:profile) do
+    let(:profile_content) do
       {
         "bootloader" => { "boot" => "/dev/sda" },
         "software"   => { "packages" => ["yast2"] }
       }
     end
+    let(:profile) { Yast::ProfileHash.new(profile_content) }
+
+    let(:importer) { Y2Autoinstallation::Importer.new(profile) }
 
     before do
       allow(Yast::AutoinstGeneral).to receive(:Write)
@@ -44,6 +47,7 @@ describe Y2Autoinstallation::Clients::InstAutosetup do
       allow(Yast::AutoinstStorage).to receive(:Write).and_return(true)
 
       allow(Yast::WFM).to receive(:CallFunction).with(/_auto/, Array).and_return(true)
+      allow(Yast::WFM).to receive(:ClientExists).with(/_auto/).and_return(true)
       allow(Yast::Popup).to receive(:ConfirmAbort).and_return(true)
 
       allow(Yast::SCR).to receive(:Read)
@@ -55,10 +59,12 @@ describe Y2Autoinstallation::Clients::InstAutosetup do
       allow(subject).to receive(:autosetup_network)
       allow(subject).to receive(:autosetup_country)
       allow(subject).to receive(:autosetup_security)
-      allow(subject).to receive(:autosetup_users)
       allow(subject).to receive(:probe_storage)
       allow(Yast::AutoinstSoftware).to receive(:Write).and_return(true)
       allow(Yast::ServicesManager).to receive(:import)
+      allow(Y2Autoinstallation::Importer).to receive(:new).and_return(importer)
+      allow(importer).to receive(:import_entry).and_call_original
+      allow(Yast::ProductControl).to receive(:RunFrom).and_return(:next)
       Yast::Profile.current = Yast::ProfileHash.new(profile)
     end
 
@@ -68,8 +74,20 @@ describe Y2Autoinstallation::Clients::InstAutosetup do
     end
 
     it "sets up additional configuration files" do
-      expect(subject).to receive(:autosetup_files)
+      expect(importer).to receive(:import_entry).with("files")
+        .and_return(Y2Autoinstallation::ImportResult.new(["files"], true))
       subject.main
+    end
+
+    context "when setting up additional configuration files fails" do
+      before do
+        allow(importer).to receive(:import_entry).with("files")
+          .and_return(Y2Autoinstallation::ImportResult.new(["files"], false))
+      end
+
+      it "returns :abort" do
+        expect(subject.main).to eq(:abort)
+      end
     end
 
     it "sets up the country configuration" do
@@ -192,8 +210,20 @@ describe Y2Autoinstallation::Clients::InstAutosetup do
     end
 
     it "sets up the users" do
-      expect(subject).to receive(:autosetup_users)
+      expect(importer).to receive(:import_entry).with("users")
+        .and_return(Y2Autoinstallation::ImportResult.new(["users"], true))
       subject.main
+    end
+
+    context "when setting up users fails" do
+      before do
+        allow(importer).to receive(:import_entry).with("users")
+          .and_return(Y2Autoinstallation::ImportResult.new(["users"], false))
+      end
+
+      it "returns :abort" do
+        expect(subject.main).to eq(:abort)
+      end
     end
 
     context "when ssh import settings are present in the profile" do
@@ -204,7 +234,7 @@ describe Y2Autoinstallation::Clients::InstAutosetup do
       let(:import_result) { true }
 
       before do
-        allow(Yast::WFM).to receive(:CallFunction).with("ssh_import", Array)
+        allow(Yast::WFM).to receive(:CallFunction).with("ssh_import_auto", any_args)
           .and_return(import_result)
       end
 
