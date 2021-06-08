@@ -307,6 +307,7 @@ describe Y2Autoinstallation::AutosetupHelpers do
       allow(Yast::WFM).to receive(:CallFunction).with("lan_auto", anything)
       allow(Yast::WFM).to receive(:CallFunction).with("inst_lan", anything)
       allow(Yast::WFM).to receive(:CallFunction).with("host_auto", anything)
+      allow(Yast::WFM).to receive(:CallFunction).with("proxy_auto", anything)
     end
 
     context "when a networking section is defined in the profile" do

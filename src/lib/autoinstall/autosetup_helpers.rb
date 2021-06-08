@@ -142,6 +142,10 @@ module Y2Autoinstallation
         Yast::WFM.CallFunction("host_auto", ["Import", Yast::Profile.current["host"]])
       end
 
+      if Yast::Profile.current["proxy"]
+        Yast::WFM.CallFunction("proxy_auto", ["Import", Yast::Profile.current["proxy"]])
+      end
+
       if semi_auto?("networking")
         log.info("Networking manual setup before proposal")
         Yast::WFM.CallFunction("inst_lan", ["enable_next" => true])
@@ -149,10 +153,11 @@ module Y2Autoinstallation
       end
 
       log.info("Networking setup before the proposal: #{network_before_proposal?}")
+      Yast::WFM.CallFunction("proxy_auto", ["Write"]) if network_before_proposal?
       Yast::WFM.CallFunction("lan_auto", ["Write"]) if network_before_proposal?
 
       # Clean-up the profile
-      Yast::Profile.remove_sections(["networking", "host"])
+      Yast::Profile.remove_sections(["networking", "host", "proxy"])
 
       @network_configured = true
     end
