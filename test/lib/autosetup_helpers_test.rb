@@ -307,6 +307,7 @@ describe Y2Autoinstallation::AutosetupHelpers do
       allow(Yast::WFM).to receive(:CallFunction).with("lan_auto", anything)
       allow(Yast::WFM).to receive(:CallFunction).with("inst_lan", anything)
       allow(Yast::WFM).to receive(:CallFunction).with("host_auto", anything)
+      allow(Yast::WFM).to receive(:CallFunction).with("proxy_auto", anything)
     end
 
     context "when a networking section is defined in the profile" do
@@ -380,6 +381,33 @@ describe Y2Autoinstallation::AutosetupHelpers do
         expect(Yast::WFM).to receive(:CallFunction).with("lan_auto", ["Import", {}])
 
         client.autosetup_network
+      end
+    end
+
+    context "when proxy configuration is given" do
+      let(:proxy_section) { { "enabled" => true, "http_proxy" => "http://proxy:3128" } }
+      let(:profile) { { "proxy" => proxy_section } }
+
+      it "imports the proxy configuration from the profile" do
+        expect(Yast::WFM).to receive(:CallFunction).with("proxy_auto", ["Import", proxy_section])
+
+        client.autosetup_network
+      end
+
+      it "removes the host section from the profile after imported" do
+        client.autosetup_network
+
+        expect(Yast::Profile.current.keys).to_not include("proxy")
+      end
+
+      context "and the networking is configured to setup before the proposal" do
+        let(:profile) { networking_section.merge("proxy" => proxy_section) }
+
+        it "writes the proxy configuration to the ins-sys" do
+          expect(Yast::WFM).to receive(:CallFunction).with("proxy_auto", ["Write"])
+
+          client.autosetup_network
+        end
       end
     end
   end
