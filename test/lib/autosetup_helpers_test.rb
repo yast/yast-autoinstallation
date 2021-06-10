@@ -401,7 +401,7 @@ describe Y2Autoinstallation::AutosetupHelpers do
       end
 
       context "and the networking is configured to setup before the proposal" do
-        let(:profile) { networking_section.merge(proxy_section) }
+        let(:profile) { networking_section.merge("proxy" => proxy_section) }
 
         it "writes the proxy configuration to the ins-sys" do
           expect(Yast::WFM).to receive(:CallFunction).with("proxy_auto", ["Write"])
