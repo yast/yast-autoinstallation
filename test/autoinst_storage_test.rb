@@ -291,5 +291,14 @@ describe Yast::AutoinstStorage do
         subject.import_general_settings(profile)
       end
     end
+
+    context "when settings are not a hash" do
+      let(:profile) { "" }
+
+      it "does not import the settings" do
+        subject.import_general_settings(profile)
+        expect(subject.general_settings).to be_a(Hash)
+      end
+    end
   end
 end
