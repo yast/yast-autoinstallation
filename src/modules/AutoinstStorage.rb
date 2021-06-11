@@ -74,7 +74,7 @@ module Yast
     #
     # @param settings [Hash] general/storage section settings
     def import_general_settings(settings)
-      return if settings.nil?
+      return unless settings.is_a?(Hash)
 
       self.general_settings = settings.clone
 
