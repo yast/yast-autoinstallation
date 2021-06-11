@@ -11,6 +11,8 @@ require "autoinstall/dialogs/question"
 require "installation/autoinst_issues/issues_presenter"
 require "autoinstall/partitioning_preprocessor"
 
+Yast.import "Profile"
+
 module Yast
   class AutoinstStorageClass < Module
     include Yast::Logger
@@ -42,7 +44,7 @@ module Yast
       @fstab = {}
 
       # general/storage settings
-      self.general_settings = {}
+      self.general_settings = Yast::ProfileHash.new
     end
 
     # Get all the configuration from a map.
@@ -74,9 +76,9 @@ module Yast
     #
     # @param settings [Hash] general/storage section settings
     def import_general_settings(settings)
-      return if settings.nil?
+      return unless settings.is_a?(Hash)
 
-      self.general_settings = settings.clone
+      self.general_settings = Yast::ProfileHash.new(settings.clone)
 
       # Override product settings from control file
       @proposal_settings = proposal_settings_from_profile(settings["proposal"])
