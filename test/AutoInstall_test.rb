@@ -106,8 +106,10 @@ describe "Yast::AutoInstall" do
     let(:scripts_dir) { "/scripts" }
 
     before do
+      allow(Yast::AutoinstConfig).to receive(:profile_path)
+        .and_return(FIXTURES_PATH.join("instsys", "tmp", "profile", "autoinst.xml").to_s)
       allow(Yast::AutoinstConfig).to receive(:tmpDir)
-        .and_return(FIXTURES_PATH.join("instsys", "tmp").to_s)
+        .and_return(FIXTURES_PATH.join("instsys", "tmp", "YaST2").to_s)
       allow(Yast::AutoinstConfig).to receive(:logs_dir).and_return(logs_dir)
       allow(Yast::AutoinstConfig).to receive(:scripts_dir).and_return(scripts_dir)
       FileUtils.mkdir(File.join(destdir, logs_dir))

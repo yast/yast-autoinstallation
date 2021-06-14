@@ -237,7 +237,7 @@ module Yast
         path(".target.bash"),
         Builtins.sformat(
           "/bin/cp %1 %2%3",
-          "#{AutoinstConfig.tmpDir}/profile/autoinst.xml",
+          AutoinstConfig.profile_path,
           destdir,
           AutoinstConfig.xml_file
         )
