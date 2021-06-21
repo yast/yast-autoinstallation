@@ -25,7 +25,11 @@ general = element general {
         element proposal { text }*
     }? &
     element storage {
-        element start_multipath { BOOLEAN }?
+        MAP,
+        (
+          element start_multipath { BOOLEAN }? &
+          storage-proposal?
+        )
     }? &
     element wait {
         element pre-modules {
@@ -59,6 +63,19 @@ general = element general {
     }? &
     cio_ignore?
 }
+
+storage-proposal = element proposal {
+    MAP,
+    (
+      element lvm                 { BOOLEAN }? &
+      element resize_windows      { BOOLEAN }? &
+      element windows_delete_mode { SYMBOL }? &
+      element linux_delete_mode   { SYMBOL }? &
+      element other_delete_mode   { SYMBOL }? &
+      element encyrption_password { STRING }?
+    )
+}
+
 ask-list = element ask-list { LIST, ask* }
 ask = element ask { ask_question? & ask_default? & ask_help? & ask_title? & ask_type? & ask_password? & ask_path? & ask_pathlist? & ask_stage? & ask_selection? & ask_file? & ask_dialog? & ask_element? & ask_width? & ask_height? & ask_frametitle? & ask_script? & ask_timeout? & ask_ok_label? & ask_back_label? & ask_default_value_script? }
 ask_question = element question { text }
