@@ -24,7 +24,7 @@ describe Y2Autoinstallation::Clients::ScriptsAuto do
   let(:mod) { Yast::AutoinstScripts }
   describe "#import" do
     it "imports its param" do
-      expect(mod).to receive(:Import).with({})
+      expect(mod).to receive(:Import).with(Yast::ProfileHash)
 
       subject.import({})
     end
@@ -40,7 +40,10 @@ describe Y2Autoinstallation::Clients::ScriptsAuto do
 
   describe "#reset" do
     it "repropose module" do
-      expect(mod).to receive(:Import).with({})
+      expect(mod).to receive(:Import) do |arg|
+        expect(arg).to be_a(Yast::ProfileHash)
+        expect(arg).to be_empty
+      end
 
       subject.reset
     end
