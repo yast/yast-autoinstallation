@@ -20,6 +20,7 @@
 require "installation/auto_client"
 
 Yast.import "AutoinstScripts"
+Yast.import "Profile"
 
 module Y2Autoinstallation
   module Clients
@@ -33,7 +34,7 @@ module Y2Autoinstallation
       end
 
       def import(map)
-        Yast::AutoinstScripts.Import(map)
+        Yast::AutoinstScripts.Import(Yast::ProfileHash.new(map))
       end
 
       def summary
@@ -41,7 +42,7 @@ module Y2Autoinstallation
       end
 
       def reset
-        Yast::AutoinstScripts.Import({})
+        Yast::AutoinstScripts.Import(Yast::ProfileHash.new)
       end
 
       def modified?
