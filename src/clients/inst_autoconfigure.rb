@@ -162,7 +162,7 @@ module Yast
           #  feedback_type, location, notification)
           # make sure to avoid conflicts with "zzz_reboot" script here
           # https://github.com/yast/yast-autoinstallation/blob/104c18f1a56d02ab50055cdf09653db964b97888/src/modules/Profile.rb#L157
-          AutoinstScripts.AddEditScript("zzzz_reboot", "shutdown -r now", "shell", "init",
+          AutoinstScripts.AddEditScript("zzzz_reboot", "shutdown -r now", "shell", "init-scripts",
             false, false, false, "", "", "") # wonderful API without defaults
         end
       end
