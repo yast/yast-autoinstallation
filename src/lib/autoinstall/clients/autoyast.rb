@@ -1,4 +1,4 @@
-# Copyright (c) [2020] SUSE LLC
+# Copyright (c) [2020-2021] SUSE LLC
 #
 # All Rights Reserved.
 #
@@ -172,7 +172,7 @@ module Y2Autoinstallation
         end
 
         checker = ProfileChecker.new(options["filename"],
-          import_all:  options["import_all"] != "false",
+          import_all:  options["import-all"] != "false",
           run_scripts: options["run-scripts"] == "true",
           target_file: options["output"] || "~/check_profile_result.xml")
         checker.check
