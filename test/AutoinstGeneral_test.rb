@@ -129,6 +129,19 @@ describe "Yast::AutoinstGeneral" do
       expect(subject.Export).to include("storage" => profile["storage"])
     end
 
+    context "when there are no storage settings" do
+      let(:profile) do
+        {
+          "storage" => {},
+          "mode" => { "confirm" => false }
+        }
+      end
+
+      it "does not export storage settings" do
+        expect(subject.Export.keys).to_not include("storage")
+      end
+    end
+
     it "exports mode settings" do
       expect(subject.Export).to include("mode" => profile["mode"])
     end
@@ -137,8 +150,28 @@ describe "Yast::AutoinstGeneral" do
       expect(subject.Export).to include("signature-handling" => profile["signature-handling"])
     end
 
+    context "when there are no signature-handling settings" do
+      let(:profile) do
+        { "signature-handling" => {} }
+      end
+
+      it "does not export the signature handling settings" do
+        expect(subject.Export.keys).to_not include("signature-handling")
+      end
+    end
+
     it "exports ask-list settings" do
       expect(subject.Export).to include("ask-list" => profile["ask-list"])
+    end
+
+    context "when there are no ask-list settings" do
+      let(:profile) do
+        { "ask-list" => [] }
+      end
+
+      it "does not export the ask-list settings" do
+        expect(subject.Export.keys).to_not include("ask-list")
+      end
     end
 
     it "exports proposals settings" do
