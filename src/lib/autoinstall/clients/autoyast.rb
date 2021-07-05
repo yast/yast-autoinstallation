@@ -1,4 +1,4 @@
-# Copyright (c) [2020] SUSE LLC
+# Copyright (c) [2020-2021] SUSE LLC
 #
 # All Rights Reserved.
 #
@@ -102,24 +102,45 @@ module Y2Autoinstallation
             }
           },
           "options"    => {
-            "filename"    => { "type" => "string", "help" => "Which profile to use. In " \
-              "check-profile case it supports also remote location like " \
-              "filename=ftp://test.com/example.xml" },
-            "modname"     => { "type" => "string", "help" => "modname=AYAST_MODULE" },
-            "output"      => { "type" => "string", "help" => "where evaluated profile will be " \
-              "written. Default is '~/check_profile_result.xml'. Example 'filename=~/test.xml'." },
-            "run-scripts" => { "type"     => "enum",
-                               "help"     => "run also scripts that are defined in profile. " \
-              "By default false. Example: run-scripts=true",
-                               "typespec" => ["true", "false"] },
-            "import-all"  => { "type"     => "enum",
-                               "help"     => "Do testing import of all sections in profile. " \
-              "Note that scripts are imported when run-scripts is set to true. By default true. " \
-              "Example: import-all=false",
-                               "typespec" => ["true", "false"] }
+            "filename"    => {
+              "type" => "string",
+              "help" => "Which profile to use. In check-profile case it supports also remote " \
+                        "location like filename=ftp://test.com/example.xml"
+            },
+            "modname"     => {
+              "type" => "string",
+              "help" => "modname=AYAST_MODULE"
+            },
+            "output"      => {
+              "type" => "string",
+              "help" => "Where evaluated profile will be written. Default is " \
+                        "'~/check_profile_result.xml'. Example 'filename=~/test.xml'."
+            },
+            "run-scripts" => {
+              "type"     => "enum",
+              "help"     => "Run also scripts that are defined in profile. Be careful when " \
+                            "running pre-installation scripts as root. Use only\n\t\t\t\t     " \
+                            "profiles that you trust. By default false. Example: run-scripts=true",
+              "typespec" => ["true", "false"]
+            },
+            "run-erb"     => {
+              "type"     => "enum",
+              "help"     => "Render the ERB profile. Be careful when running ERB profiles as " \
+                            "root. Use only profiles that you trust. This option is" \
+                            "\n\t\t\t\t     mandatory when running checks for an ERB profile as " \
+                            "root. Example: run-erb=true",
+              "typespec" => ["true", "false"]
+            },
+            "import-all"  => {
+              "type"     => "enum",
+              "help"     => "Do testing import of all sections in profile. Note that scripts are " \
+                            "imported when run-scripts is set to true.\n\t\t\t\t     By default " \
+                            "true. Example: import-all=false",
+              "typespec" => ["true", "false"]
+            }
           },
           "mappings"   => {
-            "check-profile" => ["filename", "run-scripts", "output", "import-all"],
+            "check-profile" => ["filename", "run-scripts", "run-erb", "output", "import-all"],
             "file"          => ["filename", "modname"],
             "module"        => ["filename", "modname"],
             "ui"            => ["filename", "modname"]
@@ -171,8 +192,10 @@ module Y2Autoinstallation
           return false
         end
 
+        return false unless erb_check(options["filename"], options["run-erb"])
+
         checker = ProfileChecker.new(options["filename"],
-          import_all:  options["import_all"] != "false",
+          import_all:  options["import-all"] != "false",
           run_scripts: options["run-scripts"] == "true",
           target_file: options["output"] || "~/check_profile_result.xml")
         checker.check
@@ -199,6 +222,34 @@ module Y2Autoinstallation
         )
         Y2Autoinstallation::Importer.new(Profile.current).import_sections
         Yast::Popup.ClearFeedback
+      end
+
+      # Checks whether an ERB profile can be rendered according to the given options
+      #
+      # An ERB can be rendered if the check-profile command is run without root permissions. If it
+      # is run as root, then the option run-erb=true must be given.
+      #
+      # @param filename [String] filename of the AutoYaST profile
+      # @param run_erb_option [String] the given run-erb option
+      #
+      # @return [Boolean]
+      def erb_check(filename, run_erb_option)
+        return true unless filename.end_with?(".erb")
+
+        if !run_erb_option && Process.euid.zero?
+          Yast::CommandLine.Error(_("run-erb=true option is mandatory when checking an ERB " \
+            "profile as root."))
+
+          return false
+        end
+
+        if run_erb_option == "false"
+          Yast::CommandLine.Error(_("The ERB profile cannot be rendered with run-erb=false."))
+
+          return false
+        end
+
+        true
       end
 
       # AutoYaST UI sequence
@@ -264,7 +315,9 @@ module Y2Autoinstallation
       def check_profile_action_help
         _("Check if profile is valid. Also evaluate profile for dynamic profiles like " \
           "ERB or rules/classes. If run-scripts parameter is set to 'true' it can be used " \
-          "also to validate dynamic profiles generated by pre-scripts.")
+          "also to validate dynamic profiles generated by pre-scripts.\n\n    " \
+          "Be careful when running pre-installation scripts and ERB profiles as root. Use " \
+          "only profiles that you trust.")
       end
     end
   end
