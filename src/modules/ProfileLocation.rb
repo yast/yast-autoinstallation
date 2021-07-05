@@ -1,3 +1,22 @@
+# Copyright (c) [2013-2021] SUSE LLC
+#
+# All Rights Reserved.
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of version 2 of the GNU General Public License as published
+# by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+# more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, contact SUSE LLC.
+#
+# To contact SUSE LLC about this file by physical or electronic mail, you may
+# find current contact information at www.suse.com.
+
 # File:  modules/ProfileLocation.ycp
 # Package:  Auto-installation
 # Summary:  Process Auto-Installation Location
@@ -11,6 +30,7 @@ require "autoinstall/xml_checks"
 require "autoinstall/y2erb"
 require "y2storage"
 require "fileutils"
+require "yast2/popup"
 
 module Yast
   class ProfileLocationClass < Module
@@ -154,8 +174,7 @@ module Yast
 
         # render erb template
         if AutoinstConfig.filepath.end_with?(".erb")
-          res = Y2Autoinstallation::Y2ERB.render(localfile)
-          SCR.Write(path(".target.string"), localfile, res)
+          return false unless render_erb(localfile)
         end
       else
         is_directory = true
@@ -257,6 +276,30 @@ module Yast
 
     publish function: :ProfileLocation, type: "void ()"
     publish function: :Process, type: "boolean ()"
+
+  private
+
+    # Renders the ERB profile and saves the result
+    #
+    # An error popup is shown if there is an error while rendering the profile.
+    #
+    # @return [Boolean] true if everything was ok.
+    def render_erb(file)
+      res = nil
+
+      begin
+        res = Y2Autoinstallation::Y2ERB.render(file)
+      rescue StandardError => e
+        message = _("There was an error while rendering the ERB profile.")
+        details = e.message + "\n\n" + e.backtrace.join("\n")
+
+        Yast2::Popup.show(message, headline: :error, details: details)
+        return false
+      end
+
+      SCR.Write(path(".target.string"), file, res)
+      true
+    end
   end
 
   ProfileLocation = ProfileLocationClass.new
