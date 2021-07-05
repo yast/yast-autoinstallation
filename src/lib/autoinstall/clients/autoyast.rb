@@ -128,7 +128,7 @@ module Y2Autoinstallation
               "help"     => "Render the ERB profile. Be careful when running ERB profiles as " \
                             "root. Use only profiles that you trust. This option is" \
                             "\n\t\t\t\t     mandatory when running checks for an ERB profile as " \
-                            "root. By defautl true. Example: run-erb=true",
+                            "root. Example: run-erb=true",
               "typespec" => ["true", "false"]
             },
             "import-all"  => {
