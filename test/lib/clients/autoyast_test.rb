@@ -1,4 +1,4 @@
-# Copyright (c) [2020] SUSE LLC
+# Copyright (c) [2020-2021] SUSE LLC
 #
 # All Rights Reserved.
 #
@@ -120,6 +120,122 @@ describe Y2Autoinstallation::Clients::Autoyast do
           expect(items.to_s).to include(name)
         end
         client.main
+      end
+    end
+
+    describe "'check-profile' command" do
+      let(:command) { "check-profile" }
+
+      let(:args) { [command, filename, run_erb].compact }
+
+      let(:filename) { nil }
+
+      let(:run_erb) { nil }
+
+      context "when the given filename is an ERB" do
+        let(:filename) { "filename=test.erb" }
+
+        context "and the command is run without root permissions" do
+          before do
+            allow(Process).to receive(:euid).and_return(1000)
+          end
+
+          context "and run-erb option is not given" do
+            let(:run_erb) { nil }
+
+            it "checks the profile" do
+              expect_any_instance_of(Y2Autoinstallation::ProfileChecker).to receive(:check)
+
+              client.main
+            end
+          end
+
+          context "and run-erb=true option is given" do
+            let(:run_erb) { "run-erb=true" }
+
+            it "checks the profile" do
+              expect_any_instance_of(Y2Autoinstallation::ProfileChecker).to receive(:check)
+
+              client.main
+            end
+          end
+
+          context "and run-erb=false option is given" do
+            let(:run_erb) { "run-erb=false" }
+
+            before do
+              allow(Yast::CommandLine).to receive(:Error)
+            end
+
+            it "shows an error message" do
+              expect(Yast::CommandLine).to receive(:Error).with(/cannot be rendered/)
+
+              client.main
+            end
+
+            it "does not check the profile" do
+              expect_any_instance_of(Y2Autoinstallation::ProfileChecker).to_not receive(:check)
+
+              client.main
+            end
+          end
+        end
+
+        context "and the command is run with root permissions" do
+          before do
+            allow(Process).to receive(:euid).and_return(0)
+          end
+
+          context "and run-erb option is not given" do
+            let(:run_erb) { nil }
+
+            before do
+              allow(Yast::CommandLine).to receive(:Error)
+            end
+
+            it "shows an error message" do
+              expect(Yast::CommandLine).to receive(:Error).with(/run-erb=true option is mandatory/)
+
+              client.main
+            end
+
+            it "does not check the profile" do
+              expect_any_instance_of(Y2Autoinstallation::ProfileChecker).to_not receive(:check)
+
+              client.main
+            end
+          end
+
+          context "and run-erb=true option is given" do
+            let(:run_erb) { "run-erb=true" }
+
+            it "checks the profile" do
+              expect_any_instance_of(Y2Autoinstallation::ProfileChecker).to receive(:check)
+
+              client.main
+            end
+          end
+
+          context "and run-erb=false option is given" do
+            let(:run_erb) { "run-erb=false" }
+
+            before do
+              allow(Yast::CommandLine).to receive(:Error)
+            end
+
+            it "shows an error message" do
+              expect(Yast::CommandLine).to receive(:Error).with(/cannot be rendered/)
+
+              client.main
+            end
+
+            it "does not check the profile" do
+              expect_any_instance_of(Y2Autoinstallation::ProfileChecker).to_not receive(:check)
+
+              client.main
+            end
+          end
+        end
       end
     end
   end
