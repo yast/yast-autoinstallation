@@ -13,6 +13,7 @@ describe "Yast::AutoinstScripts" do
     allow(Yast::SCR).to receive(:Write)
     # re-init
     subject.main
+    Yast::AutoinstConfig.main
   end
 
   describe "#GetModified" do
