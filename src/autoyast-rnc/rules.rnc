@@ -27,7 +27,8 @@ rule =
 element rule {
     y2_match_to+ &
     result &
-    operator?
+    operator? &
+    dialog?
 }
 
 y2_match_to =
@@ -94,6 +95,19 @@ element result {
         element element { text }*
     }? &
     continue?
+}
+
+dialog =
+element dialog {
+    element dialog_nr { INTEGER }? &
+    element element { INTEGER }? &
+    element title { text }? &
+    element question { text }? &
+    element timeout { INTEGER }? &
+    element conflicts {
+        LIST,
+        element (element | listentry) { INTEGER }*
+    }
 }
 
 profile =
