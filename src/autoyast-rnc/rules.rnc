@@ -27,7 +27,8 @@ rule =
 element rule {
     y2_match_to+ &
     result &
-    operator?
+    operator? &
+    dialog?
 }
 
 y2_match_to =
@@ -46,6 +47,8 @@ y2_match_to =
     | hostid
     | karch
     | linux
+    | installed_product
+    | installed_product_version
     | mac
     | memsize
     | network
@@ -70,6 +73,8 @@ hostaddress    = element hostaddress     { match_text & match_type? }
 hostid         = element hostid          { match_text & match_type? }
 karch          = element karch           { match_text & match_type? }
 linux          = element linux           { match_text & match_type? }
+installed_product         = element installed_product         { match_text & match_type? }
+installed_product_version = element installed_product_version { match_text & match_type? }
 mac            = element mac             { match_text & match_type? }
 memsize        = element memsize         { match_text & match_type? }
 network        = element network         { match_text & match_type? }
@@ -94,6 +99,19 @@ element result {
         element element { text }*
     }? &
     continue?
+}
+
+dialog =
+element dialog {
+    element dialog_nr { INTEGER }? &
+    element element { INTEGER }? &
+    element title { text }? &
+    element question { text }? &
+    element timeout { INTEGER }? &
+    element conflicts {
+        LIST,
+        element (element | listentry) { INTEGER }*
+    }
 }
 
 profile =
