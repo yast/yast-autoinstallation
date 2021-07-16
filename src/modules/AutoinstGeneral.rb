@@ -214,7 +214,7 @@ module Yast
         end
       end
 
-      deep_copy(general)
+      general.reject { |_k, v| v.nil? || (v.respond_to?(:empty?) && v.empty?) }
     end
 
     # set the sigature handling
