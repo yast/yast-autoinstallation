@@ -30,7 +30,8 @@ element rule {
     (
       y2_match_to+ &
       result &
-      operator?
+      operator? &
+      dialog?
     )
 }
 
@@ -103,6 +104,19 @@ element result {
       }? &
       continue?
     )
+}
+
+dialog =
+element dialog {
+    element dialog_nr { INTEGER }? &
+    element element { INTEGER }? &
+    element title { STRING }? &
+    element question { STRING }? &
+    element timeout { INTEGER }? &
+    element conflicts {
+        LIST,
+        element (element | listentry) { INTEGER }*
+    }
 }
 
 profile =
