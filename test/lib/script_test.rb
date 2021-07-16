@@ -368,4 +368,14 @@ describe Y2Autoinstallation::InitScript do
       expect(subject.script_path).to eq "/var/adm/autoinstall/init.d/test.sh"
     end
   end
+
+  describe "#localfile" do
+    before do
+      allow(Yast::AutoinstConfig).to receive(:destdir).and_return("/mnt")
+    end
+
+    it "returns the path in the target system" do
+      expect(subject.localfile).to eq "/mnt/var/adm/autoinstall/init.d/test.sh"
+    end
+  end
 end
