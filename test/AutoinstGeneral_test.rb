@@ -133,7 +133,7 @@ describe "Yast::AutoinstGeneral" do
       let(:profile) do
         {
           "storage" => {},
-          "mode" => { "confirm" => false }
+          "mode"    => { "confirm" => false }
         }
       end
 
