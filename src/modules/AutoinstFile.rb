@@ -12,6 +12,7 @@ module Yast
       textdomain "autoinst"
 
       Yast.import "AutoinstConfig"
+      Yast.import "Installation"
       Yast.import "Summary"
 
       Yast.include self, "autoinstall/io.rb"
@@ -149,14 +150,15 @@ module Yast
             Ops.set(file, "file_location", newloc)
             Builtins.y2milestone("changed relurl to %1 for file", newloc)
           end
+          file_location = File.join(Installation.destdir, file["file_path"] || alternate_location)
           Builtins.y2milestone(
             "trying to get file from %1 storing in %2",
             Ops.get_string(file, "file_location", ""),
-            Ops.get_string(file, "file_path", alternate_location)
+            file_location
           )
           if !GetURL(
             Ops.get_string(file, "file_location", ""),
-            Ops.get_string(file, "file_path", alternate_location)
+            file_location
           )
             Builtins.y2error("file could not be retrieved")
           else
