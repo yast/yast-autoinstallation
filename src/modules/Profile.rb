@@ -131,11 +131,9 @@ module Yast
             Builtins.remove(Ops.get_map(@current, "general", {}), "clock")
           )
         end
-        if Ops.get_boolean(@current, ["general", "mode", "final_halt"], false)
-          script = {
-            "filename" => "zzz_halt",
-            "source"   => "shutdown -h now"
-          }
+        if Ops.get_boolean(@current, ["general", "mode", "final_halt"], false) &&
+            !Ops.get_list(@current, ["scripts", "init-scripts"], []).include?(HALT_SCRIPT)
+
           Ops.set(@current, "scripts", {}) if !Builtins.haskey(@current, "scripts")
           if !Builtins.haskey(
             Ops.get_map(@current, "scripts", {}),
@@ -148,15 +146,13 @@ module Yast
             ["scripts", "init-scripts"],
             Builtins.add(
               Ops.get_list(@current, ["scripts", "init-scripts"], []),
-              script
+              HALT_SCRIPTt
             )
           )
         end
-        if Ops.get_boolean(@current, ["general", "mode", "final_reboot"], false)
-          script = {
-            "filename" => "zzz_reboot",
-            "source"   => "shutdown -r now"
-          }
+        if Ops.get_boolean(@current, ["general", "mode", "final_reboot"], false) &&
+            !Ops.get_list(@current, ["scripts", "init-scripts"], []).include?(REBOOT_SCRIPT)
+
           Ops.set(@current, "scripts", {}) if !Builtins.haskey(@current, "scripts")
           if !Builtins.haskey(
             Ops.get_map(@current, "scripts", {}),
@@ -169,7 +165,7 @@ module Yast
             ["scripts", "init-scripts"],
             Builtins.add(
               Ops.get_list(@current, ["scripts", "init-scripts"], []),
-              script
+              REBOOT_SCRIPT
             )
           )
         end
@@ -657,6 +653,16 @@ module Yast
     publish function: :needed_second_stage_packages, type: "list <string> ()"
 
   private
+
+    REBOOT_SCRIPT = {
+      "filename" => "zzz_reboot",
+      "source"   => "shutdown -r now"
+    }.freeze
+
+    HALT_SCRIPT = {
+      "filename" => "zzz_halt",
+      "source"   => "shutdown -h now"
+    }.freeze
 
     def add_autoyast_packages
       @current["software"] ||= {}
