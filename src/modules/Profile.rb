@@ -146,7 +146,7 @@ module Yast
             ["scripts", "init-scripts"],
             Builtins.add(
               Ops.get_list(@current, ["scripts", "init-scripts"], []),
-              HALT_SCRIPTt
+              HALT_SCRIPT
             )
           )
         end
