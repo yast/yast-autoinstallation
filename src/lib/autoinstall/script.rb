@@ -419,7 +419,7 @@ module Y2Autoinstallation
       File.join(Yast::AutoinstConfig.initscripts_dir, script_name)
     end
 
-    # Returns the path to write th script
+    # Returns the path to write the script
     #
     # The init-scripts always run in the target system.
     #
