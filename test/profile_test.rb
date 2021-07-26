@@ -28,6 +28,12 @@ describe Yast::Profile do
     items_list("patterns")
   end
 
+  def reboot_scripts
+    Yast::Profile.current["scripts"]["init-scripts"].select do |s|
+      s["filename"] == "zzz_reboot"
+    end
+  end
+
   describe "#softwareCompat" do
     before do
       Yast::Profile.current = profile
@@ -120,6 +126,37 @@ describe Yast::Profile do
       it "adds 'base' pattern" do
         Yast::Profile.softwareCompat
         expect(patterns_list).to include("base")
+      end
+    end
+  end
+
+  describe "#generalCompat" do
+    before do
+      Yast::Profile.current = profile
+    end
+
+    context "when a custom reboot script is not present" do
+      let(:profile) { { "general" => { "mode" => { "final_reboot" => true } } } }
+
+      it "adds a reboot script for the 'final_reboot' flag" do
+        Yast::Profile.generalCompat
+        expect(reboot_scripts).to_not be_empty
+      end
+    end
+
+    # the first stage adds a custom script for the "final_reboot" flag,
+    # ensure the second stage does not add it again (bsc#1188356)
+    context "when a custom reboot script is present" do
+      let(:profile) do
+        { "general" => { "mode" => { "final_reboot" => true } },
+          "scripts" => { "init-scripts" => [
+            { "filename" => "zzz_reboot", "source" => "shutdown -r now" }
+          ] } }
+      end
+
+      it "does not duplicate the reboot script" do
+        Yast::Profile.generalCompat
+        expect(reboot_scripts.size).to eq(1)
       end
     end
   end
