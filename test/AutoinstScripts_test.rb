@@ -377,6 +377,20 @@ describe "Yast::AutoinstScripts" do
       subject.Write("pre-scripts", true)
     end
 
+    it "closes the notification popup even if the script was not executed" do
+      data = {
+        "pre-scripts" => [{ "location" => "http://test.com/script", "filename" => "script1",
+        "interpreter" => "shell", "rerun" => true, "notification" => "Script1!!!" }]
+      }
+
+      allow_any_instance_of(Y2Autoinstallation::PreScript).to receive(:execute).and_return(nil)
+      expect(Yast::Popup).to receive(:ShowFeedback).with("", "Script1!!!")
+      expect(Yast::Popup).to receive(:ClearFeedback)
+
+      subject.Import(data)
+      subject.Write("pre-scripts", true)
+    end
+
     it "shows a report if feedback parameter is set" do
       data = {
         "pre-scripts" => [{ "location" => "http://test.com/script", "filename" => "script1",
