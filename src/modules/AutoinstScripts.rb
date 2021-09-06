@@ -259,9 +259,9 @@ module Yast
         Popup.ShowFeedback("", script.notification) unless script.notification.empty?
 
         res = script.execute
-        next if res.nil? # the script was not executed
 
         Popup.ClearFeedback unless script.notification.empty?
+        next if res.nil? # the script was not executed
 
         feedback = if script.feedback.value == :no
           ""
