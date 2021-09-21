@@ -52,7 +52,20 @@ describe Y2Autoinstall::ScriptRunner do
       it "displays the notification" do
         expect(Yast::Popup).to receive(:ShowFeedback)
           .with("", "A script is running...")
+        expect(Yast::Popup).to receive(:ClearFeedback)
         runner.run(script)
+      end
+
+      context "and the script was not executed" do
+        before do
+          allow(script).to receive(:execute).and_return(nil)
+        end
+
+        it "closes the notification" do
+          expect(Yast::Popup).to receive(:ShowFeedback)
+          expect(Yast::Popup).to receive(:ClearFeedback)
+          runner.run(script)
+        end
       end
     end
 
