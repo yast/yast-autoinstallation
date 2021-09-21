@@ -359,57 +359,5 @@ describe "Yast::AutoinstScripts" do
         subject.Write("init-scripts", true)
       end
     end
-
-    it "executes script" do
-      data = Yast::ProfileHash.new(
-        "pre-scripts" => [{ "location" => "http://test.com/script", "filename" => "script1",
-        "interpreter" => "shell", "rerun" => true }]
-      )
-
-      expect(Yast::SCR).to receive(:Execute).with(path(".target.bash"), /\/bin\/sh/)
-
-      subject.Import(data)
-      subject.Write("pre-scripts", true)
-    end
-
-    it "shows a feedback during script when notification is set for script" do
-      data = Yast::ProfileHash.new(
-        "pre-scripts" => [{ "location" => "http://test.com/script", "filename" => "script1",
-        "interpreter" => "shell", "rerun" => true, "notification" => "Script1!!!" }]
-      )
-
-      expect(Yast::Popup).to receive(:ShowFeedback).with("", "Script1!!!")
-      expect(Yast::Popup).to receive(:ClearFeedback)
-
-      subject.Import(data)
-      subject.Write("pre-scripts", true)
-    end
-
-    it "closes the notification popup even if the script was not executed" do
-      data = {
-        "pre-scripts" => [{ "location" => "http://test.com/script", "filename" => "script1",
-        "interpreter" => "shell", "rerun" => true, "notification" => "Script1!!!" }]
-      }
-
-      allow_any_instance_of(Y2Autoinstallation::PreScript).to receive(:execute).and_return(nil)
-      expect(Yast::Popup).to receive(:ShowFeedback).with("", "Script1!!!")
-      expect(Yast::Popup).to receive(:ClearFeedback)
-
-      subject.Import(data)
-      subject.Write("pre-scripts", true)
-    end
-
-    it "shows a report if feedback parameter is set" do
-      data = Yast::ProfileHash.new(
-        "pre-scripts" => [{ "location" => "http://test.com/script", "filename" => "script1",
-        "interpreter" => "shell", "feedback" => true, "feedback_type" => "error", "rerun" => true }]
-      )
-
-      allow(Yast::SCR).to receive(:Read).and_return("test")
-      expect(Yast::Report).to receive(:Error)
-
-      subject.Import(data)
-      subject.Write("pre-scripts", true)
-    end
   end
 end
