@@ -35,6 +35,7 @@ describe Y2Autoinstallation::Clients::CloneSystem do
     let(:normal?) { true }
     let(:package_installed?) { true }
     let(:tmp_dir) { Dir.mktmpdir("YaST-") }
+    let(:profile) { {} }
     let(:profile_path) { File.join(tmp_dir, "autoinst.xml") }
     let(:profile_exists?) { false }
 
@@ -52,6 +53,10 @@ describe Y2Autoinstallation::Clients::CloneSystem do
         "Y2Autoinstallation::Clients::CloneSystem::DEFAULT_FILENAME",
         File.join(tmp_dir, "autoinst.xml")
       )
+    end
+
+    before do
+      allow(Yast::Profile).to receive(:current).and_return(profile)
     end
 
     around(:each) do |example|
@@ -86,10 +91,6 @@ describe Y2Autoinstallation::Clients::CloneSystem do
     describe "'modules' command" do
       let(:args) { ["modules"] }
       let(:profile) { { "general" => { "mode" => { "confirm" => true } } } }
-
-      before do
-        allow(Yast::Profile).to receive(:current).and_return(profile)
-      end
 
       context "when the target file already exists" do
         let(:profile_exists?) { true }
