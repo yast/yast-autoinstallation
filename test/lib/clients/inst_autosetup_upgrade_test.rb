@@ -26,7 +26,7 @@ require "y2packager/resolvable"
 
 describe Y2Autoinstallation::Clients::InstAutosetupUpgrade do
   let(:profile) do
-    {
+    Yast::ProfileHash.new({
       "general"  => {},
       "software" => {
         "products"        => ["sled"],
@@ -37,7 +37,7 @@ describe Y2Autoinstallation::Clients::InstAutosetupUpgrade do
         "remove-products" => ["sle-desktop"]
       },
       "upgrade"  => { "stop_on_solver_conflict" => true }
-    }
+    })
   end
 
   before do

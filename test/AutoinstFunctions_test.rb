@@ -117,6 +117,8 @@ describe Yast::AutoinstFunctions do
       Y2Packager::Product.new(name: name)
     end
 
+    let(:product_spec) { instance_double(Y2Packager::ProductSpec, name: "openSUSE") }
+
     let(:selected_name) { "SLES" }
 
     let(:profile) do
@@ -129,6 +131,9 @@ describe Yast::AutoinstFunctions do
         .to receive(:new)
         .and_return(double(available_base_products: [base_product("SLES"), base_product("SLED")]))
 
+      allow(Y2Packager::ProductSpec).to receive(:base_products).and_return([product_spec])
+
+      subject.main
       # reset cache between tests
       subject.reset_product
     end
@@ -136,6 +141,15 @@ describe Yast::AutoinstFunctions do
     context "when the base product is explicitly selected in the profile" do
       context "and the product exists on the media" do
         it "returns the corresponding base product" do
+          expect(subject.selected_product.name).to eql selected_name
+        end
+      end
+
+      context "and the product exists on the control file (online case)" do
+        let(:selected_name) { "openSUSE" }
+
+        it "returns the corresponding base product" do
+          subject.main
           expect(subject.selected_product.name).to eql selected_name
         end
       end
