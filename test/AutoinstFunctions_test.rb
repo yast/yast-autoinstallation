@@ -163,7 +163,6 @@ describe Yast::AutoinstFunctions do
       end
     end
 
-
     context "when the product is identified by a pattern" do
       let(:profile) do
         { "software" => { "patterns" => ["sles-base-32bit"] } }

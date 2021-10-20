@@ -237,8 +237,8 @@ module Y2Autoinstallation
            "It can be specified in the <b>software</b>/<b>products</b> entry in the " \
            "AutoYaST configuration file.<br><br>" \
            "Following base products are available:<br>")
-          Y2Packager::ProductSpec.base_products.each do |producŧ|
-            msg += "#{product.name} (#{product.display_name})<br>"
+          Y2Packager::ProductSpec.base_products.each do |prod|
+            msg += "#{prod.name} (#{prod.display_name})<br>"
           end
           Yast2::Popup.show(msg, richtext: true) # No timeout because we are stopping the upgrade.
           return :abort

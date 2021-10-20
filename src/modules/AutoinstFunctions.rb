@@ -126,7 +126,9 @@ module Yast
     def available_base_products
       return @base_products if @base_products
 
-      @base_products = Y2Packager::ProductReader.new.available_base_products(force_repos: @force_libzypp)
+      @base_products = Y2Packager::ProductReader.new.available_base_products(
+        force_repos: @force_libzypp
+      )
       return @base_products if @force_libzypp
 
       libzypp_names = @base_products.map(&:name)

@@ -429,8 +429,8 @@ module Y2Autoinstallation
               "Please check the <b>products</b> entry in the <b>software</b> section.<br><br>" \
               "Following base products are available:<br>")
           end
-          Y2Packager::ProductSpec.base_products.each do |product|
-            msg += "#{product.name} (#{product.display_name})<br>"
+          Y2Packager::ProductSpec.base_products.each do |prod|
+            msg += "#{prod.name} (#{prod.display_name})<br>"
           end
           Yast::Popup.LongError(msg) # No timeout because we are stopping the installation/upgrade.
           return :abort
