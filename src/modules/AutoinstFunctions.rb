@@ -19,6 +19,8 @@ module Yast
       Yast.import "Profile"
       Yast.import "Pkg"
 
+      # Force to read the list of products from libzypp. See {#check_result} for
+      # further details.
       @force_libzypp = false
     end
 
