@@ -1,6 +1,7 @@
 require "autoinstall/autosetup_helpers"
 require "autoinstall/importer"
 require "y2packager/medium_type"
+require "y2packager/product_spec"
 require "autoinstall/ask/runner"
 require "autoinstall/ask/stage"
 
@@ -134,8 +135,8 @@ module Y2Autoinstallation
            "in the AutoYaST configuration file. " \
            "Please check the <b>products</b> entry in the <b>software</b> section.<br><br>" \
            "Following base products are available:<br>")
-          Yast::AutoinstFunctions.available_base_products_hash.each do |product|
-            msg += "#{product[:name]} (#{product[:summary]})<br>"
+          Y2Packager::ProductSpec.base_products.each do |product|
+            msg += "#{product.name} (#{product.display_name})<br>"
           end
           Yast::Popup.LongError(msg) # No timeout because we are stopping the installation/upgrade.
           return :abort
@@ -428,8 +429,8 @@ module Y2Autoinstallation
               "Please check the <b>products</b> entry in the <b>software</b> section.<br><br>" \
               "Following base products are available:<br>")
           end
-          Yast::AutoinstFunctions.available_base_products_hash.each do |p|
-            msg += "#{p[:name]} (#{p[:summary]})<br>"
+          Y2Packager::ProductSpec.base_products.each do |product|
+            msg += "#{product.name} (#{product.display_name})<br>"
           end
           Yast::Popup.LongError(msg) # No timeout because we are stopping the installation/upgrade.
           return :abort

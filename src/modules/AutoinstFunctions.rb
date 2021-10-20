@@ -83,8 +83,7 @@ module Yast
     # 2) impllicitly according to software selection
     # 3) if not set explicitly and just one product is available on media - use it
     #
-    # @return [Y2Packager::Product|Y2Packager::ProductLocation] a base product or nil.
-    # The returned class depends on phase of installation and type of installation medium.
+    # @return [Y2Packager::ProductSpec] a base product or nil.
     def selected_product
       return @selected_product if @selected_product
 
@@ -118,8 +117,6 @@ module Yast
     # the product information has been read (libzypp, or product specs).
     # So the type could be Product or ProductSpec derived class.
     #
-    # available_base_products_hash could be an alternative for this call.
-    #
     # The behaviour of this method can be affected by the `force_libzypp` attribute.
     # Check {#reset_product} for further details.
     #
@@ -136,17 +133,6 @@ module Yast
       end
 
       @base_products
-    end
-
-    #
-    # Evaluate all available base products and returns a list of hashes which contains
-    # human readable strings only.
-    #
-    # @return [Hash] an array of product hashes
-    def available_base_products_hash
-      available_base_products.map do |product|
-        { name: product.name, summary: product.display_name }
-      end
     end
 
     # force selected product to be read from libzypp and not from product location

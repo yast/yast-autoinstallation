@@ -1,5 +1,6 @@
 require "autoinstall/autosetup_helpers"
 
+require "y2packager/product_spec"
 require "y2packager/product_upgrade"
 require "yast2/popup"
 
@@ -236,8 +237,8 @@ module Y2Autoinstallation
            "It can be specified in the <b>software</b>/<b>products</b> entry in the " \
            "AutoYaST configuration file.<br><br>" \
            "Following base products are available:<br>")
-          Yast::AutoinstFunctions.available_base_products_hash.each do |product|
-            msg += "#{product[:name]} (#{product[:summary]})<br>"
+          Y2Packager::ProductSpec.base_products.each do |producŧ|
+            msg += "#{product.name} (#{product.display_name})<br>"
           end
           Yast2::Popup.show(msg, richtext: true) # No timeout because we are stopping the upgrade.
           return :abort
