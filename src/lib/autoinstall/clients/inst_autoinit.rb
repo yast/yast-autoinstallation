@@ -408,7 +408,7 @@ module Y2Autoinstallation
           log_url = Yast::URL.HidePassword(base_url)
           Yast::Packages.Initialize_StageInitial(show_popup, base_url, log_url, product.dir)
           # select the product to install
-          Yast::Pkg.ResolvableInstall(product.details.product, :product, "")
+          Yast::Pkg.ResolvableInstall(product.name, :product, "")
           # initialize addons and the workflow manager
           Yast::AddOnProduct.SetBaseProductURL(base_url)
           Yast::WorkflowManager.SetBaseWorkflow(false)
