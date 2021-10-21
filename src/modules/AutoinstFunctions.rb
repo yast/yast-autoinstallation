@@ -1,6 +1,6 @@
 require "y2packager/product"
 require "y2packager/product_reader"
-require "y2packager/product_location"
+require "y2packager/product_spec"
 require "y2packager/medium_type"
 
 module Yast
@@ -18,6 +18,10 @@ module Yast
       Yast.import "ProductControl"
       Yast.import "Profile"
       Yast.import "Pkg"
+
+      # Force to read the list of products from libzypp. See {#check_result} for
+      # further details.
+      @force_libzypp = false
     end
 
     # Determines if the second stage should be executed
@@ -81,8 +85,7 @@ module Yast
     # 2) impllicitly according to software selection
     # 3) if not set explicitly and just one product is available on media - use it
     #
-    # @return [Y2Packager::Product|Y2Packager::ProductLocation] a base product or nil.
-    # The returned class depends on phase of installation and type of installation medium.
+    # @return [Y2Packager::ProductSpec] a base product or nil.
     def selected_product
       return @selected_product if @selected_product
 
@@ -113,35 +116,27 @@ module Yast
     #
     # Evaluate all available base products and returns a list of product.
     # CAUTION: The type of the return values depend of the kind of where
-    # the product information has been read (libzypp, product location).
-    # So the type could be ProductLocation or Product.
-    # available_base_products_hash could be an alternative for this call.
+    # the product information has been read (libzypp, or product specs).
+    # So the type could be Product or ProductSpec derived class.
     #
+    # The behaviour of this method can be affected by the `force_libzypp` attribute.
+    # Check {#reset_product} for further details.
+    #
+    # @return [Array<Y2Packager::Product|Y2Packager::ProductSpec>] List of base products
     def available_base_products
-      @base_products ||= if Y2Packager::MediumType.offline? && !@force_libzypp
-        url = InstURL.installInf2Url("")
-        Y2Packager::ProductLocation
-          .scan(url)
-          .select { |p| p.details&.base }
-          .sort(&::Y2Packager::PRODUCT_SORTER)
-      else
-        Y2Packager::ProductReader.new.available_base_products(force_repos: @force_libzypp)
-      end
-    end
+      return @base_products if @base_products
 
-    #
-    # Evaluate all available base products and returns a list of hashes which contains
-    # human readable strings only.
-    #
-    # @return [Hash] an array of product hashes
-    def available_base_products_hash
-      available_base_products.map do |product|
-        if product.is_a?(Y2Packager::ProductLocation)
-          { name: product.details.product, summary: product.details.summary }
-        else
-          { name: product.name, summary: product.display_name }
-        end
+      @base_products = Y2Packager::ProductReader.new.available_base_products(
+        force_repos: @force_libzypp
+      )
+      return @base_products if @force_libzypp
+
+      libzypp_names = @base_products.map(&:name)
+      Y2Packager::ProductSpec.base_products.each do |product|
+        @base_products << product unless libzypp_names.include?(product.name)
       end
+
+      @base_products
     end
 
     # force selected product to be read from libzypp and not from product location
@@ -171,11 +166,7 @@ module Yast
       log.info "Found base products : #{available_base_products.inspect}"
 
       products = available_base_products.select do |product|
-        if product.is_a?(Y2Packager::ProductLocation)
-          yield(product.details.product)
-        else
-          yield(product.name)
-        end
+        yield(product.name)
       end
 
       return products.first if products.size == 1
