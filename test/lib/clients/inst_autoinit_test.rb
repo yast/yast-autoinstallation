@@ -36,10 +36,17 @@ describe Y2Autoinstallation::Clients::InstAutoinit do
     allow(Yast::Mode).to receive(:autoupgrade).and_return(true)
     allow(Yast::AutoinstFunctions).to receive(:available_base_products).and_return([])
     allow(Y2Packager::MediumType).to receive(:online?).and_return(true)
+    allow(Y2Packager::ProductSpec).to receive(:base_products).and_return([sles_spec])
     Yast::AutoinstConfig.ProfileInRootPart = false
   end
 
   describe "#run" do
+    let(:sles_spec) do
+      instance_double(
+        Y2Packager::ProductSpec, name: "SLES", display_name: "SUSE Linux Enterprise Server"
+      )
+    end
+
     it "inits console module" do
       expect(Yast::Console).to receive(:Init)
 
@@ -102,6 +109,7 @@ describe Y2Autoinstallation::Clients::InstAutoinit do
         allow(Y2Packager::MediumType).to receive(:online?).and_return(false)
         allow(Y2Packager::MediumType).to receive(:offline?).and_return(true)
         allow(Yast::Mode).to receive(:autoupgrade).and_return(false)
+        allow(Yast::InstURL).to receive(:installInf2Url).and_return("")
 
         expect(Yast::Popup).to receive(:LongError)
 
