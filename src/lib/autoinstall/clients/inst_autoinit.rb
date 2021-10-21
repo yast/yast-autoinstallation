@@ -91,17 +91,19 @@ module Y2Autoinstallation
 
         Yast::Progress.Finish
 
-        # when installing from the online installation medium we need to
-        # register the system earlier because the medium does not contain any
-        # repositories, we need the repositories from the registration server
-        if Y2Packager::MediumType.online? && !Yast::Mode.autoupgrade
+        # register the system early to get repositories from registration server
+        if Yast::Profile.current.fetch_as_hash(REGISTER_SECTION)["do_registration"] && !Yast::Mode.autoupgrade
           autosetup_network if network_before_proposal?
 
-          res = register_system
-          return res if res
-        # offline registration need here to init software management according to picked product
-        # or autoupgrade without scc
-        elsif Y2Packager::MediumType.offline?
+          suse_register
+        # report error if there are no registration and no repository on medium
+        elsif !Y2Packager::InstallationMedium.contain_repo? && !Yast::Mode.autoupgrade
+          report_missing_registration
+          return :abort
+        end
+
+        # if there are more repos, pick corresponding ones
+        if Y2Packager::InstallationMedium.contain_multi_repos?
           res = offline_product
           return res if res
         end
@@ -367,25 +369,11 @@ module Y2Autoinstallation
         Yast::AutoinstConfig.ProfileInRootPart = true
       end
 
-      # Register system acoording to profile
-      # @return nil if all is fine or :abort if unrecoverable error found
-      def register_system
-        # check that the registration section is defined and registration is enabled
-        reg_section = Yast::Profile.current.fetch(REGISTER_SECTION, {})
-        reg_enabled = reg_section["do_registration"]
-
-        if !reg_enabled
-          msg = _("Registration is mandatory when using the online " \
-            "installation medium. Enable registration in " \
-            "the AutoYaST profile or use full installation medium.")
-          Yast::Popup.LongError(msg) # No timeout because we are stopping the installation/upgrade.
-
-          return :abort
-        end
-
-        suse_register
-
-        nil
+      def report_missing_registration
+        msg = _("Registration is mandatory when using the online " \
+          "installation medium. Enable registration in " \
+          "the AutoYaST profile or use full installation medium.")
+        Yast::Popup.LongError(msg) # No timeout because we are stopping the installation/upgrade.
       end
 
       # sets product and initialize it for offline installation
