@@ -1,6 +1,5 @@
 require "autoinstall/autosetup_helpers"
 require "autoinstall/importer"
-require "y2packager/medium_type"
 require "y2packager/product_spec"
 require "autoinstall/ask/runner"
 require "autoinstall/ask/stage"
@@ -131,8 +130,7 @@ module Y2Autoinstallation
           Yast::WFM.CallFunction("fcoe-client_auto", ["Write"])
         end
 
-        if !(Y2Packager::MediumType.offline? || Yast::AutoinstFunctions.selected_product ||
-            Yast::Mode.autoupgrade)
+        if !(Yast::AutoinstFunctions.selected_product || Yast::Mode.autoupgrade)
           msg = _("None or wrong base product has been defined " \
            "in the AutoYaST configuration file. " \
            "Please check the <b>products</b> entry in the <b>software</b> section.<br><br>" \
