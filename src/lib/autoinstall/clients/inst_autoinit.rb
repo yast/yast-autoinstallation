@@ -87,6 +87,12 @@ module Y2Autoinstallation
 
         Yast::Progress.Finish
 
+        # if there are more repos, pick corresponding ones
+        if Y2Packager::InstallationMedium.contain_multi_repos?
+          res = offline_product
+          return res if res
+        end
+
         # register the system early to get repositories from registration server
         if Yast::Profile.current.fetch_as_hash(REGISTER_SECTION)["do_registration"] && !Yast::Mode.autoupgrade
           autosetup_network if network_before_proposal?
@@ -96,12 +102,6 @@ module Y2Autoinstallation
         elsif !Y2Packager::InstallationMedium.contain_repo? && !Yast::Mode.autoupgrade
           report_missing_registration
           return :abort
-        end
-
-        # if there are more repos, pick corresponding ones
-        if Y2Packager::InstallationMedium.contain_multi_repos?
-          res = offline_product
-          return res if res
         end
 
         if !(Yast::Mode.autoupgrade && Yast::AutoinstConfig.ProfileInRootPart)
