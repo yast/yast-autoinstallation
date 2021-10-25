@@ -29,6 +29,7 @@ module Y2Autoinstall
       def self.attributes
         [
           { name: :chrooted },
+          { name: :environment },
           { name: :filename },
           { name: :interpreter },
           { name: :location },
