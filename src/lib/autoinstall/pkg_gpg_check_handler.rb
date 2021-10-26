@@ -147,9 +147,9 @@ module Yast
     # @param [String] url   Repository URL
     # @return [Yast::ProfileHash] Signature handling settings for the given add-on.
     def get_addon_config(profile, url)
-      addon_config =
-        addons_config(profile).find { |c| c["media_url"] == url } ||
-        Yast::ProfileHash.new
+      config = addons_config(profile).find { |c| c["media_url"] == url }
+      addon_config = Yast::ProfileHash.new(config || {})
+
       general_config = profile.fetch_as_hash("general")
       general_config.fetch_as_hash("signature-handling")
         .merge(addon_config.fetch_as_hash("signature-handling"))
@@ -161,7 +161,7 @@ module Yast
     # of an AutoYaST profile.
     #
     # @param [Yast::ProfileHash] profile AutoYaST profile.
-    # @return [Yast::ProfileHash] Add-ons section from profile.
+    # @return [Array<Hash>] Add-ons section from profile.
     def addons_config(profile)
       profile.fetch_as_hash("add-on").fetch_as_array("add_on_products")
     end
