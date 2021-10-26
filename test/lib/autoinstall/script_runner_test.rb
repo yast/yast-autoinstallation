@@ -28,10 +28,12 @@ describe Y2Autoinstall::ScriptRunner do
   let(:spec) { { "filename" => "test.sh" } }
 
   describe "#run" do
+    let(:logs_content) { "logs content" }
+
     before do
       allow(Yast::SCR).to receive(:Read)
         .with(Yast::Path.new(".target.string"), script.log_path)
-        .and_return("logs content")
+        .and_return(logs_content)
       allow(script).to receive(:execute).and_return(true)
     end
 
@@ -76,12 +78,23 @@ describe Y2Autoinstall::ScriptRunner do
       end
     end
 
-    context "when feedback is enabled but the type is not set" do
-      let(:spec) { { "feedback" => true } }
+    context "when feedback is enabled" do
+      context "but the type is not set" do
+        let(:spec) { { "feedback" => true } }
 
-      it "displays the logs in a pop-up" do
-        expect(Yast::Popup).to receive(:LongText)
-        runner.run(script)
+        it "displays the logs in a pop-up" do
+          expect(Yast::Popup).to receive(:LongText)
+          runner.run(script)
+        end
+      end
+
+      context "but the log is empty" do
+        let(:logs_content) { "" }
+
+        it "does not report or display anything" do
+          expect(Yast::Popup).to_not receive(:ShowFeedback)
+          runner.run(script)
+        end
       end
     end
 
@@ -91,7 +104,7 @@ describe Y2Autoinstall::ScriptRunner do
       end
 
       it "displays the logs as a regular message" do
-        expect(Yast::Report).to receive(:Message).with("logs content")
+        expect(Yast::Report).to receive(:Message).with(logs_content)
         runner.run(script)
       end
     end
@@ -102,7 +115,7 @@ describe Y2Autoinstall::ScriptRunner do
       end
 
       it "displays the logs as a warning" do
-        expect(Yast::Report).to receive(:Warning).with("logs content")
+        expect(Yast::Report).to receive(:Warning).with(logs_content)
         runner.run(script)
       end
     end
@@ -113,7 +126,7 @@ describe Y2Autoinstall::ScriptRunner do
       end
 
       it "displays the logs as a error" do
-        expect(Yast::Report).to receive(:Error).with("logs content")
+        expect(Yast::Report).to receive(:Error).with(logs_content)
         runner.run(script)
       end
     end

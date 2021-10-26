@@ -23,13 +23,15 @@ require "autoinstall/autoinst_profile/script_section"
 describe Y2Autoinstall::AutoinstProfile::ScriptSection do
   describe ".new_from_hashes" do
     let(:hash) do
-      { "filename" => "script.sh" }
+      { "filename"    => "script.sh",
+        "environment" => true }
     end
 
     it "returns an ScriptSection with the given attributes" do
       section = described_class.new_from_hashes(hash)
 
       expect(section.filename).to eq("script.sh")
+      expect(section.environment).to eq(true)
     end
   end
 end
