@@ -380,7 +380,7 @@ module Y2Autoinstallation
           return :abort
         end
 
-        suse_register
+        return :abort unless suse_register
 
         nil
       end
