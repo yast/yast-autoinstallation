@@ -98,7 +98,9 @@ module Y2Autoinstallation
             !Yast::Mode.autoupgrade
           autosetup_network if network_before_proposal?
 
-          suse_register
+          register = suse_register
+          # abort installation if registration failed and there are no install repo
+          return :abort if !register && !Y2Packager::InstallationMedium.contain_repo?
         # report error if there are no registration and no repository on medium
         elsif !Y2Packager::InstallationMedium.contain_repo? && !Yast::Mode.autoupgrade
           report_missing_registration
