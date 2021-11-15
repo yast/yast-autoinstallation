@@ -1,19 +1,16 @@
-require "autoinstall/autosetup_helpers"
-require "autoinstall/importer"
-require "y2packager/medium_type"
 require "autoinstall/ask/runner"
 require "autoinstall/ask/stage"
+require "autoinstall/autosetup_helpers"
+require "autoinstall/importer"
+require "y2packager/installation_medium"
+require "y2packager/product_spec"
 
-Yast.import "AutoInstall"
-Yast.import "AutoInstallRules"
 Yast.import "AutoinstConfig"
 Yast.import "AutoinstFunctions"
 Yast.import "AutoinstGeneral"
 Yast.import "AutoinstScripts"
-Yast.import "Call"
 Yast.import "Console"
 Yast.import "InstURL"
-Yast.import "Installation"
 Yast.import "Linuxrc"
 Yast.import "Mode"
 Yast.import "Popup"
@@ -90,19 +87,25 @@ module Y2Autoinstallation
 
         Yast::Progress.Finish
 
-        # when installing from the online installation medium we need to
-        # register the system earlier because the medium does not contain any
-        # repositories, we need the repositories from the registration server
-        if Y2Packager::MediumType.online? && !Yast::Mode.autoupgrade
-          autosetup_network if network_before_proposal?
-
-          res = register_system
-          return res if res
-        # offline registration need here to init software management according to picked product
-        # or autoupgrade without scc
-        elsif Y2Packager::MediumType.offline?
+        # if there are more repos, pick corresponding ones
+        if Y2Packager::InstallationMedium.contain_multi_repos?
           res = offline_product
           return res if res
+        end
+
+        autosetup_network if network_before_proposal? && !Yast::Mode.autoupgrade
+
+        # register the system early to get repositories from registration server
+        if Yast::Profile.current.fetch_as_hash(REGISTER_SECTION)["do_registration"] &&
+            !Yast::Mode.autoupgrade
+
+          register = suse_register
+          # abort installation if registration failed and there are no install repo
+          return :abort if !register && !Y2Packager::InstallationMedium.contain_repo?
+        # report error if there are no registration and no repository on medium
+        elsif !Y2Packager::InstallationMedium.contain_repo? && !Yast::Mode.autoupgrade
+          report_missing_registration
+          return :abort
         end
 
         if !(Yast::Mode.autoupgrade && Yast::AutoinstConfig.ProfileInRootPart)
@@ -128,14 +131,13 @@ module Y2Autoinstallation
           Yast::WFM.CallFunction("fcoe-client_auto", ["Write"])
         end
 
-        if !(Y2Packager::MediumType.offline? || Yast::AutoinstFunctions.selected_product ||
-            Yast::Mode.autoupgrade)
+        if !(Yast::AutoinstFunctions.selected_product || Yast::Mode.autoupgrade)
           msg = _("None or wrong base product has been defined " \
            "in the AutoYaST configuration file. " \
            "Please check the <b>products</b> entry in the <b>software</b> section.<br><br>" \
            "Following base products are available:<br>")
-          Yast::AutoinstFunctions.available_base_products_hash.each do |product|
-            msg += "#{product[:name]} (#{product[:summary]})<br>"
+          Y2Packager::ProductSpec.base_products.each do |product|
+            msg += "#{product.name} (#{product.display_name})<br>"
           end
           Yast::Popup.LongError(msg) # No timeout because we are stopping the installation/upgrade.
           return :abort
@@ -366,25 +368,11 @@ module Y2Autoinstallation
         Yast::AutoinstConfig.ProfileInRootPart = true
       end
 
-      # Register system acoording to profile
-      # @return nil if all is fine or :abort if unrecoverable error found
-      def register_system
-        # check that the registration section is defined and registration is enabled
-        reg_section = Yast::Profile.current.fetch(REGISTER_SECTION, {})
-        reg_enabled = reg_section["do_registration"]
-
-        if !reg_enabled
-          msg = _("Registration is mandatory when using the online " \
-            "installation medium. Enable registration in " \
-            "the AutoYaST profile or use full installation medium.")
-          Yast::Popup.LongError(msg) # No timeout because we are stopping the installation/upgrade.
-
-          return :abort
-        end
-
-        suse_register
-
-        nil
+      def report_missing_registration
+        msg = _("Registration is mandatory when using the online " \
+          "installation medium. Enable registration in " \
+          "the AutoYaST profile or use full installation medium.")
+        Yast::Popup.LongError(msg) # No timeout because we are stopping the installation/upgrade.
       end
 
       # sets product and initialize it for offline installation
@@ -407,7 +395,7 @@ module Y2Autoinstallation
           log_url = Yast::URL.HidePassword(base_url)
           Yast::Packages.Initialize_StageInitial(show_popup, base_url, log_url, product.dir)
           # select the product to install
-          Yast::Pkg.ResolvableInstall(product.details.product, :product, "")
+          Yast::Pkg.ResolvableInstall(product.name, :product, "")
           # initialize addons and the workflow manager
           Yast::AddOnProduct.SetBaseProductURL(base_url)
           Yast::WorkflowManager.SetBaseWorkflow(false)
@@ -428,8 +416,8 @@ module Y2Autoinstallation
               "Please check the <b>products</b> entry in the <b>software</b> section.<br><br>" \
               "Following base products are available:<br>")
           end
-          Yast::AutoinstFunctions.available_base_products_hash.each do |p|
-            msg += "#{p[:name]} (#{p[:summary]})<br>"
+          Y2Packager::ProductSpec.base_products.each do |prod|
+            msg += "#{prod.name} (#{prod.display_name})<br>"
           end
           Yast::Popup.LongError(msg) # No timeout because we are stopping the installation/upgrade.
           return :abort

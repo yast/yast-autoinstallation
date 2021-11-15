@@ -117,73 +117,92 @@ describe Yast::AutoinstFunctions do
       Y2Packager::Product.new(name: name)
     end
 
+    let(:product_spec) { instance_double(Y2Packager::ProductSpec, name: "openSUSE") }
+
     let(:selected_name) { "SLES" }
 
+    let(:profile) do
+      { "software" => { "products" => [selected_name] } }
+    end
+
     before(:each) do
+      allow(Yast::Profile).to receive(:current).and_return(Yast::ProfileHash.new(profile))
       allow(Y2Packager::ProductReader)
         .to receive(:new)
         .and_return(double(available_base_products: [base_product("SLES"), base_product("SLED")]))
 
+      allow(Y2Packager::ProductSpec).to receive(:base_products).and_return([product_spec])
+
+      subject.main
       # reset cache between tests
       subject.reset_product
     end
 
-    it "returns proper base product when explicitly selected in the profile " \
-        "and such base product exists on media" do
-      allow(Yast::Profile)
-        .to receive(:current)
-        .and_return(Yast::ProfileHash.new("software" => { "products" => [selected_name] }))
+    context "when the base product is explicitly selected in the profile" do
+      context "and the product exists on the media" do
+        it "returns the corresponding base product" do
+          expect(subject.selected_product.name).to eql selected_name
+        end
+      end
 
-      expect(subject.selected_product.name).to eql selected_name
+      context "and the product exists on the control file (online case)" do
+        let(:selected_name) { "openSUSE" }
+
+        it "returns the corresponding base product" do
+          subject.main
+          expect(subject.selected_product.name).to eql selected_name
+        end
+      end
+
+      context "and such a product does not exist on the media" do
+        let(:selected_name) { "Fedora" }
+
+        it "returns nil" do
+          expect(subject.selected_product).to be nil
+        end
+      end
     end
 
-    it "returns nil when product is explicitly selected in the profile and " \
-        "such base product doesn't exist on media" do
-      allow(Yast::Profile)
-        .to receive(:current)
-        .and_return(
-          Yast::ProfileHash.new("software" => { "products" => { "product" => "Fedora" } })
-        )
+    context "when the product is identified by a pattern" do
+      let(:profile) do
+        { "software" => { "patterns" => ["sles-base-32bit"] } }
+      end
 
-      expect(subject.selected_product).to be nil
+      it "returns the corresponding product" do
+        expect(subject.selected_product.name).to eql selected_name
+      end
     end
 
-    it "returns base product identified by patterns in the profile " \
-        "if such base product exists on media" do
-      allow(Yast::Profile)
-        .to receive(:current)
-        .and_return(Yast::ProfileHash.new("software" => { "patterns" => ["sles-base-32bit"] }))
+    context "when the product is identified by a package" do
+      let(:profile) do
+        { "software" => { "packages" => ["sles-release"] } }
+      end
 
-      expect(subject.selected_product.name).to eql selected_name
+      it "returns the corresponding product" do
+        expect(subject.selected_product.name).to eql selected_name
+      end
     end
 
-    it "returns base product identified by packages in the profile " \
-        "if such base product exists on media" do
-      allow(Yast::Profile)
-        .to receive(:current)
-        .and_return(Yast::ProfileHash.new("software" => { "packages" => ["sles-release"] }))
+    context "when the product cannot be identified from the profile" do
+      let(:profile) do
+        { "software" => {} }
+      end
 
-      expect(subject.selected_product.name).to eql selected_name
-    end
+      context "and only one base product exists on the media" do
+        before do
+          allow(Y2Packager::ProductReader)
+            .to receive(:new)
+            .and_return(double(available_base_products: [base_product("SLED")]))
+        end
 
-    it "returns base product if there is just one on media and " \
-        "product cannot be identified from profile" do
-      allow(Y2Packager::ProductReader)
-        .to receive(:new)
-        .and_return(double(available_base_products: [base_product("SLED")]))
-      allow(Yast::Profile)
-        .to receive(:current)
-        .and_return(Yast::ProfileHash.new("software" => {}))
-
-      expect(subject.selected_product.name).to eql "SLED"
+        it "returns the existing base product" do
+          expect(subject.selected_product.name).to eql "SLED"
+        end
+      end
     end
 
     context "when there is not a valid software section" do
-      before do
-        allow(Yast::Profile)
-          .to receive(:current)
-          .and_return(Yast::ProfileHash.new("software" => nil))
-      end
+      let(:profile) { { "software" => nil } }
 
       it "returns nil" do
         expect(subject.selected_product).to be_nil

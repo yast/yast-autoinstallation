@@ -22,6 +22,17 @@ require_relative "../../test_helper"
 require "autoinstall/clients/inst_autoinit"
 
 describe Y2Autoinstallation::Clients::InstAutoinit do
+  let(:repo?) { true }
+  let(:do_registration) { true }
+  let(:setup_before_proposal) { false }
+
+  let(:profile) do
+    Yast::ProfileHash.new(
+      "suse_register" => { "do_registration" => do_registration },
+      "networking"    => { "setup_before_proposal" => setup_before_proposal }
+    )
+  end
+
   before do
     allow(Yast::UI).to receive(:UserInput).and_return(:next)
     allow(Yast::WFM).to receive(:CallFunction).and_return(true)
@@ -32,14 +43,22 @@ describe Y2Autoinstallation::Clients::InstAutoinit do
     allow(Yast::Linuxrc).to receive(:InstallInf).and_return(nil)
     allow(Yast::ProfileLocation).to receive(:Process).and_return(true)
     allow(Yast::Profile).to receive(:ReadXML).and_return(true)
-    allow(Yast::Profile).to receive(:current).and_return(Yast::ProfileHash.new)
-    allow(Yast::Mode).to receive(:autoupgrade).and_return(true)
+    allow(Yast::Profile).to receive(:current).and_return(profile)
+    allow(Yast::Mode).to receive(:autoupgrade).and_return(false)
     allow(Yast::AutoinstFunctions).to receive(:available_base_products).and_return([])
-    allow(Y2Packager::MediumType).to receive(:online?).and_return(true)
+    allow(Y2Packager::InstallationMedium).to receive(:contain_multi_repos?).and_return(false)
+    allow(Y2Packager::InstallationMedium).to receive(:contain_repo?).and_return(repo?)
+    allow(Y2Packager::ProductSpec).to receive(:base_products).and_return([sles_spec])
     Yast::AutoinstConfig.ProfileInRootPart = false
   end
 
   describe "#run" do
+    let(:sles_spec) do
+      instance_double(
+        Y2Packager::ProductSpec, name: "SLES", display_name: "SUSE Linux Enterprise Server"
+      )
+    end
+
     it "inits console module" do
       expect(Yast::Console).to receive(:Init)
 
@@ -97,53 +116,26 @@ describe Y2Autoinstallation::Clients::InstAutoinit do
       subject.run
     end
 
-    context "when using the Full medium" do
-      it "reports an error when the product is not specified" do
-        allow(Y2Packager::MediumType).to receive(:online?).and_return(false)
-        allow(Y2Packager::MediumType).to receive(:offline?).and_return(true)
-        allow(Yast::Mode).to receive(:autoupgrade).and_return(false)
+    it "reports an error when the product is not specified" do
+      allow(Yast::Mode).to receive(:autoupgrade).and_return(false)
+      allow(Yast::InstURL).to receive(:installInf2Url).and_return("")
 
-        expect(Yast::Popup).to receive(:LongError)
+      expect(Yast::Popup).to receive(:LongError)
 
-        expect(subject.run).to eq :abort
-      end
+      expect(subject.run).to eq :abort
     end
 
-    context "when using the Online medium for an installation" do
-      let(:do_registration) { false }
-      let(:setup_before_proposal) { false }
-      let(:profile) do
-        Yast::ProfileHash.new(
-          "suse_register" => { "do_registration" => do_registration },
-          "networking"    => { "setup_before_proposal" => setup_before_proposal }
-        )
+    context "when the registration is not enabled in the profile" do
+      it "does not try to register the system" do
+        expect(Yast::WFM).to_not receive(:CallFunction)
+          .with("scc_auto", ["Import", profile["suse_register"]])
+        expect(Yast::WFM).to_not receive(:CallFunction).with("scc_auto", ["Write"])
+
+        subject.run
       end
 
-      before do
-        allow(Yast::Mode).to receive(:autoupgrade).and_return(false)
-        allow(Yast::Profile).to receive(:current).and_return(profile)
-      end
-
-      context "and the network is requested to be configured before the proposal" do
-        let(:setup_before_proposal) { true }
-
-        it "configures the network" do
-          expect(subject).to receive(:autosetup_network)
-
-          subject.run
-        end
-      end
-
-      context "and the registration is disabled or not present in the profile" do
-        let(:do_registration) { false }
-
-        it "does not try to register the system" do
-          expect(Yast::WFM).to_not receive(:CallFunction)
-            .with("scc_auto", ["Import", profile["suse_register"]])
-          expect(Yast::WFM).to_not receive(:CallFunction).with("scc_auto", ["Write"])
-
-          subject.run
-        end
+      context "and there are not repositories in the installation medium" do
+        let(:repo?) { false }
 
         it "reports an error" do
           expect(Yast::WFM).to_not receive(:CallFunction)
@@ -158,20 +150,30 @@ describe Y2Autoinstallation::Clients::InstAutoinit do
           expect(subject.run).to eq :abort
         end
       end
+    end
 
-      context "and the registration is enabled according to the profile" do
-        let(:do_registration) { true }
+    context "when the registration is enabled according to the profile" do
+      let(:do_registration) { true }
 
-        it "registers the system" do
-          expect(Yast::WFM).to receive(:CallFunction)
-            .with("scc_auto", ["Import", profile["suse_register"]])
-          expect(Yast::WFM).to receive(:CallFunction).with("scc_auto", ["Write"])
-          # fake that registration is available to avoid build requires
-          allow(subject).to receive(:registration_module_available?).and_return(true)
-          allow(Yast::Profile).to receive(:remove_sections)
+      it "registers the system" do
+        expect(Yast::WFM).to receive(:CallFunction)
+          .with("scc_auto", ["Import", profile["suse_register"]])
+        expect(Yast::WFM).to receive(:CallFunction).with("scc_auto", ["Write"])
+        # fake that registration is available to avoid build requires
+        allow(subject).to receive(:registration_module_available?).and_return(true)
+        allow(Yast::Profile).to receive(:remove_sections)
 
-          subject.run
-        end
+        subject.run
+      end
+    end
+
+    context "when the network is requested to be configured before the proposal" do
+      let(:setup_before_proposal) { true }
+
+      it "configures the network" do
+        expect(subject).to receive(:autosetup_network)
+
+        subject.run
       end
     end
 
