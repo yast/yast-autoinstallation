@@ -93,10 +93,11 @@ module Y2Autoinstallation
           return res if res
         end
 
+        autosetup_network if network_before_proposal? && !Yast::Mode.autoupgrade
+
         # register the system early to get repositories from registration server
         if Yast::Profile.current.fetch_as_hash(REGISTER_SECTION)["do_registration"] &&
             !Yast::Mode.autoupgrade
-          autosetup_network if network_before_proposal?
 
           register = suse_register
           # abort installation if registration failed and there are no install repo
