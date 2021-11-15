@@ -280,11 +280,11 @@ describe Yast::PkgGpgCheckHandler do
           },
           "add-on"  => {
             "add_on_products" => [
-              Yast::ProfileHash.new(
+              {
                 "media_url"          => "http://dl.opensuse.org/repos/YaST:/Head",
                 "name"               => "yast_head",
                 "signature-handling" => { "accept_unsigned_file" => false }
-              )
+              }
             ]
           }
         )

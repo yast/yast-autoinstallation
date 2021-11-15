@@ -70,6 +70,7 @@ module Y2Autoinstall
       return if script.feedback.value == :no
 
       feedback = Yast::SCR.Read(Yast::Path.new(".target.string"), script.log_path)
+      return if feedback.to_s.strip.empty?
 
       case script.feedback.value
       when :popup
