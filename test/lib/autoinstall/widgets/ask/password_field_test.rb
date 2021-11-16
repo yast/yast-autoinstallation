@@ -20,6 +20,7 @@
 require_relative "../../../../test_helper"
 require "autoinstall/widgets/ask/password_field"
 require "autoinstall/ask/question"
+require "cwm/rspec"
 
 describe Y2Autoinstall::Widgets::Ask::PasswordField do
   subject { described_class.new(question) }
