@@ -75,6 +75,7 @@ module Y2Autoinstall
         :hostaddress,
         :network,
         :domain,
+        :efi,
         :arch,
         :karch,
         :product,

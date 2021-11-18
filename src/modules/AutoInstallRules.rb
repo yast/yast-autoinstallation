@@ -85,7 +85,7 @@ module Yast
       @totaldisk = 0
       @hostid = ""
       @mac = ""
-      @efi = false
+      @efi = "no"
       @linux = 0
       @others = 0
       @xserver = ""
@@ -484,6 +484,7 @@ module Yast
               "installed_product_version",
               "installed_product",
               "domain",
+              "efi",
               "network",
               "mac",
               "karch",
@@ -1086,7 +1087,7 @@ module Yast
     def AutoInstallRules
       @mac = getMAC
       @hostid = getHostid
-      @efi = boot_efi?
+      @efi = boot_efi? ? "yes" : "no"
       log.info "init mac:#{@mac} hostid: #{@hostid} efi: #{@efi}"
       nil
     end
