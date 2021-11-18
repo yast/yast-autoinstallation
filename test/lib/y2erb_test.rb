@@ -232,4 +232,26 @@ describe Y2Autoinstallation::Y2ERB::TemplateEnvironment do
       expect(subject.os_release).to be_a(Hash)
     end
   end
+
+  describe "#efi?" do
+    let(:efi) { "0" }
+
+    before do
+      allow(Yast::Linuxrc).to receive(:InstallInf).with("EFI").and_return(efi)
+    end
+
+    context "when the system is boot using efi" do
+      let(:efi) { "1" }
+
+      it "returns true" do
+        expect(subject.efi?).to eq(true)
+      end
+    end
+
+    context "when the system is boot without UEFI" do
+      it "returns false" do
+        expect(subject.efi?).to eq(false)
+      end
+    end
+  end
 end

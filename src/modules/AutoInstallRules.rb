@@ -24,6 +24,7 @@ module Yast
       Yast.import "XML"
       Yast.import "Kernel"
       Yast.import "Mode"
+      Yast.import "Linuxrc"
       Yast.import "Profile"
       Yast.import "Label"
       Yast.import "Report"
@@ -84,6 +85,7 @@ module Yast
       @totaldisk = 0
       @hostid = ""
       @mac = ""
+      @efi = false
       @linux = 0
       @others = 0
       @xserver = ""
@@ -137,6 +139,13 @@ module Yast
       UI.CloseDialog
 
       nil
+    end
+
+    # Returns whether the system was booted using UEFI or not
+    #
+    # @return [Boolean] true when the system is booted using EFI
+    def boot_efi?
+      Yast::Linuxrc.InstallInf("EFI") == "1"
     end
 
     # getMAC()
@@ -285,6 +294,11 @@ module Yast
       # MAC
       #
       Ops.set(@ATTR, "mac", @mac)
+
+      #
+      # EFI Boot
+      #
+      @ATTR["efi"] = @efi
 
       #
       # Network
@@ -1072,7 +1086,8 @@ module Yast
     def AutoInstallRules
       @mac = getMAC
       @hostid = getHostid
-      Builtins.y2milestone("init mac:%1 hostid:%2", @mac, @hostid)
+      @efi = boot_efi?
+      log.info "init mac:#{@mac} hostid: #{@hostid} efi: #{@efi}"
       nil
     end
 

@@ -12,6 +12,13 @@ module Y2Autoinstallation
     class TemplateEnvironment
       include Yast::Logger
 
+      # @return [Boolean] whether the system was booted using UEFI or not according to linuxrc
+      def efi?
+        Yast.import "Linuxrc"
+
+        Yast::Linuxrc.InstallInf("EFI") == "1"
+      end
+
       def hardware
         @hardware ||= Yast::SCR.Read(Yast::Path.new(".probe"))
       end
