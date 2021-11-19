@@ -2,7 +2,7 @@ require_relative "../test_helper"
 require "autoinstall/efi_detector"
 
 describe Y2Autoinstallation::EFIDetector do
-  describe "#boot_efi?" do
+  describe ".boot_efi?" do
     let(:efi) { true }
 
     context "when called in the initial Stage" do
@@ -12,7 +12,7 @@ describe Y2Autoinstallation::EFIDetector do
 
       context "and EFI is read as '1' from the Install.inf file" do
         it "returns true" do
-          expect(subject.boot_efi?)
+          expect(described_class.boot_efi?)
         end
       end
 
@@ -20,7 +20,7 @@ describe Y2Autoinstallation::EFIDetector do
         let(:efi) { false }
 
         it "returns false" do
-          expect(subject.boot_efi?)
+          expect(described_class.boot_efi?)
         end
       end
     end
@@ -33,7 +33,7 @@ describe Y2Autoinstallation::EFIDetector do
       described_class.const_get("EFI_VARS_DIRS").each do |dir|
         it "returns true if '#{dir}' exists" do
           expect(Dir).to receive(:exist?).with(dir).and_return(true)
-          expect(subject.boot_efi?).to eq(true)
+          expect(described_class.boot_efi?).to eq(true)
         end
       end
 
@@ -42,7 +42,7 @@ describe Y2Autoinstallation::EFIDetector do
           allow(Dir).to receive(:exist?).with(dir).and_return(false)
         end
 
-        expect(subject.boot_efi?).to eq(false)
+        expect(described_class.boot_efi?).to eq(false)
       end
     end
   end
