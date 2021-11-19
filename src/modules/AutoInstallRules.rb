@@ -6,12 +6,14 @@
 # $Id$
 require "yast"
 require "autoinstall/xml_checks"
+require "autoinstall/common_helpers"
 require "yast2/popup"
 require "y2storage"
 
 module Yast
   class AutoInstallRulesClass < Module
     include Yast::Logger
+    include Y2Autoinstallation::CommonHelpers
 
     def main
       Yast.import "UI"
@@ -139,13 +141,6 @@ module Yast
       UI.CloseDialog
 
       nil
-    end
-
-    # Returns whether the system was booted using UEFI or not
-    #
-    # @return [Boolean] true when the system is booted using EFI
-    def boot_efi?
-      Yast::Linuxrc.InstallInf("EFI") == "1"
     end
 
     # getMAC()
@@ -1134,6 +1129,7 @@ module Yast
     publish variable: :mac, type: "string"
     publish variable: :linux, type: "integer"
     publish variable: :others, type: "integer"
+    publish variable: :efi, type: "string"
     publish variable: :xserver, type: "string"
     publish variable: :NonLinuxPartitions, type: "list"
     publish variable: :LinuxPartitions, type: "list"

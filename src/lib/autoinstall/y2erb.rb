@@ -1,5 +1,6 @@
 require "yast"
 require "erb"
+require "autoinstall/common_helpers"
 
 module Y2Autoinstallation
   class Y2ERB
@@ -11,13 +12,7 @@ module Y2Autoinstallation
 
     class TemplateEnvironment
       include Yast::Logger
-
-      # @return [Boolean] whether the system was booted using UEFI or not according to linuxrc
-      def efi?
-        Yast.import "Linuxrc"
-
-        Yast::Linuxrc.InstallInf("EFI") == "1"
-      end
+      include Y2Autoinstallation::CommonHelpers
 
       def hardware
         @hardware ||= Yast::SCR.Read(Yast::Path.new(".probe"))
