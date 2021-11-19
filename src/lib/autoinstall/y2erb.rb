@@ -13,7 +13,7 @@ module Y2Autoinstallation
     class TemplateEnvironment
       include Yast::Logger
 
-      # @see {EFIDetector}
+      # @see Y2Autoinstallation::EFIDetector
       # @return [Boolean] whether the system is booted using EFI or not
       def boot_efi?
         (@efi_detector ||= EFIDetector.new).boot_efi?

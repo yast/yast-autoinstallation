@@ -1086,9 +1086,8 @@ module Yast
       nil
     end
 
-    # @see {Y2Autoinstallation::EFIDetector}
-    # @return [String] "yes" when the system is booted using EFI or "no" when not according to the
-    #   {Y2Autoinstallation::EFIDetector}
+    # @see Y2Autoinstallation::EFIDetector
+    # @return [String] "yes" when the system is booted using EFI or "no" when not
     def boot_efi?
       (@detector ||= Y2Autoinstallation::EFIDetector.new).boot_efi? ? "yes" : "no"
     end
