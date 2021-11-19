@@ -6,6 +6,7 @@
 # $Id$
 require "yast"
 require "autoinstall/xml_checks"
+require "autoinstall/efi_detector"
 require "yast2/popup"
 require "y2storage"
 
@@ -24,6 +25,7 @@ module Yast
       Yast.import "XML"
       Yast.import "Kernel"
       Yast.import "Mode"
+      Yast.import "Linuxrc"
       Yast.import "Profile"
       Yast.import "Label"
       Yast.import "Report"
@@ -84,6 +86,7 @@ module Yast
       @totaldisk = 0
       @hostid = ""
       @mac = ""
+      @efi = "no"
       @linux = 0
       @others = 0
       @xserver = ""
@@ -287,6 +290,11 @@ module Yast
       Ops.set(@ATTR, "mac", @mac)
 
       #
+      # EFI Boot
+      @efi = boot_efi?
+      @ATTR["efi"] = @efi
+
+      #
       # Network
       #
       Ops.set(@ATTR, "hostaddress", hostaddress)
@@ -470,6 +478,7 @@ module Yast
               "installed_product_version",
               "installed_product",
               "domain",
+              "efi",
               "network",
               "mac",
               "karch",
@@ -1072,8 +1081,15 @@ module Yast
     def AutoInstallRules
       @mac = getMAC
       @hostid = getHostid
-      Builtins.y2milestone("init mac:%1 hostid:%2", @mac, @hostid)
+      @efi = boot_efi?
+      log.info "init mac:#{@mac} hostid: #{@hostid} efi: #{@efi}"
       nil
+    end
+
+    # @see Y2Autoinstallation::EFIDetector
+    # @return [String] "yes" when the system is booted using EFI or "no" when not
+    def boot_efi?
+      Y2Autoinstallation::EFIDetector.boot_efi? ? "yes" : "no"
     end
 
     # Regexp to extract the IP from the routes table
@@ -1118,6 +1134,7 @@ module Yast
     publish variable: :mac, type: "string"
     publish variable: :linux, type: "integer"
     publish variable: :others, type: "integer"
+    publish variable: :efi, type: "string"
     publish variable: :xserver, type: "string"
     publish variable: :NonLinuxPartitions, type: "list"
     publish variable: :LinuxPartitions, type: "list"

@@ -212,6 +212,28 @@ describe Y2Autoinstallation::Y2ERB::TemplateEnvironment do
     allow(Yast::SCR).to receive(:Read).and_return(hardware_mock_data)
   end
 
+  describe "#boot_efi?" do
+    let(:efi) { true }
+
+    before do
+      allow(Y2Autoinstallation::EFIDetector).to receive(:boot_efi?).and_return(efi)
+    end
+
+    context "when the system was booted with EFI" do
+      it "returns true" do
+        expect(subject.boot_efi?).to eq(true)
+      end
+    end
+
+    context "when the system was not booted with EFI" do
+      let(:efi) { false }
+
+      it "returns false" do
+        expect(subject.boot_efi?).to eq(false)
+      end
+    end
+  end
+
   describe "#network_cards" do
     it "returns list of map" do
       expect(subject.network_cards).to be_a(Array)
