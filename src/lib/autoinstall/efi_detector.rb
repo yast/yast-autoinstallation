@@ -3,7 +3,7 @@ Yast.import "Stage"
 
 module Y2Autoinstallation
   # This module defines some methods that are used by different classes
-  module CommonHelpers
+  class EFIDetector
     # Use same approach than linuxrc for detecting the EFI boot in a running system but use
     # install.inf in case of initial Stage.
     EFI_VARS_DIRS = ["/sys/firmware/efi/efivars", "/sys/firmware/efi/vars/"].freeze

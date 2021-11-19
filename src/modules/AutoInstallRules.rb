@@ -6,14 +6,13 @@
 # $Id$
 require "yast"
 require "autoinstall/xml_checks"
-require "autoinstall/common_helpers"
+require "autoinstall/efi_detector"
 require "yast2/popup"
 require "y2storage"
 
 module Yast
   class AutoInstallRulesClass < Module
     include Yast::Logger
-    include Y2Autoinstallation::CommonHelpers
 
     def main
       Yast.import "UI"
@@ -292,7 +291,7 @@ module Yast
 
       #
       # EFI Boot
-      #
+      @efi = boot_efi?
       @ATTR["efi"] = @efi
 
       #
@@ -1082,9 +1081,16 @@ module Yast
     def AutoInstallRules
       @mac = getMAC
       @hostid = getHostid
-      @efi = boot_efi? ? "yes" : "no"
+      @efi = boot_efi?
       log.info "init mac:#{@mac} hostid: #{@hostid} efi: #{@efi}"
       nil
+    end
+
+    # @see {Y2Autoinstallation::EFIDetector}
+    # @return [String] "yes" when the system is booted using EFI or "no" when not according to the
+    #   {Y2Autoinstallation::EFIDetector}
+    def boot_efi?
+      (@detector ||= Y2Autoinstallation::EFIDetector.new).boot_efi? ? "yes" : "no"
     end
 
     # Regexp to extract the IP from the routes table

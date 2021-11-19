@@ -43,6 +43,8 @@ describe "Yast::AutoInstallRules" do
       expect(Yast::Kernel).to receive(:GetPackages).and_return([])
       expect(subject).to receive(:getNetwork).and_return("192.168.1.0")
       expect(subject).to receive(:getHostname).and_return("myhost")
+      expect_any_instance_of(Y2Autoinstallation::EFIDetector)
+        .to receive(:boot_efi?).and_return(true)
       expect(Yast::SCR).to receive(:Read).with(Yast::Path.new(".etc.install_inf.XServer"))
       expect(Yast::Hostname).to receive(:CurrentDomain).and_return("mydomain.lan")
 
@@ -55,6 +57,7 @@ describe "Yast::AutoInstallRules" do
 
       expect(Yast::AutoInstallRules.installed_product).to eq("SUSE Linux Enterprise Server 12")
       expect(Yast::AutoInstallRules.installed_product_version).to eq("12")
+      expect(Yast::AutoInstallRules.efi).to eq("yes")
     end
   end
 

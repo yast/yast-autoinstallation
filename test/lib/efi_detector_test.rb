@@ -1,17 +1,7 @@
 require_relative "../test_helper"
-require "autoinstall/common_helpers"
+require "autoinstall/efi_detector"
 
-describe Y2Autoinstallation::CommonHelpers do
-  class Dummy
-    include Y2Autoinstallation::CommonHelpers
-
-    def initialize
-      @name = "Dummy class"
-    end
-  end
-
-  subject { Dummy.new }
-
+describe Y2Autoinstallation::EFIDetector do
   describe "#boot_efi?" do
     let(:efi) { true }
 
