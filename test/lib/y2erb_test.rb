@@ -216,7 +216,7 @@ describe Y2Autoinstallation::Y2ERB::TemplateEnvironment do
     let(:efi) { true }
 
     before do
-      allow_any_instance_of(Y2Autoinstallation::EFIDetector).to receive(:boot_efi?).and_return(efi)
+      allow(Y2Autoinstallation::EFIDetector).to receive(:boot_efi?).and_return(efi)
     end
 
     context "when the system was booted with EFI" do

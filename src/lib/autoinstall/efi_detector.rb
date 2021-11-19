@@ -2,16 +2,17 @@ Yast.import "Linuxrc"
 Yast.import "Stage"
 
 module Y2Autoinstallation
-  # This module defines some methods that are used by different classes
+  # This class is responsible of detecting if the system was booted using EFI or not
   class EFIDetector
-    # Use same approach than linuxrc for detecting the EFI boot in a running system but use
-    # install.inf in case of initial Stage.
     EFI_VARS_DIRS = ["/sys/firmware/efi/efivars", "/sys/firmware/efi/vars/"].freeze
 
-    # Whether the system was booted using UEFI or not
+    # Returns whether the system was booted using UEFI or not
     #
-    # @return [Boolean] whether the system was booted using UEFI or not according to linuxrc
-    def boot_efi?
+    # During the First Stage of the installation it relies on linuxrc for detecting the boot
+    # but in the rest of cases it checks if any of the EFI vars directories exist
+    #
+    # @return [Boolean] whether the system was booted using UEFI or not
+    def self.boot_efi?
       if Yast::Stage.initial
         Yast::Linuxrc.InstallInf("EFI") == "1"
       else

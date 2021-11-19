@@ -16,7 +16,7 @@ module Y2Autoinstallation
       # @see Y2Autoinstallation::EFIDetector
       # @return [Boolean] whether the system is booted using EFI or not
       def boot_efi?
-        (@efi_detector ||= EFIDetector.new).boot_efi?
+        EFIDetector.boot_efi?
       end
 
       def hardware
