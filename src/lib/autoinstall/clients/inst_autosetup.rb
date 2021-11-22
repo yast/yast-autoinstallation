@@ -140,6 +140,8 @@ module Y2Autoinstallation
             log.warn("User has aborted the installation.")
             return :abort
           end
+          Profile.remove_sections("add-on")
+
           Call.Function("add-on_auto", ["Write"])
 
           # Recover partitioning settings that were removed by the add-on_auto client (bsc#1073548)

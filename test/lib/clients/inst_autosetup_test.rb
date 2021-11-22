@@ -252,5 +252,26 @@ describe Y2Autoinstallation::Clients::InstAutosetup do
         end
       end
     end
+
+    context "when the add-on section is included" do
+      let(:profile) do
+        {
+          "add-on" => {
+            "add_on_products" => [
+              { "media_url" => "relurl:///", "product_dir" => "/AddOn" }
+            ]
+          }
+        }
+      end
+
+      it "removes the add-on section from the profile" do
+        expect(Yast::Profile.current).to have_key("add-on")
+        expect(Yast::WFM).to receive(:CallFunction)
+          .with("add-on_auto", ["Import", profile["add-on"]])
+          .and_return(true)
+        subject.main
+        expect(Yast::Profile.current).to_not have_key("add-on")
+      end
+    end
   end
 end
