@@ -25,11 +25,12 @@ require "autoinstall/clients/inst_autosetup_upgrade"
 require "y2packager/resolvable"
 
 describe Y2Autoinstallation::Clients::InstAutosetupUpgrade do
+  let(:product_name) { "sled" }
   let(:profile) do
     Yast::ProfileHash.new(
       "general"  => {},
       "software" => {
-        "products"        => ["sled"],
+        "products"        => [product_name],
         "patterns"        => ["yast-devel"],
         "packages"        => ["vim"],
         "remove-packages" => ["emacs"],
@@ -38,6 +39,10 @@ describe Y2Autoinstallation::Clients::InstAutosetupUpgrade do
       },
       "upgrade"  => { "stop_on_solver_conflict" => true }
     )
+  end
+
+  let(:product) do
+    Y2Packager::Product.new(name: product_name)
   end
 
   before do
@@ -56,6 +61,8 @@ describe Y2Autoinstallation::Clients::InstAutosetupUpgrade do
     allow(Yast::WFM).to receive(:SetLanguage)
     allow(Yast::UI).to receive(:SetLanguage)
     allow(Yast::AutoinstFunctions).to receive(:available_base_products).and_return([])
+    allow(Yast::AutoinstFunctions).to receive(:selected_product).and_return(product)
+    allow(Yast::AutoinstSoftware).to receive(:merge_product)
     allow(Yast::Product).to receive(:FindBaseProducts).and_return([])
     allow(Yast::ProductControl).to receive(:RunFrom).and_return(:next)
   end
@@ -63,6 +70,12 @@ describe Y2Autoinstallation::Clients::InstAutosetupUpgrade do
   describe "#main" do
     it "shows a progress" do
       expect(Yast::Progress).to receive(:New).at_least(:once)
+
+      subject.main
+    end
+
+    it "merges the selected product workflow" do
+      expect(Yast::AutoinstSoftware).to receive(:merge_product).with(product)
 
       subject.main
     end
@@ -96,7 +109,7 @@ describe Y2Autoinstallation::Clients::InstAutosetupUpgrade do
     end
 
     it "install/removes patterns, products anad packages according to profile" do
-      expect(Yast::Pkg).to receive(:ResolvableInstall).with("sled", :product)
+      expect(Yast::Pkg).to receive(:ResolvableInstall).with(product_name, :product)
       expect(Yast::Pkg).to receive(:ResolvableInstall).with("yast-devel", :pattern)
       expect(Yast::Pkg).to receive(:ResolvableInstall).with("vim", :package)
       expect(Yast::Pkg).to receive(:ResolvableRemove).with("emacs", :package)
