@@ -56,12 +56,14 @@ module Y2Autoinstallation
         return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
 
         Progress.NextStage
-
-        # configure general settings
-
         #
         # Set workflow variables
-        #
+        # Ensure that we clean product cache to avoid product from control (bsc#1156058)
+        AutoinstFunctions.reset_product
+        # Merging selected product (bsc#1192437)
+        AutoinstSoftware.merge_product(AutoinstFunctions.selected_product)
+
+        # configure general settings
         general_section = Profile.current["general"] || {}
         AutoinstGeneral.Import(general_section)
         Builtins.y2milestone(
