@@ -17,13 +17,13 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require_relative "./test_helper"
-require_relative "../src/clients/software_auto"
+require_relative "../../test_helper"
+require "autoinstall/clients/software_auto"
 Yast.import "AutoinstSoftware"
 
-describe Yast::SoftwareAutoClient do
+describe Y2Autoinstallation::Clients::SoftwareAuto do
   subject(:client) do
-    Yast::SoftwareAutoClient.new
+    described_class.new
   end
 
   before do
