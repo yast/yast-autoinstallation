@@ -49,10 +49,10 @@ module Y2Autoinstallation
 
         # Check arguments
         if Yast::Ops.greater_than(Yast::Builtins.size(WFM.Args), 0) &&
-           Yast::Ops.is_string?(WFM.Args(0))
+            Yast::Ops.is_string?(WFM.Args(0))
           @func = Yast::Convert.to_string(WFM.Args(0))
           if Yast::Ops.greater_than(Yast::Builtins.size(WFM.Args), 1) &&
-             Yast::Ops.is_map?(WFM.Args(1))
+              Yast::Ops.is_map?(WFM.Args(1))
             @param = Yast::Convert.to_map(WFM.Args(1))
           end
         end
@@ -142,19 +142,20 @@ module Y2Autoinstallation
               )
             )
           ),
-          HBox(PushButton(Id(:ok), Yast::Label.OKButton), PushButton(Id(:abort), Yast::Label.AbortButton))
+          HBox(
+            PushButton(Id(:ok), Yast::Label.OKButton),
+            PushButton(Id(:abort), Yast::Label.AbortButton)
+          )
         )
         UI.OpenDialog(Opt(:decorated), contents)
         UI.ChangeWidget(Id(:location), :Enabled, mainRepo != "")
-        okay = false
-        begin
-          ret = nil
+        loop do
           if Yast::Ops.greater_than(
-               Yast::Builtins.size(
-                 Yast::Convert.to_string(UI.QueryWidget(Id(:location), :Value))
-               ),
-               0
-             )
+            Yast::Builtins.size(
+              Yast::Convert.to_string(UI.QueryWidget(Id(:location), :Value))
+            ),
+            0
+          )
             UI.ChangeWidget(Id(:localSource), :Enabled, false)
           else
             UI.ChangeWidget(Id(:localSource), :Enabled, true)
@@ -163,13 +164,13 @@ module Y2Autoinstallation
           if ret == :ok
             if Yast::Convert.to_boolean(UI.QueryWidget(Id(:localSource), :Value))
               Yast::Pkg.TargetInit("/", false)
-              okay = true
+              break
             else
               Yast::Pkg.SourceFinishAll
               mainRepo = Yast::Convert.to_string(UI.QueryWidget(Id(:location), :Value))
               Yast::Pkg.TargetInit(tmpdir, false)
               if Yast::SourceManager.createSource(mainRepo) == :ok
-                okay = true
+                break
               else
                 Yast::Popup.Error(_("using that installation source failed"))
               end
@@ -184,7 +185,7 @@ module Y2Autoinstallation
             UI.ChangeWidget(Id(:location), :Enabled, !localSource)
             UI.ChangeWidget(Id(:location), :Value, "") if localSource
           end
-        end while !okay
+        end
         UI.CloseDialog
         Yast::AutoinstSoftware.instsource = mainRepo
 
