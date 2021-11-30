@@ -28,7 +28,7 @@ describe Y2Autoinstallation::Clients::SoftwareAuto do
 
   before do
     Yast::AutoinstSoftware.main
-    Yast::PackageAI.main
+    Yast::PackagesProposal.ResetAll
   end
 
   describe "#main" do
@@ -126,7 +126,7 @@ describe Y2Autoinstallation::Clients::SoftwareAuto do
 
       context "when the packages proposal includes packages to install" do
         before do
-          Yast::PackageAI.toinstall = ["yast2"]
+          Yast::PackagesProposal.AddResolvables("autoyast", :package, ["yast2"])
         end
 
         it "selects the packages" do
@@ -137,7 +137,7 @@ describe Y2Autoinstallation::Clients::SoftwareAuto do
 
       context "when the packages proposal includes packages to remove" do
         before do
-          Yast::PackageAI.toremove = ["dummy"]
+          Yast::PackagesProposal.AddTaboos("autoyast", ["dummy"])
         end
 
         it "deselects the packages" do
@@ -171,8 +171,9 @@ describe Y2Autoinstallation::Clients::SoftwareAuto do
         it "updates the proposal and the list of patterns" do
           client.main
           expect(Yast::AutoinstSoftware.patterns).to eq([base_pattern.name, yast2_pattern.name])
-          expect(Yast::PackageAI.toinstall).to eq(["yast2", "git"])
-          expect(Yast::PackageAI.toremove).to eq(["dummy"])
+          expect(Yast::PackagesProposal.GetResolvables("autoyast", :package))
+            .to eq(["yast2", "git"])
+          expect(Yast::PackagesProposal.GetTaboos("autoyast")).to eq(["dummy"])
         end
       end
 
@@ -210,9 +211,9 @@ describe Y2Autoinstallation::Clients::SoftwareAuto do
         end
       end
 
-      context "when the PackageAI module is modified" do
+      context "when some packages are selected" do
         before do
-          Yast::PackageAI.SetModified
+          Yast::PackagesProposal.AddResolvables("autoyast", :package, ["yast2"])
         end
 
         it "returns true" do
@@ -220,7 +221,17 @@ describe Y2Autoinstallation::Clients::SoftwareAuto do
         end
       end
 
-      context "when AutoinstSofware and PackageAI are not modified" do
+      context "when some packages are unselected" do
+        before do
+          Yast::PackagesProposal.AddTaboos("autoyast", ["yast2"])
+        end
+
+        it "returns true" do
+          expect(client.main).to eq(true)
+        end
+      end
+
+      context "when AutoinstSofware and no packages are selected/unselected" do
         it "returns false" do
           expect(client.main).to eq(false)
         end

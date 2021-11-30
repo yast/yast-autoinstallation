@@ -14,6 +14,7 @@ describe Yast::AutoinstSoftware do
 
   before(:each) do
     Yast::AutoinstData.main
+    Yast::PackagesProposal.ResetAll
     subject.main
     Yast::Profile.ReadXML(profile)
   end
@@ -42,7 +43,8 @@ describe Yast::AutoinstSoftware do
 
     it "appends the given list to the one to be installed" do
       Yast::AutoinstSoftware.add_additional_packages(pkgs)
-      expect(Yast::PackageAI.toinstall).to include("NetworkManager")
+      expect(Yast::PackagesProposal.GetResolvables("autoyast", :package))
+        .to include("NetworkManager")
     end
 
     context "when the packages given are not available" do
@@ -50,7 +52,8 @@ describe Yast::AutoinstSoftware do
 
       it "the packages are not added" do
         Yast::AutoinstSoftware.add_additional_packages(pkgs)
-        expect(Yast::PackageAI.toinstall).to_not include("NetworkManager")
+        expect(Yast::PackagesProposal.GetResolvables("NetworkManager", :package))
+          .to_not include("NetworkManager")
       end
     end
   end
@@ -76,8 +79,8 @@ describe Yast::AutoinstSoftware do
     it "saves the list of patterns and packages to install and remove" do
       subject.Import(software)
       expect(subject.patterns).to eq(["base", "yast2_basis"])
-      expect(Yast::PackageAI.toinstall).to eq(["yast2", "other"])
-      expect(Yast::PackageAI.toremove).to eq(["dummy"])
+      expect(Yast::PackagesProposal.GetResolvables("autoyast", :package)).to eq(["yast2", "other"])
+      expect(Yast::PackagesProposal.GetTaboos("autoyast")).to eq(["dummy"])
     end
 
     it "sets the kernel package to install" do
@@ -257,7 +260,7 @@ describe Yast::AutoinstSoftware do
 
     context "when packages are preselected for removal" do
       before do
-        allow(Yast::PackageAI).to receive(:toremove).and_return(["dummy"])
+        Yast::PackagesProposal.AddTaboos("autoyast", ["dummy"])
       end
 
       it "removes the packages" do

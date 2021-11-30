@@ -35,7 +35,7 @@ module Y2Autoinstallation
         Yast.import "AutoinstConfig"
         Yast.import "AutoinstSoftware"
         Yast.import "Label"
-        Yast.import "PackageAI"
+        Yast.import "PackagesProposal"
         Yast.import "AutoInstall"
         Yast.import "SourceManager"
         Yast.import "PackagesUI"
@@ -74,7 +74,9 @@ module Y2Autoinstallation
         elsif @func == "Change"
           @ret = packageSelector
         elsif @func == "GetModified"
-          @ret = Yast::AutoinstSoftware.GetModified || Yast::PackageAI.GetModified
+          packages = Yast::PackagesProposal.GetResolvables("autoyast", :package) +
+            Yast::PackagesProposal.GetTaboos("autoyast")
+          @ret = Yast::AutoinstSoftware.GetModified || !packages.empty?
         elsif @func == "SetModified"
           Yast::AutoinstSoftware.SetModified
           @ret = true
@@ -213,8 +215,9 @@ module Y2Autoinstallation
             Yast::Pkg.ResolvableInstall(pattern, :pattern)
           end
 
-          if Yast::Ops.greater_than(Yast::Builtins.size(Yast::PackageAI.toinstall), 0)
-            Yast::Builtins.foreach(Yast::PackageAI.toinstall) do |p|
+          pkgs_to_install = Yast::PackagesProposal.GetResolvables("autoyast", :package)
+          if Yast::Ops.greater_than(Yast::Builtins.size(pkgs_to_install), 0)
+            Yast::Builtins.foreach(pkgs_to_install) do |p|
               Yast::Builtins.y2milestone(
                 "selecting package for installation: %1 -> %2",
                 p,
@@ -222,8 +225,10 @@ module Y2Autoinstallation
               )
             end
           end
-          if Yast::Ops.greater_than(Yast::Builtins.size(Yast::PackageAI.toremove), 0)
-            Yast::Builtins.foreach(Yast::PackageAI.toremove) do |p|
+
+          pkgs_to_remove = Yast::PackagesProposal.GetTaboos("autoyast")
+          if Yast::Ops.greater_than(Yast::Builtins.size(pkgs_to_remove), 0)
+            Yast::Builtins.foreach(pkgs_to_remove) do |p|
               Yast::Builtins.y2milestone(
                 "deselecting package for installation: %1 -> %2",
                 p,
@@ -257,8 +262,12 @@ module Y2Autoinstallation
           patadd = deep_copy(Yast::AutoinstSoftware.patterns)
         end
 
-        Yast::PackageAI.toinstall = Yast::Pkg.FilterPackages(false, true, true, true)
-        Yast::PackageAI.toremove = Yast::Pkg.GetPackages(:taboo, true)
+        Yast::PackagesProposal.SetResolvables(
+          "autoyast", :package, Yast::Pkg.FilterPackages(false, true, true, true)
+        )
+        Yast::PackagesProposal.SetTaboos(
+          "autoyast", Yast::Pkg.GetPackages(:taboo, true)
+        )
         Yast::AutoinstSoftware.patterns = Yast::Convert.convert(
           Yast::Builtins.union(patadd, patadd),
           from: "list",
