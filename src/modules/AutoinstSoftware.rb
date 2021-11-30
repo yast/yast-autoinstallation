@@ -238,35 +238,6 @@ module Yast
       s
     end
 
-    # Add packages needed by modules, i.e. NIS, NFS etc.
-    # @param module_packages [Array<String>] list of strings packages to add
-    def AddModulePackages(module_packages)
-      module_packages = deep_copy(module_packages)
-      PackageAI.toinstall = Builtins.toset(
-        Convert.convert(
-          Builtins.union(PackageAI.toinstall, module_packages),
-          from: "list",
-          to:   "list <string>"
-        )
-      )
-      #
-      # Update profile
-      #
-      Ops.set(Profile.current, "software", Export())
-      nil
-    end
-
-    # Remove packages not needed by modules, i.e. NIS, NFS etc.
-    # @param module_packages [Array<String>] list of strings packages to add
-    def RemoveModulePackages(module_packages)
-      module_packages = deep_copy(module_packages)
-      PackageAI.toinstall = Builtins.filter(PackageAI.toinstall) do |p|
-        !Builtins.contains(module_packages, p)
-      end
-      Ops.set(Profile.current, "software", Export())
-      nil
-    end
-
     # Summary
     # @return Html formatted configuration summary
     def Summary
@@ -702,9 +673,7 @@ module Yast
     publish function: :Import, type: "boolean (map)"
     publish function: :AutoinstSoftware, type: "void ()"
     publish function: :Export, type: "map ()"
-    publish function: :AddModulePackages, type: "void (list <string>)"
     publish function: :AddYdepsFromProfile, type: "void (list <string>)"
-    publish function: :RemoveModulePackages, type: "void (list <string>)"
     publish function: :Summary, type: "string ()"
     publish function: :autoinstPackages, type: "list <string> ()"
     publish function: :Write, type: "boolean ()"
