@@ -4,12 +4,14 @@ require "autoinstall/efi_detector"
 describe Y2Autoinstallation::EFIDetector do
   describe ".boot_efi?" do
     let(:efi) { true }
+    let(:initial) { true }
+
+    before do
+      allow(Yast::Linuxrc).to receive(:InstallInf).with("EFI").and_return(efi)
+      allow(Yast::Stage).to receive(:initial).and_return(initial)
+    end
 
     context "when called in the initial Stage" do
-      before do
-        allow(Yast::Linuxrc).to receive(:InstallInf).with("EFI").and_return(efi)
-      end
-
       context "and EFI is read as '1' from the Install.inf file" do
         it "returns true" do
           expect(described_class.boot_efi?)
@@ -26,6 +28,8 @@ describe Y2Autoinstallation::EFIDetector do
     end
 
     context "when called in normal Mode" do
+      let(:initial) { false }
+
       before do
         allow(Dir).to receive(:exist?)
       end
