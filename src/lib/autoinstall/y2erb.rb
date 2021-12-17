@@ -1,6 +1,6 @@
 require "yast"
 require "erb"
-require "autoinstall/efi_detector"
+require "y2storage"
 
 module Y2Autoinstallation
   class Y2ERB
@@ -13,10 +13,9 @@ module Y2Autoinstallation
     class TemplateEnvironment
       include Yast::Logger
 
-      # @see Y2Autoinstallation::EFIDetector
       # @return [Boolean] whether the system is booted using EFI or not
       def boot_efi?
-        EFIDetector.boot_efi?
+        Y2Storage::Arch.new.efiboot?
       end
 
       def hardware

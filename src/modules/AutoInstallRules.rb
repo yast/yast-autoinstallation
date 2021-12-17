@@ -6,7 +6,6 @@
 # $Id$
 require "yast"
 require "autoinstall/xml_checks"
-require "autoinstall/efi_detector"
 require "yast2/popup"
 require "y2storage"
 
@@ -1086,10 +1085,9 @@ module Yast
       nil
     end
 
-    # @see Y2Autoinstallation::EFIDetector
     # @return [String] "yes" when the system is booted using EFI or "no" when not
     def boot_efi?
-      Y2Autoinstallation::EFIDetector.boot_efi? ? "yes" : "no"
+      Y2Storage::Arch.new.efiboot? ? "yes" : "no"
     end
 
     # Regexp to extract the IP from the routes table
