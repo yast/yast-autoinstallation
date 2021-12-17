@@ -29,6 +29,7 @@ describe "Yast::AutoInstallRules" do
     end
 
     it "detect system properties" do
+      allow_any_instance_of(Y2Storage::Arch).to receive(:efiboot?).and_return(true)
       allow(Y2Storage::StorageManager.instance).to receive(:probed)
         .and_return(devicegraph)
       allow(Y2Storage::StorageManager.instance.probed).to receive(:disks)
@@ -43,7 +44,6 @@ describe "Yast::AutoInstallRules" do
       expect(Yast::Kernel).to receive(:GetPackages).and_return([])
       expect(subject).to receive(:getNetwork).and_return("192.168.1.0")
       expect(subject).to receive(:getHostname).and_return("myhost")
-      expect(Y2Autoinstallation::EFIDetector).to receive(:boot_efi?).and_return(true)
       expect(Yast::SCR).to receive(:Read).with(Yast::Path.new(".etc.install_inf.XServer"))
       expect(Yast::Hostname).to receive(:CurrentDomain).and_return("mydomain.lan")
 
