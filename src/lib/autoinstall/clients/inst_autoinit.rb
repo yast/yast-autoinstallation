@@ -143,6 +143,8 @@ module Y2Autoinstallation
 
         return :abort if Yast::UI.PollInput == :abort && Yast::Popup.ConfirmAbort(:painless)
 
+        Yast::WorkflowManager.SetBaseWorkflow(false)
+
         :next
       end
 
@@ -408,7 +410,6 @@ module Y2Autoinstallation
           Yast::Pkg.ResolvableInstall(product.details.product, :product, "")
           # initialize addons and the workflow manager
           Yast::AddOnProduct.SetBaseProductURL(base_url)
-          Yast::WorkflowManager.SetBaseWorkflow(false)
           Yast::AutoinstFunctions.reset_product
         # report error only for installation or if autoupgrade contain addon with relative url.
         # This way autoupgrade for Full medium on registered system
