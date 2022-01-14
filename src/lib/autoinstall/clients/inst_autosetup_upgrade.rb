@@ -56,12 +56,6 @@ module Y2Autoinstallation
         return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
 
         Progress.NextStage
-        #
-        # Set workflow variables
-        # Ensure that we clean product cache to avoid product from control (bsc#1156058)
-        AutoinstFunctions.reset_product
-        # Merging selected product (bsc#1192437)
-        AutoinstSoftware.merge_product(AutoinstFunctions.selected_product)
 
         # configure general settings
         general_section = Profile.current["general"] || {}
@@ -170,6 +164,12 @@ module Y2Autoinstallation
 
         Progress.NextStage
         return :abort unless suse_register
+
+        # Set workflow variables
+        # Ensure that we clean product cache to avoid product from control (bsc#1156058)
+        AutoinstFunctions.reset_product
+        # Merging selected product (bsc#1192437)
+        AutoinstSoftware.merge_product(AutoinstFunctions.selected_product)
 
         # Bootloader
         # FIXME: De-duplicate with inst_autosetup
