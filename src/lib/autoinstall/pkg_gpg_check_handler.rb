@@ -31,12 +31,13 @@ module Yast
     # @option data [String] "Localpath" Path to RPM file.
     # @option data [String] "RepoMediaUrl" Media URL.
     #   (it should match `media_url` key in AutoYaST profile).
-    # @param [Hash] profile AutoYaST profile.
-    def initialize(data, profile)
+    # @param signature_handling [Hash] Signature handling settings (from AutoYaST general section)
+    # @param addons [Array<Hash>] Defined add-ons to check for signature settings
+    def initialize(data, signature_handling = {}, addons = [])
       @result  = data["CheckPackageResult"]
       @package = data["Package"]
       @path    = data["Localpath"]
-      @config  = get_addon_config(profile, data["RepoMediaUrl"])
+      @config  = get_addon_config(signature_handling, addons, data["RepoMediaUrl"])
       log.info format("Signature handling settings: #{@config}")
     end
 
@@ -143,27 +144,13 @@ module Yast
     # If the add-on has its own specific configuration, those settings
     # will override to general settings.
     #
-    # @param [Yast::ProfileHash] profile AutoYaST profile
+    # @param signature_handling [Hash] General signature handling options
+    # @param addons [Array<Hash>] List of add-ons
     # @param [String] url   Repository URL
-    # @return [Yast::ProfileHash] Signature handling settings for the given add-on.
-    def get_addon_config(profile, url)
-      config = addons_config(profile).find { |c| c["media_url"] == url }
-      addon_config = Yast::ProfileHash.new(config || {})
-
-      general_config = profile.fetch_as_hash("general")
-      general_config.fetch_as_hash("signature-handling")
-        .merge(addon_config.fetch_as_hash("signature-handling"))
-    end
-
-    # Get add-ons configuration
-    #
-    # This is just a helper method that returns the //add-ons/add_on_products section
-    # of an AutoYaST profile.
-    #
-    # @param [Yast::ProfileHash] profile AutoYaST profile.
-    # @return [Array<Hash>] Add-ons section from profile.
-    def addons_config(profile)
-      profile.fetch_as_hash("add-on").fetch_as_array("add_on_products")
+    # @return [Hash] Signature handling settings for the given add-on.
+    def get_addon_config(signature_handling, addons, url)
+      addon_config = addons.find { |a| a["media_url"] == url } || {}
+      signature_handling.merge(addon_config.fetch("signature-handling", {}))
     end
 
     # Find the key ID for the package

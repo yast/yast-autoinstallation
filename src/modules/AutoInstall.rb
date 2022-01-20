@@ -22,8 +22,10 @@ module Yast
       Yast.import "Profile"
       Yast.import "Mode"
       Yast.import "Stage"
-      Yast.import "AutoinstConfig"
       Yast.import "AutoInstallRules"
+      Yast.import "AutoinstConfig"
+      Yast.import "AutoinstGeneral"
+      Yast.import "AddOnProduct"
       Yast.import "Report"
       Yast.import "TFTP"
 
@@ -334,7 +336,10 @@ module Yast
     #   a blank string is returned (so no decision is made).
     def pkg_gpg_check(data)
       log.debug("pkgGpgCheck data: #{data}")
-      accept = PkgGpgCheckHandler.new(data, Profile.current).accept?
+      checker = PkgGpgCheckHandler.new(
+        data, Yast::AutoinstGeneral.signature_handling, Yast::AddOnProduct.add_on_products
+      )
+      accept = checker.accept?
       log.info("PkgGpgCheckerHandler for #{data["Package"]} returned #{accept}")
       accept ? "I" : ""
     end
