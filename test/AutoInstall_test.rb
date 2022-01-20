@@ -23,12 +23,14 @@ describe "Yast::AutoInstall" do
 
   describe "#pkg_gpg_check" do
     let(:data) { { "CheckPackageResult" => Yast::PkgGpgCheckHandler::CHK_OK } }
-    let(:profile) { {} }
     let(:checker) { double("checker") }
+    let(:signature_handling) { { "accept_unsigned_file" => true } }
 
     before do
-      allow(Yast::Profile).to receive(:current).and_return(profile)
-      allow(Yast::PkgGpgCheckHandler).to receive(:new).with(data, profile).and_return(checker)
+      allow(Yast::AutoinstGeneral).to receive(:signature_handling)
+        .and_return(signature_handling)
+      allow(Yast::PkgGpgCheckHandler).to receive(:new)
+        .with(data, signature_handling, []).and_return(checker)
       allow(checker).to receive(:accept?).and_return(accept?)
     end
 
