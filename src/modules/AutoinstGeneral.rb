@@ -174,7 +174,10 @@ module Yast
       log.info "General import: #{settings.inspect}"
       @mode = settings.fetch("mode", {})
       @cio_ignore = settings.fetch("cio_ignore", true)
-      @signature_handling = settings.fetch("signature-handling", {})
+      @signature_handling = {}
+      if settings["signature-handling"].is_a?(Hash)
+        @signature_handling = settings["signature-handling"]
+      end
       @askList = settings.fetch("ask-list", [])
       @proposals = settings.fetch("proposals", [])
       AutoinstStorage.import_general_settings(settings["storage"])

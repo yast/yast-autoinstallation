@@ -6,7 +6,9 @@ require_relative "../../src/lib/autoinstall/pkg_gpg_check_handler"
 require "yast"
 
 describe Yast::PkgGpgCheckHandler do
-  subject(:handler) { Yast::PkgGpgCheckHandler.new(data, profile) }
+  subject(:handler) do
+    Yast::PkgGpgCheckHandler.new(data, signature_handling, addons)
+  end
 
   let(:data) do
     { "CheckPackageResult" => result,
@@ -15,8 +17,8 @@ describe Yast::PkgGpgCheckHandler do
       "RepoMediaUrl"       => "http://dl.opensuse.org/repos/YaST:/Head" }
   end
   let(:result) { Yast::PkgGpgCheckHandler::CHK_OK }
-  let(:profile) { { "general" => { "signature-handling" => signature_handling } } }
   let(:signature_handling) { {} }
+  let(:addons) { [] }
 
   describe "#accept?" do
     context "when signature is OK" do
@@ -206,8 +208,8 @@ describe Yast::PkgGpgCheckHandler do
         end
       end
 
+      # Using '<all>' element in profile instead of just 'true'.
       context "and all packages with non trusted keys are allowed" do
-        # Using '<all>' element in profile instead of just 'true'.
         let(:signature_handling) { { "accept_non_trusted_gpg_key" => { "all" => true } } }
 
         it "returns true" do
@@ -264,20 +266,16 @@ describe Yast::PkgGpgCheckHandler do
     context "when the add-on has specific settings" do
       let(:result) { Yast::PkgGpgCheckHandler::CHK_NOTFOUND }
 
-      let(:profile) do
-        { "general" => {
-          "signature-handling" => {
-            "accept_unsigned_file"   => true,
-            "accept_unknown_gpg_key" => true
-          }
-        },
-          "add-on"  => {
-            "add_on_products" => [
-              { "media_url"          => "http://dl.opensuse.org/repos/YaST:/Head",
-                "name"               => "yast_head",
-                "signature-handling" => { "accept_unsigned_file" => false } }
-            ]
-          } }
+      let(:signature_handling) do
+        { "accept_unsigned_file" => true, "accept_unknown_gpg_key" => true }
+      end
+
+      let(:addons) do
+        [
+          { "media_url"          => "http://dl.opensuse.org/repos/YaST:/Head",
+            "name"               => "yast_head",
+            "signature-handling" => { "accept_unsigned_file" => false } }
+        ]
       end
 
       it "honors the add-on settings" do
@@ -286,7 +284,9 @@ describe Yast::PkgGpgCheckHandler do
 
       it "honors general settings which are not overridden" do
         gpg_handler = Yast::PkgGpgCheckHandler.new(
-          data.merge("CheckPackageResult" => Yast::PkgGpgCheckHandler::CHK_NOKEY), profile
+          data.merge("CheckPackageResult" => Yast::PkgGpgCheckHandler::CHK_NOKEY),
+          signature_handling,
+          addons
         )
         expect(gpg_handler.accept?).to eq(true)
       end
