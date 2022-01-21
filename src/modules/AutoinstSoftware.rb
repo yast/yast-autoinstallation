@@ -158,7 +158,7 @@ module Yast
       addPostPackages(settings.fetch("post-packages", []))
       AutoinstData.post_patterns = settings.fetch("post-patterns", [])
       to_remove = settings.fetch("remove-packages", [])
-      PackagesProposal.AddTaboos("autoyast", to_remove) unless to_remove.empty?
+      PackagesProposal.AddTaboos("autoyast", :package, to_remove) unless to_remove.empty?
 
       true
     end
@@ -213,7 +213,7 @@ module Yast
       pkg_post = AutoinstData.post_packages
       s["post-packages"] = pkg_post unless pkg_post.empty?
 
-      pkgs_to_remove = Yast::PackagesProposal.GetTaboos("autoyast")
+      pkgs_to_remove = Yast::PackagesProposal.GetTaboos("autoyast", :package)
       s["remove-packages"] = pkgs_to_remove unless pkgs_to_remove.empty?
 
       s["instsource"] = @instsource
@@ -260,7 +260,7 @@ module Yast
       )
 
       summary = Summary.AddHeader(summary, _("Packages to Remove"))
-      pkgs_to_remove = Yast::PackagesProposal.GetTaboos("autoyast")
+      pkgs_to_remove = Yast::PackagesProposal.GetTaboos("autoyast", :package)
       summary = Summary.AddLine(
         summary,
         Builtins.sformat("%1", Builtins.size(pkgs_to_remove))
@@ -379,7 +379,7 @@ module Yast
 
       SelectPackagesForInstallation()
 
-      pkgs_to_remove = PackagesProposal.GetTaboos("autoyast").dup
+      pkgs_to_remove = PackagesProposal.GetTaboos("autoyast", :package).dup
       computed_packages = Packages.ComputeSystemPackageList
       Builtins.foreach(computed_packages) do |pack2|
         if Ops.greater_than(Builtins.size(@kernel), 0) && pack2 != @kernel &&

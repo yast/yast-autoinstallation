@@ -80,7 +80,7 @@ describe Yast::AutoinstSoftware do
       subject.Import(software)
       expect(subject.patterns).to eq(["base", "yast2_basis"])
       expect(Yast::PackagesProposal.GetResolvables("autoyast", :package)).to eq(["yast2", "other"])
-      expect(Yast::PackagesProposal.GetTaboos("autoyast")).to eq(["dummy"])
+      expect(Yast::PackagesProposal.GetTaboos("autoyast", :package)).to eq(["dummy"])
     end
 
     it "sets the kernel package to install" do
@@ -260,7 +260,7 @@ describe Yast::AutoinstSoftware do
 
     context "when packages are preselected for removal" do
       before do
-        Yast::PackagesProposal.AddTaboos("autoyast", ["dummy"])
+        Yast::PackagesProposal.AddTaboos("autoyast", :package, ["dummy"])
       end
 
       it "removes the packages" do

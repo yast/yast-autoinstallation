@@ -137,7 +137,7 @@ describe Y2Autoinstallation::Clients::SoftwareAuto do
 
       context "when the packages proposal includes packages to remove" do
         before do
-          Yast::PackagesProposal.AddTaboos("autoyast", ["dummy"])
+          Yast::PackagesProposal.AddTaboos("autoyast", :package, ["dummy"])
         end
 
         it "deselects the packages" do
@@ -173,7 +173,7 @@ describe Y2Autoinstallation::Clients::SoftwareAuto do
           expect(Yast::AutoinstSoftware.patterns).to eq([base_pattern.name, yast2_pattern.name])
           expect(Yast::PackagesProposal.GetResolvables("autoyast", :package))
             .to eq(["yast2", "git"])
-          expect(Yast::PackagesProposal.GetTaboos("autoyast")).to eq(["dummy"])
+          expect(Yast::PackagesProposal.GetTaboos("autoyast", :package)).to eq(["dummy"])
         end
       end
 
@@ -223,7 +223,7 @@ describe Y2Autoinstallation::Clients::SoftwareAuto do
 
       context "when some packages are unselected" do
         before do
-          Yast::PackagesProposal.AddTaboos("autoyast", ["yast2"])
+          Yast::PackagesProposal.AddTaboos("autoyast", :package, ["yast2"])
         end
 
         it "returns true" do

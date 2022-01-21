@@ -75,7 +75,7 @@ module Y2Autoinstallation
           @ret = packageSelector
         elsif @func == "GetModified"
           packages = Yast::PackagesProposal.GetResolvables("autoyast", :package) +
-            Yast::PackagesProposal.GetTaboos("autoyast")
+            Yast::PackagesProposal.GetTaboos("autoyast", :package)
           @ret = Yast::AutoinstSoftware.GetModified || !packages.empty?
         elsif @func == "SetModified"
           Yast::AutoinstSoftware.SetModified
@@ -226,7 +226,7 @@ module Y2Autoinstallation
             end
           end
 
-          pkgs_to_remove = Yast::PackagesProposal.GetTaboos("autoyast")
+          pkgs_to_remove = Yast::PackagesProposal.GetTaboos("autoyast", :package)
           if Yast::Ops.greater_than(Yast::Builtins.size(pkgs_to_remove), 0)
             Yast::Builtins.foreach(pkgs_to_remove) do |p|
               Yast::Builtins.y2milestone(
@@ -266,7 +266,7 @@ module Y2Autoinstallation
           "autoyast", :package, Yast::Pkg.FilterPackages(false, true, true, true)
         )
         Yast::PackagesProposal.SetTaboos(
-          "autoyast", Yast::Pkg.GetPackages(:taboo, true)
+          "autoyast", :package, Yast::Pkg.GetPackages(:taboo, true)
         )
         Yast::AutoinstSoftware.patterns = Yast::Convert.convert(
           Yast::Builtins.union(patadd, patadd),
