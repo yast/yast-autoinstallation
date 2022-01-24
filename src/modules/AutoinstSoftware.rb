@@ -52,7 +52,7 @@ module Yast
 
       # All shared data are in yast2.rpm to break cyclic dependencies
       Yast.import "AutoinstData"
-      Yast.import "PackageAI"
+      Yast.import "PackagesProposal"
 
       @Software = {}
 
@@ -151,12 +151,14 @@ module Yast
         to:   "list <string>"
       )
 
-      PackageAI.toinstall = settings.fetch("packages", [])
+      to_install = settings.fetch("packages", [])
+      PackagesProposal.AddResolvables("autoyast", :package, to_install) unless to_install.empty?
       @kernel = settings.fetch("kernel", "")
 
       addPostPackages(settings.fetch("post-packages", []))
       AutoinstData.post_patterns = settings.fetch("post-patterns", [])
-      PackageAI.toremove = settings.fetch("remove-packages", [])
+      to_remove = settings.fetch("remove-packages", [])
+      PackagesProposal.AddTaboos("autoyast", :package, to_remove) unless to_remove.empty?
 
       true
     end
@@ -165,11 +167,8 @@ module Yast
     #
     # @param pkglist [Array<String>] list of additional packages to be installed
     def add_additional_packages(pkglist)
-      pkglist.each do |p|
-        if !PackageAI.toinstall.include?(p) && @packagesAvailable.include?(p)
-          PackageAI.toinstall.push(p)
-        end
-      end
+      available = pkglist & @packagesAvailable
+      PackagesProposal.AddResolvables("autoyast", :package, available) unless available.empty?
     end
 
     def AddYdepsFromProfile(entries)
@@ -208,14 +207,14 @@ module Yast
       s["kernel"] = @kernel if !@kernel.empty?
       s["patterns"] = @patterns if !@patterns.empty?
 
-      pkg_toinstall = PackageAI.toinstall
-      s["packages"] = pkg_toinstall if !pkg_toinstall.empty?
+      pkgs_to_install = Yast::PackagesProposal.GetResolvables("autoyast", :package)
+      s["packages"] = pkgs_to_install unless pkgs_to_install.empty?
 
       pkg_post = AutoinstData.post_packages
-      s["post-packages"] = pkg_post if !pkg_post.empty?
+      s["post-packages"] = pkg_post unless pkg_post.empty?
 
-      pkg_toremove = PackageAI.toremove
-      s["remove-packages"] = PackageAI.toremove if !pkg_toremove.empty?
+      pkgs_to_remove = Yast::PackagesProposal.GetTaboos("autoyast", :package)
+      s["remove-packages"] = pkgs_to_remove unless pkgs_to_remove.empty?
 
       s["instsource"] = @instsource
 
@@ -238,35 +237,6 @@ module Yast
       s
     end
 
-    # Add packages needed by modules, i.e. NIS, NFS etc.
-    # @param module_packages [Array<String>] list of strings packages to add
-    def AddModulePackages(module_packages)
-      module_packages = deep_copy(module_packages)
-      PackageAI.toinstall = Builtins.toset(
-        Convert.convert(
-          Builtins.union(PackageAI.toinstall, module_packages),
-          from: "list",
-          to:   "list <string>"
-        )
-      )
-      #
-      # Update profile
-      #
-      Ops.set(Profile.current, "software", Export())
-      nil
-    end
-
-    # Remove packages not needed by modules, i.e. NIS, NFS etc.
-    # @param module_packages [Array<String>] list of strings packages to add
-    def RemoveModulePackages(module_packages)
-      module_packages = deep_copy(module_packages)
-      PackageAI.toinstall = Builtins.filter(PackageAI.toinstall) do |p|
-        !Builtins.contains(module_packages, p)
-      end
-      Ops.set(Profile.current, "software", Export())
-      nil
-    end
-
     # Summary
     # @return Html formatted configuration summary
     def Summary
@@ -283,15 +253,17 @@ module Yast
         summary = Summary.AddLine(summary, Summary.NotConfigured)
       end
       summary = Summary.AddHeader(summary, _("Individually Selected Packages"))
+      pkgs_to_install = Yast::PackagesProposal.GetResolvables("autoyast", :package)
       summary = Summary.AddLine(
         summary,
-        Builtins.sformat("%1", Builtins.size(PackageAI.toinstall))
+        Builtins.sformat("%1", Builtins.size(pkgs_to_install))
       )
 
       summary = Summary.AddHeader(summary, _("Packages to Remove"))
+      pkgs_to_remove = Yast::PackagesProposal.GetTaboos("autoyast", :package)
       summary = Summary.AddLine(
         summary,
-        Builtins.sformat("%1", Builtins.size(PackageAI.toremove))
+        Builtins.sformat("%1", Builtins.size(pkgs_to_remove))
       )
 
       if @kernel != ""
@@ -309,7 +281,7 @@ module Yast
 
       # the primary list of packages
       allpackages = Convert.convert(
-        Builtins.union(allpackages, PackageAI.toinstall),
+        Builtins.union(allpackages, Yast::PackagesProposal.GetResolvables("autoyast", :package)),
         from: "list",
         to:   "list <string>"
       )
@@ -407,12 +379,13 @@ module Yast
 
       SelectPackagesForInstallation()
 
+      pkgs_to_remove = PackagesProposal.GetTaboos("autoyast", :package).dup
       computed_packages = Packages.ComputeSystemPackageList
       Builtins.foreach(computed_packages) do |pack2|
         if Ops.greater_than(Builtins.size(@kernel), 0) && pack2 != @kernel &&
             Builtins.search(pack2, "kernel-") == 0
           Builtins.y2milestone("taboo for kernel %1", pack2)
-          PackageAI.toremove = Builtins.add(PackageAI.toremove, pack2)
+          pkgs_to_remove.push(pack2)
         end
       end
 
@@ -421,14 +394,14 @@ module Yast
       #
       # Now remove all packages listed in remove-packages
       #
-      Builtins.y2milestone("Packages to be removed: %1", PackageAI.toremove)
-      if Ops.greater_than(Builtins.size(PackageAI.toremove), 0)
-        Builtins.foreach(PackageAI.toremove) do |rp|
+      Builtins.y2milestone("Packages to be removed: %1", pkgs_to_remove)
+      if Ops.greater_than(Builtins.size(pkgs_to_remove), 0)
+        Builtins.foreach(pkgs_to_remove) do |rp|
           # Pkg::ResolvableSetSoftLock( rp, `package ); // FIXME: maybe better Pkg::PkgTaboo(rp) ?
           Pkg.PkgTaboo(rp)
         end
 
-        Pkg.DoRemove(PackageAI.toremove)
+        Pkg.DoRemove(pkgs_to_remove)
       end
 
       #
@@ -702,9 +675,7 @@ module Yast
     publish function: :Import, type: "boolean (map)"
     publish function: :AutoinstSoftware, type: "void ()"
     publish function: :Export, type: "map ()"
-    publish function: :AddModulePackages, type: "void (list <string>)"
     publish function: :AddYdepsFromProfile, type: "void (list <string>)"
-    publish function: :RemoveModulePackages, type: "void (list <string>)"
     publish function: :Summary, type: "string ()"
     publish function: :autoinstPackages, type: "list <string> ()"
     publish function: :Write, type: "boolean ()"

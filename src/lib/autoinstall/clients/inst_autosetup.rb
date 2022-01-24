@@ -41,6 +41,7 @@ Yast.import "AutoinstStorage"
 Yast.import "AutoinstScripts"
 Yast.import "AutoinstGeneral"
 Yast.import "AutoinstSoftware"
+Yast.import "PackagesProposal"
 Yast.import "Popup"
 Yast.import "Arch"
 Yast.import "Call"
@@ -291,18 +292,18 @@ module Y2Autoinstallation
         Progress.NextStage
 
         # Evaluating package and patterns selection.
-        # Selection will be stored in PackageAI.
+        # Selection will be stored in PackagesProposal.
         AutoinstSoftware.Import(Ops.get_map(Profile.current, "software", {}))
 
         # Add additional packages in order to run YAST modules which
         # have been defined in the AutoYaST configuration file.
-        # Selection will be stored in PackageAI.
+        # Selection will be stored in PackagesProposal.
         add_yast2_dependencies if AutoinstFunctions.second_stage_required?
         # Also add packages needed by some profile configuration but missing the
         # explicit declaration in the software section
-        AutoinstSoftware.add_additional_packages(pkg_list) unless pkg_list.empty?
+        Yast::PackagesProposal.AddResolvables("autoyast", :package, pkg_list) unless pkg_list.empty?
 
-        # Adding selections (defined in PackageAI) to libzypp and solving
+        # Adding selections (defined in PackagesProposal) to libzypp and solving
         # package dependencies.
         if !AutoinstSoftware.Write
           Report.Error(
