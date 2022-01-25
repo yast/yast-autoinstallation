@@ -32,7 +32,7 @@ Yast.import "Mode"
 Yast.import "FileUtils"
 Yast.import "Report"
 Yast.import "Installation"
-Yast.import "PackageSystem"
+Yast.import "Package"
 
 module Y2Autoinstallation
   module Clients
@@ -47,8 +47,8 @@ module Y2Autoinstallation
       # Handle the command line options and clone the system
       def main
         if Yast::Mode.normal
-          if !Yast::PackageSystem.Installed("autoyast2")
-            ret = Yast::PackageSystem.InstallAll(["autoyast2"])
+          if !Yast::Package.Installed("autoyast2")
+            ret = Yast::Package.InstallAll(["autoyast2"])
             # The modules/clients has to be reloaded. So the export
             # will be restarted.
             if ret

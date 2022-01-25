@@ -55,7 +55,7 @@ describe "Y2Autoinstall::Clients::AyastSetup" do
       allow(Yast::WFM).to receive(:CallFunction)
       allow(Yast::Mode).to receive(:SetMode)
       allow(Yast::Stage).to receive(:Set)
-      allow(Yast::PackageSystem).to receive(:Installed).and_return(true)
+      allow(Yast::Package).to receive(:Installed).and_return(true)
       allow(Yast::Pkg).to receive(:TargetInit)
       allow(subject).to receive(:restart_initscripts)
       subject.dopackages = dopackages
@@ -77,7 +77,7 @@ describe "Y2Autoinstall::Clients::AyastSetup" do
       let(:dopackages) { true }
 
       it "installs given post installation packages / patterns when not installed yet" do
-        expect(Yast::PackageSystem).to receive(:Installed).and_return(false)
+        expect(Yast::Package).to receive(:Installed).and_return(false)
         expect(Yast::AutoinstSoftware).to receive(:addPostPackages).with(["vim"])
         expect(Yast::WFM).to receive(:CallFunction).with("inst_rpmcopy", [])
 

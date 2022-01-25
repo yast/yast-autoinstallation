@@ -42,7 +42,7 @@ describe Y2Autoinstallation::Clients::CloneSystem do
     before do
       allow(Yast::WFM).to receive(:Args).and_return(args)
       allow(Yast::Mode).to receive(:normal).and_return(normal?)
-      allow(Yast::PackageSystem).to receive(:Installed).with("autoyast2")
+      allow(Yast::Package).to receive(:Installed).with("autoyast2")
         .and_return(package_installed?)
       allow(Yast::Installation).to receive(:restart_file)
         .and_return(File.join(tmp_dir, "restart_yast"))
@@ -70,7 +70,7 @@ describe Y2Autoinstallation::Clients::CloneSystem do
         let(:package_installed?) { false }
 
         it "installs the 'autoyast2' package and creates the 'restart file'" do
-          expect(Yast::PackageSystem).to receive(:InstallAll).with(["autoyast2"]).and_return(true)
+          expect(Yast::Package).to receive(:InstallAll).with(["autoyast2"]).and_return(true)
           client.main
           expect(File).to exist(Yast::Installation.restart_file)
         end

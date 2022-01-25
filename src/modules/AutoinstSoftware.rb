@@ -43,7 +43,7 @@ module Yast
       Yast.import "Mode"
       Yast.import "Misc"
       Yast.import "Directory"
-      Yast.import "PackageSystem"
+      Yast.import "Package"
       Yast.import "ProductFeatures"
       Yast.import "WorkflowManager"
       Yast.import "Product"
@@ -445,7 +445,7 @@ module Yast
     # @param calcpost [Array<String>] list calculated post packages
     def addPostPackages(calcpost)
       # filter out already installed packages
-      calcpost.reject! { |p| PackageSystem.Installed(p) }
+      calcpost.reject! { |p| Package.Installed(p) }
 
       calcpost = deep_copy(calcpost)
       AutoinstData.post_packages = Convert.convert(

@@ -20,8 +20,6 @@
 require "yast"
 require "y2packager/resolvable"
 
-Yast.import "PackageSystem"
-
 module Y2Autoinstallation
   # Class responsible for finding packages for given sections. Uses yast2-schema.
   class PackagerSearcher
