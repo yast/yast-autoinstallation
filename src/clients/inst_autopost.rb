@@ -24,7 +24,7 @@ module Yast
       Yast.import "AutoinstScripts"
       Yast.import "Report"
       Yast.import "Progress"
-      Yast.import "PackageSystem"
+      Yast.import "Package"
       Yast.import "AutoinstConfig"
 
       Builtins.y2debug("Profile=%1", Profile.current)
@@ -97,7 +97,7 @@ module Yast
       # Add all found packages
       Progress.NextStep
       Progress.Title(_("Adding found packages..."))
-      @packages = Builtins.filter(@packages) { |p| !PackageSystem.Installed(p) }
+      @packages = Builtins.filter(@packages) { |p| !Package.Installed(p) }
       AutoinstSoftware.addPostPackages(@packages)
 
       # Finish

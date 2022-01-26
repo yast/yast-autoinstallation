@@ -25,7 +25,7 @@ Yast.import "CommandLine"
 Yast.import "Stage"
 Yast.import "AutoInstall"
 Yast.import "AutoinstSoftware"
-Yast.import "PackageSystem"
+Yast.import "Package"
 Yast.import "AutoinstData"
 Yast.import "Lan"
 Yast.import "Pkg"
@@ -61,7 +61,7 @@ module Y2Autoinstall
         )
 
         postPackages = Builtins.filter(postPackages) do |p|
-          !Yast::PackageSystem.Installed(p)
+          !Yast::Package.Installed(p)
         end
         Yast::AutoinstSoftware.addPostPackages(postPackages)
 

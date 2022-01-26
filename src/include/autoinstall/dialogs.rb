@@ -16,7 +16,7 @@ module Yast
       Yast.import "Wizard"
       Yast.import "AutoinstConfig"
       Yast.import "AutoinstClass"
-      Yast.import "PackageSystem"
+      Yast.import "Package"
       Yast.include include_target, "autoinstall/helps.rb"
     end
 
@@ -335,7 +335,7 @@ module Yast
       end
 
       # jing validation -- validates complete xml profile
-      if PackageSystem.Installed("jing")
+      if Package.Installed("jing")
         complete_xml_file = Ops.add(
           Ops.add(AutoinstConfig.tmpDir, "/"),
           "valid.xml"
