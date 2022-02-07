@@ -31,8 +31,9 @@ describe Y2Autoinstall::Ask::Runner do
 
   let(:profile) do
     Yast::ProfileHash.new(
-      "general" => { "ask-list" => ask_list },
-      "users"   => [{ "username" => "root", "user_password" => "ask" }]
+      "general"    => { "ask-list" => ask_list },
+      "users"      => [{ "username" => "root", "user_password" => "ask" }],
+      "networking" => { "dns" => { "hostname" => "localhost" } }
     )
   end
 
@@ -99,6 +100,20 @@ describe Y2Autoinstall::Ask::Runner do
       it "updates the profile with the value from the question" do
         runner.run
         expect(profile["users"][0]).to eq("username" => "root", "user_password" => "secret")
+      end
+
+      context "and the profile is deeper than 1 level" do
+        let(:question1) do
+          Y2Autoinstall::Ask::Question.new("Hostname").tap do |question|
+            question.paths << "networking,dns,hostname"
+            question.value = "example"
+          end
+        end
+
+        it "updates the profile with the value from the question" do
+          runner.run
+          expect(profile["networking"]["dns"]).to eq("hostname" => "example")
+        end
       end
     end
 

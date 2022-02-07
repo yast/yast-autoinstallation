@@ -671,7 +671,6 @@ module Yast
     # @param profile [Hash] Initial profile
     # @return [Hash] Modified profile
     def setElementByList(path, value, profile)
-      profile = Yast::ProfileHash.new(profile)
       merge_element_by_list(path, value, profile)
     end
 
