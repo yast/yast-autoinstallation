@@ -144,7 +144,9 @@ module Y2Autoinstallation
 
       if semi_auto?("networking")
         log.info("Networking manual setup before proposal")
-        Yast::WFM.CallFunction("inst_lan", ["enable_next" => true])
+        Yast::WFM.CallFunction(
+          "inst_lan", ["enable_next" => true, "skip_detection" => true]
+        )
         @network_before_proposal = true
       end
 
