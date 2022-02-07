@@ -145,6 +145,7 @@ describe Y2Autoinstallation::AutosetupHelpers do
         let(:profile_content) do
           Yast::ProfileHash.new("general" => { "semi-automatic" => ["scc"] })
         end
+
         it "shows registration screen mask and returns true" do
           # Showing registration screen mask
           expect(Yast::WFM).to receive(:CallFunction).with("inst_scc",
@@ -350,7 +351,8 @@ describe Y2Autoinstallation::AutosetupHelpers do
       let(:networking_section) { { "general" => { "semi-automatic" => ["networking"] } } }
 
       it "runs the network configuration client" do
-        expect(Yast::WFM).to receive(:CallFunction).with("inst_lan", anything)
+        expect(Yast::WFM).to receive(:CallFunction)
+          .with("inst_lan", ["enable_next" => true, "skip_detection" => true])
 
         client.autosetup_network
       end
