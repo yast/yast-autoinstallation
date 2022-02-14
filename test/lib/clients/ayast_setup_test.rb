@@ -34,7 +34,12 @@ Yast.import "Profile"
 
 describe "Y2Autoinstall::Clients::AyastSetup" do
   let(:subject) { Yast::DummyClient.new }
-  let(:profile) { { "software" => { "post-packages" => packages } } }
+  let(:profile) do
+    {
+      "general"  => { "mode" => { "confirm" => true } },
+      "software" => { "post-packages" => packages }
+    }
+  end
   let(:packages) { ["vim"] }
   let(:dopackages) { false }
 
@@ -52,6 +57,7 @@ describe "Y2Autoinstall::Clients::AyastSetup" do
     before do
       Yast::Profile.current = profile
       allow(Yast::AutoInstall).to receive(:Save)
+      allow(Yast::AutoinstGeneral).to receive(:Import)
       allow(Yast::WFM).to receive(:CallFunction)
       allow(Yast::Mode).to receive(:SetMode)
       allow(Yast::Stage).to receive(:Set)
@@ -109,6 +115,13 @@ describe "Y2Autoinstall::Clients::AyastSetup" do
       expect(Yast::Profile.current.keys).to_not include("networking")
       subject.Setup
       expect(Yast::Profile.current.keys).to_not include("networking")
+    end
+
+    it "imports general settings" do
+      expect(Yast::AutoinstGeneral).to receive(:Import).with(
+        "mode" => { "confirm" => true }
+      )
+      subject.Setup
     end
   end
 end

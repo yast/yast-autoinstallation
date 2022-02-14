@@ -27,6 +27,7 @@ Yast.import "AutoInstall"
 Yast.import "AutoinstSoftware"
 Yast.import "Package"
 Yast.import "AutoinstData"
+Yast.import "AutoinstGeneral"
 Yast.import "Lan"
 Yast.import "Pkg"
 
@@ -47,6 +48,8 @@ module Y2Autoinstall
         Yast::Wizard.CreateDialog
         Yast::Mode.SetMode("autoinstallation")
         Yast::Stage.Set("continue")
+
+        Yast::AutoinstGeneral.Import(Yast::Profile.current.fetch("general", {}))
 
         # IPv6 settings will be written despite the have been
         # changed or not. So we have to read them at first.
