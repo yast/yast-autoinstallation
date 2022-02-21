@@ -1,14 +1,15 @@
 [Unit]
 Description=Autoyast2 Init Scripts
 After=remote-fs.target network-online.target time-sync.target mail-transfer-agent.target hwscan.service ypbind.service YaST2-Second-Stage.service
-Before=systemd-user-sessions.service
 Wants=network-online.target
 
 [Service]
 Type=oneshot
 Environment=TERM=linux
+ExecStartPre=-/usr/bin/touch /run/nologin
 ExecStartPre=-/usr/bin/plymouth --hide-splash
 ExecStart=/usr/lib/YaST2/bin/autoyast-initscripts.sh
+ExecStartPost=-/usr/bin/rm -f /run/nologin
 RemainAfterExit=yes
 TimeoutSec=0
 
