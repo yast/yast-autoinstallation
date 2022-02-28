@@ -8,6 +8,7 @@
 -->
 
 <xslt:transform version="1.0"
+                xmlns="http://www.suse.com/1.0/yast2ns"
                 xmlns:xslt="http://www.w3.org/1999/XSL/Transform"
                 xmlns:m="http://informatik.hu-berlin.de/merge"
                 exclude-result-prefixes="m">
