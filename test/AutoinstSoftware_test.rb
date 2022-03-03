@@ -43,7 +43,7 @@ describe Yast::AutoinstSoftware do
 
     it "appends the given list to the one to be installed" do
       Yast::AutoinstSoftware.add_additional_packages(pkgs)
-      expect(Yast::PackagesProposal.GetResolvables("autoyast", :package))
+      expect(Yast::PackagesProposal.GetResolvables("autoyast", :package, optional: true))
         .to include("NetworkManager")
     end
 
@@ -52,7 +52,7 @@ describe Yast::AutoinstSoftware do
 
       it "the packages are not added" do
         Yast::AutoinstSoftware.add_additional_packages(pkgs)
-        expect(Yast::PackagesProposal.GetResolvables("NetworkManager", :package))
+        expect(Yast::PackagesProposal.GetResolvables("NetworkManager", :package, optional: true))
           .to_not include("NetworkManager")
       end
     end
@@ -79,7 +79,8 @@ describe Yast::AutoinstSoftware do
     it "saves the list of patterns and packages to install and remove" do
       subject.Import(software)
       expect(subject.patterns).to eq(["base", "yast2_basis"])
-      expect(Yast::PackagesProposal.GetResolvables("autoyast", :package)).to eq(["yast2", "other"])
+      expect(Yast::PackagesProposal.GetResolvables("autoyast", :package, optional: true))
+        .to eq(["yast2", "other"])
       expect(Yast::PackagesProposal.GetTaboos("autoyast", :package)).to eq(["dummy"])
     end
 

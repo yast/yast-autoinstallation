@@ -152,7 +152,9 @@ module Yast
       )
 
       to_install = settings.fetch("packages", [])
-      PackagesProposal.AddResolvables("autoyast", :package, to_install) unless to_install.empty?
+      unless to_install.empty?
+        PackagesProposal.AddResolvables("autoyast", :package, to_install, optional: true)
+      end
       @kernel = settings.fetch("kernel", "")
 
       addPostPackages(settings.fetch("post-packages", []))
@@ -168,7 +170,9 @@ module Yast
     # @param pkglist [Array<String>] list of additional packages to be installed
     def add_additional_packages(pkglist)
       available = pkglist & @packagesAvailable
-      PackagesProposal.AddResolvables("autoyast", :package, available) unless available.empty?
+      return if available.empty?
+
+      PackagesProposal.AddResolvables("autoyast", :package, available, optional: true)
     end
 
     def AddYdepsFromProfile(entries)
@@ -207,7 +211,7 @@ module Yast
       s["kernel"] = @kernel if !@kernel.empty?
       s["patterns"] = @patterns if !@patterns.empty?
 
-      pkgs_to_install = Yast::PackagesProposal.GetResolvables("autoyast", :package)
+      pkgs_to_install = Yast::PackagesProposal.GetResolvables("autoyast", :package, optional: true)
       s["packages"] = pkgs_to_install unless pkgs_to_install.empty?
 
       pkg_post = AutoinstData.post_packages
