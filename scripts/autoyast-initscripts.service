@@ -1,6 +1,9 @@
 [Unit]
 Description=Autoyast2 Init Scripts
 After=remote-fs.target network-online.target time-sync.target mail-transfer-agent.target hwscan.service ypbind.service YaST2-Second-Stage.service
+Before=getty@tty1.service serial-getty@ttyS0.service serial-getty@ttyS1.service serial-getty@ttyS2.service
+Before=serial-getty@hvc0.service serial-getty@ttyAMA0.service
+Before=display-manager.service
 Wants=network-online.target
 
 [Service]
