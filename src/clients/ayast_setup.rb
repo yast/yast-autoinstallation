@@ -34,7 +34,6 @@ module Yast
       Yast.import "CommandLine"
       Yast.import "Mode"
 
-      @dopackages = true
       @cmdline = {
         "id"         => "ayast_setup",
         "help"       => _(
