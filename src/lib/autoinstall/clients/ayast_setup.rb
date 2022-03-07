@@ -42,7 +42,14 @@ module Y2Autoinstall
       WFM = Yast::WFM
       Profile  = Yast::Profile
       Builtins = Yast::Builtins
-      def Setup
+
+      # Configures up the system according to the current AutoYaST profile
+      #
+      # It relies on clients like `inst_autopost`, `inst_rpmcopy` or
+      # `inst_autoconfigure`.
+      #
+      # @param install_packages [Boolean] Install patterns and packages
+      def Setup(install_packages: true)
         textdomain "autoinst"
         Yast::AutoInstall.Save
         Yast::Wizard.CreateDialog
@@ -74,7 +81,7 @@ module Y2Autoinstall
           []
         )
 
-        if @dopackages
+        if install_packages
           Yast::Pkg.TargetInit("/", false)
           WFM.CallFunction("inst_rpmcopy", [])
         end
@@ -91,7 +98,7 @@ module Y2Autoinstall
           Yast::CommandLine.Error(_("Path to AutoYaST profile must be set."))
           return false
         end
-        @dopackages = false if Ops.get_string(options, "dopackages", "yes") == "no"
+        install_packages = options["dopackages"] != "no"
         if SCR.Read(
           path(".target.lstat"),
           Ops.get_string(options, "filename", "")
@@ -108,7 +115,7 @@ module Y2Autoinstall
           return false
         end
 
-        Setup()
+        Setup(install_packages: install_packages)
         true
       end
 

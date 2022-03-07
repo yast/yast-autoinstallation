@@ -64,7 +64,6 @@ describe "Y2Autoinstall::Clients::AyastSetup" do
       allow(Yast::Package).to receive(:Installed).and_return(true)
       allow(Yast::Pkg).to receive(:TargetInit)
       allow(subject).to receive(:restart_initscripts)
-      subject.dopackages = dopackages
     end
 
     it "saves the current profile if modified" do
@@ -79,9 +78,17 @@ describe "Y2Autoinstall::Clients::AyastSetup" do
       subject.Setup
     end
 
-    context "when dopackages is enabled" do
-      let(:dopackages) { true }
+    context "when install_packages is set to true" do
+      it "installs given post installation packages / patterns when not installed yet" do
+        expect(Yast::PackageSystem).to receive(:Installed).and_return(false)
+        expect(Yast::AutoinstSoftware).to receive(:addPostPackages).with(["vim"])
+        expect(Yast::WFM).to receive(:CallFunction).with("inst_rpmcopy", [])
 
+        subject.Setup(install_packages: true)
+      end
+    end
+
+    context "when install_packages is set to specified" do
       it "installs given post installation packages / patterns when not installed yet" do
         expect(Yast::Package).to receive(:Installed).and_return(false)
         expect(Yast::AutoinstSoftware).to receive(:addPostPackages).with(["vim"])
@@ -91,11 +98,11 @@ describe "Y2Autoinstall::Clients::AyastSetup" do
       end
     end
 
-    context "when dopackages is disabled" do
+    context "when install_packages is set to false" do
       it "does not try to install given post installation packages / patterns" do
         expect(Yast::WFM).to_not receive(:CallFunction).with("inst_rpmcopy", [])
 
-        subject.Setup
+        subject.Setup(install_packages: false)
       end
     end
 
