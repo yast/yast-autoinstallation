@@ -80,7 +80,7 @@ describe "Y2Autoinstall::Clients::AyastSetup" do
 
     context "when install_packages is set to true" do
       it "installs given post installation packages / patterns when not installed yet" do
-        expect(Yast::PackageSystem).to receive(:Installed).and_return(false)
+        expect(Yast::Package).to receive(:Installed).and_return(false)
         expect(Yast::AutoinstSoftware).to receive(:addPostPackages).with(["vim"])
         expect(Yast::WFM).to receive(:CallFunction).with("inst_rpmcopy", [])
 
