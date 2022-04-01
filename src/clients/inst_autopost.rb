@@ -72,6 +72,9 @@ module Yast
 
       Builtins.y2milestone("Steps: %1", steps)
 
+      general_settings = Profile.current.fetch("general", {})
+      AutoinstGeneral.Import(general_settings) unless general_settings.empty?
+
       importer = Y2Autoinstallation::Importer.new(Profile.current)
       modules_to_write.each do |description|
         Builtins.y2milestone("current resource: %1", description.resource_name)
