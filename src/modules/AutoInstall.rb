@@ -22,9 +22,10 @@ module Yast
       Yast.import "Profile"
       Yast.import "Mode"
       Yast.import "Stage"
+      Yast.import "AddOnProduct"
       Yast.import "AutoInstallRules"
       Yast.import "AutoinstConfig"
-      Yast.import "AddOnProduct"
+      Yast.import "AutoinstGeneral"
       Yast.import "Report"
       Yast.import "TFTP"
 
@@ -331,9 +332,6 @@ module Yast
     # @return [String] "I" if the package should be accepted; otherwise
     #   a blank string is returned (so no decision is made).
     def pkg_gpg_check(data)
-      # Do not load AutoinstGeneral too soon, when signature handling settings are not available in
-      # the profile yet (bsc#1197655).
-      Yast.import "AutoinstGeneral"
       log.debug("pkgGpgCheck data: #{data}")
       checker = PkgGpgCheckHandler.new(
         data, Yast::AutoinstGeneral.signature_handling, Yast::AddOnProduct.add_on_products
