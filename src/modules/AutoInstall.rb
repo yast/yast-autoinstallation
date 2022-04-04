@@ -22,10 +22,10 @@ module Yast
       Yast.import "Profile"
       Yast.import "Mode"
       Yast.import "Stage"
+      Yast.import "AddOnProduct"
       Yast.import "AutoInstallRules"
       Yast.import "AutoinstConfig"
       Yast.import "AutoinstGeneral"
-      Yast.import "AddOnProduct"
       Yast.import "Report"
       Yast.import "TFTP"
 
