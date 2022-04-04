@@ -16,7 +16,6 @@ module Yast
       textdomain "autoinst"
       Yast.import "Profile"
       Yast.import "AutoInstall"
-      Yast.import "AutoinstGeneral"
       Yast.import "Call"
       Yast.import "AutoinstSoftware"
       Yast.import "AutoinstScripts"
@@ -70,12 +69,11 @@ module Yast
       Progress.Title(_("Checking for required packages..."))
 
       askDialog
-      # FIXME: too late here, even though it would be the better place
-      # if (Profile::current["general"]:$[] != $[])
-      #     AutoinstGeneral::Import(Profile::current["general"]:$[]);
-      # AutoinstGeneral::SetSignatureHandling();
 
       Builtins.y2milestone("Steps: %1", steps)
+
+      general_settings = Profile.current.fetch("general", {})
+      AutoinstGeneral.Import(general_settings) unless general_settings.empty?
 
       importer = Y2Autoinstallation::Importer.new(Profile.current)
       modules_to_write.each do |description|

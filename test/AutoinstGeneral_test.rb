@@ -23,59 +23,6 @@ describe "Yast::AutoinstGeneral" do
     allow(Yast).to receive(:import).with("FileSystems").and_return(nil)
   end
 
-  describe "#main" do
-    let(:second_stage) { false }
-    let(:imported_profile) { { "general" => general_settings } }
-    let(:general_settings) { { "mode" => true } }
-
-    before do
-      allow(Yast::Stage).to receive(:cont).and_return(second_stage)
-    end
-
-    context "on first stage" do
-      let(:second_stage) { false }
-
-      it "does not try to import the profile" do
-        expect(subject).to_not receive(:Import)
-        subject.main
-      end
-
-      it "does not set the signatures handling callbacks" do
-        expect(subject).to_not receive(:SetSignatureHandling)
-        subject.main
-      end
-    end
-
-    context "on second stage" do
-      let(:second_stage) { true }
-
-      before do
-        allow(Yast::Profile).to receive(:current).and_return(imported_profile)
-      end
-
-      context "and the profile contains a 'general' section" do
-        it "imports the profile" do
-          expect(subject).to receive(:Import).with(general_settings)
-          subject.main
-        end
-      end
-
-      context "and the profile does not contain a 'general' section" do
-        let(:general_settings) { {} }
-
-        it "does not try to import the profile" do
-          expect(subject).to_not receive(:Import)
-          subject.main
-        end
-      end
-
-      it "sets the signatures handling callbacks" do
-        expect(subject).to receive(:SetSignatureHandling)
-        subject.main
-      end
-    end
-  end
-
   describe "#Write" do
     before do
       allow(Yast::AutoinstStorage).to receive(:Write)
