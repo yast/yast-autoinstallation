@@ -60,7 +60,6 @@ module Yast
 
       # default value of settings modified
       @modified = false
-      AutoinstGeneral()
     end
 
     # Function sets internal variable, which indicates, that any
@@ -453,17 +452,6 @@ module Yast
       SetSignatureHandling()
 
       NtpSync()
-
-      nil
-    end
-
-    # Constructor
-    def AutoinstGeneral
-      return unless Stage.cont
-
-      # FIXME: wrong place for this
-      general_settings = Profile.current.fetch("general", {})
-      Import(general_settings) unless general_settings.empty?
 
       nil
     end
