@@ -35,8 +35,8 @@ module Y2Autoinstallation
             udev_names: disk["dev_names"]
           }
           result[:model] = sys_block_value(dev_name, "device/model") || "Unknown"
-          result[:serial] = sys_block_value(dev_name, "device/serial") || "Unknown"
-          result[:size] = (sys_block_value(dev_name, "device/size") || "-1").to_i
+          result[:serial] = sys_block_value(dev_name, "serial") || "Unknown"
+          result[:size] = (sys_block_value(dev_name, "size") || "-1").to_i
 
           @disks << result
         end
@@ -111,7 +111,7 @@ module Y2Autoinstallation
         sys_path = "/sys/block/#{device}/"
         ::File.read(sys_path + path).strip
       rescue StandardError => e
-        log.warn "read of #{sys_path + path}  failed with #{e}"
+        log.warn "read of #{sys_path + path} failed with #{e}"
         nil
       end
     end
