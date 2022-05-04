@@ -28,7 +28,9 @@ rule =
 element rule {
     MAP,
     (
-      (y2_match_to | dialog)+ &
+      (
+        y2_match_to+ | (y2_match_to* & dialog)
+      ) &
       result &
       operator?
     )
