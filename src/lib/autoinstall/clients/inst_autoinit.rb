@@ -4,6 +4,7 @@ require "autoinstall/autosetup_helpers"
 require "autoinstall/importer"
 require "y2packager/installation_medium"
 require "y2packager/product_spec"
+require "y2packager/medium_type"
 
 Yast.import "AutoinstConfig"
 Yast.import "AutoinstFunctions"
@@ -96,7 +97,9 @@ module Y2Autoinstallation
         autosetup_network if network_before_proposal? && !Yast::Mode.autoupgrade
 
         # register the system early to get repositories from registration server
-        if Yast::Profile.current.fetch_as_hash(REGISTER_SECTION)["do_registration"] &&
+        # when using the Online medium, for the other media the registration is done later
+        if Y2Packager::MediumType.online? &&
+            Yast::Profile.current.fetch_as_hash(REGISTER_SECTION)["do_registration"] &&
             !Yast::Mode.autoupgrade
 
           register = suse_register
