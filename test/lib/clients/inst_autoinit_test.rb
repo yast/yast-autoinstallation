@@ -155,16 +155,39 @@ describe Y2Autoinstallation::Clients::InstAutoinit do
     context "when the registration is enabled according to the profile" do
       let(:do_registration) { true }
 
-      it "registers the system" do
-        expect(Yast::WFM).to receive(:CallFunction)
-          .with("scc_auto", ["Import", profile["suse_register"]])
-        expect(Yast::WFM).to receive(:CallFunction).with("scc_auto", ["Write"])
-        # fake that registration is available to avoid build requires
-        allow(subject).to receive(:registration_module_available?).and_return(true)
-        allow(Yast::Profile).to receive(:remove_sections)
-
-        subject.run
+      before do
+        expect(Y2Packager::MediumType).to receive(:online?).and_return(online_medium)
       end
+
+      context "on the Online medium" do
+        let(:online_medium) { true }
+
+        it "registers the system" do
+          expect(Yast::WFM).to receive(:CallFunction)
+            .with("scc_auto", ["Import", profile["suse_register"]])
+          expect(Yast::WFM).to receive(:CallFunction).with("scc_auto", ["Write"])
+          # fake that registration is available to avoid build requires
+          allow(subject).to receive(:registration_module_available?).and_return(true)
+          allow(Yast::Profile).to receive(:remove_sections)
+
+          subject.run
+        end
+      end
+
+      context "on the Full medium" do
+        let(:online_medium) { false }
+
+        it "does not register the system" do
+          allow(Yast::WFM).to receive(:CallFunction)
+          expect(Yast::WFM).to_not receive(:CallFunction).with("scc_auto", anything)
+          # fake that registration is available to avoid build requires
+          allow(subject).to receive(:registration_module_available?).and_return(true)
+          allow(Yast::Profile).to receive(:remove_sections)
+
+          subject.run
+        end
+      end
+
     end
 
     context "when the network is requested to be configured before the proposal" do
