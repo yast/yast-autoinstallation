@@ -20,6 +20,7 @@
 
 require_relative "../test_helper"
 require "autoinstall/autosetup_helpers"
+require "y2security/security_policies/scopes"
 
 Yast.import "AutoinstConfig"
 Yast.import "Profile"
@@ -503,6 +504,40 @@ describe Y2Autoinstallation::AutosetupHelpers do
       it "removes the section when all country settings have been already imported" do
         expect(Yast::Profile).to receive(:remove_sections).with("language")
         client.autosetup_country
+      end
+    end
+  end
+
+  describe "#validate_security_policies" do
+    let(:issues) do
+      Y2Security::SecurityPolicies::IssuesCollection.new
+    end
+
+    before do
+      allow(Y2Security::SecurityPolicies::Manager.instance)
+        .to receive(:issues).and_return(issues)
+    end
+
+    context "when there are no issues" do
+      it "does not try to report issues to the user" do
+        expect(Y2Issues).to_not receive(:report)
+        client.validate_security_policies
+      end
+    end
+
+    context "when there are issues" do
+      before do
+        policy = Y2Security::SecurityPolicies::Manager.instance.policies.first
+        issues.update(policy, [issue])
+      end
+
+      let(:issue) do
+        Y2Security::SecurityPolicies::Issue.new("wireless interfaces not allowed")
+      end
+
+      it "reports the issues to the user" do
+        expect(Y2Issues).to receive(:report)
+        client.validate_security_policies
       end
     end
   end

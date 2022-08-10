@@ -305,5 +305,29 @@ describe Y2Autoinstallation::Clients::InstAutosetup do
         expect(Yast::Profile.current).to_not have_key("add-on")
       end
     end
+
+    context "security policies" do
+      before do
+        allow(Yast::AutoinstConfig).to receive(:Confirm).and_return(false)
+      end
+
+      context "when the confirmation mode is disabled" do
+        it "validates security policies" do
+          expect(subject).to receive(:validate_security_policies)
+          subject.main
+        end
+      end
+
+      context "when the confirmation mode is enabled" do
+        before do
+          allow(Yast::AutoinstConfig).to receive(:Confirm).and_return(true)
+        end
+
+        it "does not validate security policies" do
+          expect(subject).to_not receive(:validate_security_policies)
+          subject.main
+        end
+      end
+    end
   end
 end

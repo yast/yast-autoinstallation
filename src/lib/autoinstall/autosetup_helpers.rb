@@ -18,6 +18,8 @@
 # find current contact information at www.suse.com.
 
 require "y2storage"
+require "y2issues"
+require "y2security/security_policies/manager"
 require "autoinstall/activate_callbacks"
 require "autoinstall/xml_checks"
 
@@ -227,6 +229,16 @@ module Y2Autoinstallation
       Yast::WFM.CallFunction("firewall_auto", ["Import", firewall_section])
 
       Yast::Profile.remove_sections("firewall") if !need_second_stage_run?
+    end
+
+    def validate_security_policies
+      issues = Y2Security::SecurityPolicies::Manager.instance.issues
+      return if issues.all.empty?
+
+      y2issues = issues.all.map do |issue|
+        Y2Issues::Issue.new(issue.message, severity: :error)
+      end
+      Y2Issues.report(Y2Issues::List.new(y2issues))
     end
 
   private
