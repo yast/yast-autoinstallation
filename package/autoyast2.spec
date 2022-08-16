@@ -53,8 +53,10 @@ BuildRequires:  yast2-update >= 3.3.0
 BuildRequires:  yast2-network >= 3.1.145
 BuildRequires:  yast2-slp
 BuildRequires:  yast2-country
+# Support for SecurityPolicies
+BuildRequires:  yast2-security >= 4.4.14
 # Required for test suite testing one time sync
-BuildRequires:       yast2-ntp-client >= 4.0.1
+BuildRequires:  yast2-ntp-client >= 4.0.1
 # UEFI detection in Y2Storage::Arch
 BuildRequires:  yast2-storage-ng >= 4.4.22
 # %%{_unitdir} macro definition is in a separate package since 13.1
@@ -71,8 +73,8 @@ Requires:       libxslt
 Requires:       yast2 >= 4.4.38
 Requires:       yast2-core
 Requires:       yast2-country >= 3.1.13
-# Moving security module to first installation stage
-Requires:       yast2-security >= 4.1.1
+# Support for SecurityPolicies
+Requires:       yast2-security >= 4.4.14
 # Install selected network backend packages 
 Requires:       yast2-network >= 4.4.53
 Requires:       yast2-schema >= 4.0.6
