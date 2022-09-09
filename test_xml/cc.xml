@@ -122,9 +122,9 @@
 
 LOC="/tmp/cc-package-uri"
 
-$(echo "$VAL" | egrep -q "^http://") || \
-$(echo "$VAL" | egrep -q "^ftp://") || \
-$(echo "$VAL" | egrep -q "^file:///") && \
+$(echo "$VAL" | grep -E -q "^http://") || \
+$(echo "$VAL" | grep -E -q "^ftp://") || \
+$(echo "$VAL" | grep -E -q "^file:///") && \
 {
         echo "$VAL" > $LOC
         exit 0
