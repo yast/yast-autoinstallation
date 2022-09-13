@@ -508,7 +508,7 @@ describe Y2Autoinstallation::AutosetupHelpers do
     end
   end
 
-  describe "#validate_security_policies" do
+  describe "#autosetup_security_policies" do
     let(:failing_rules) { [] }
     let(:target_config) do
       instance_double(Y2Security::SecurityPolicies::TargetConfig)
@@ -522,9 +522,9 @@ describe Y2Autoinstallation::AutosetupHelpers do
     end
 
     context "when there are no issues" do
-      it "does not try to report issues to the user" do
-        expect(Y2Issues).to_not receive(:report)
-        client.validate_security_policies
+      it "does not enable the confirm mode" do
+        expect(Yast::AutoinstConfig).to_not receive(:Confirm=)
+        client.autosetup_security_policies
       end
     end
 
@@ -536,9 +536,9 @@ describe Y2Autoinstallation::AutosetupHelpers do
         ]
       end
 
-      it "reports the issues to the user" do
-        expect(Y2Issues).to receive(:report)
-        client.validate_security_policies
+      it "enables the confirm mode" do
+        expect(Yast::AutoinstConfig).to receive(:Confirm=).with(true)
+        client.autosetup_security_policies
       end
     end
   end

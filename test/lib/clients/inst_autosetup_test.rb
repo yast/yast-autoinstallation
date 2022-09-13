@@ -313,7 +313,7 @@ describe Y2Autoinstallation::Clients::InstAutosetup do
 
       context "when the confirmation mode is disabled" do
         it "validates security policies" do
-          expect(subject).to receive(:validate_security_policies)
+          expect(subject).to receive(:autosetup_security_policies)
           subject.main
         end
       end
@@ -324,7 +324,7 @@ describe Y2Autoinstallation::Clients::InstAutosetup do
         end
 
         it "does not validate security policies" do
-          expect(subject).to_not receive(:validate_security_policies)
+          expect(subject).to_not receive(:autosetup_security_policies)
           subject.main
         end
       end

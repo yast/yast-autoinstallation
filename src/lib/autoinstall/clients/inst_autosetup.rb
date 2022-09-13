@@ -389,7 +389,7 @@ module Y2Autoinstallation
         Progress.NextStage
 
         # Validate the security policies
-        validate_security_policies unless Yast::AutoinstConfig.Confirm
+        autosetup_security_policies unless Yast::AutoinstConfig.Confirm
 
         # Results of imported values semantic check.
         return :abort unless AutoInstall.valid_imported_values
