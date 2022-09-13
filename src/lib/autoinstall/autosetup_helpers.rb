@@ -20,6 +20,7 @@
 require "y2storage"
 require "y2issues"
 require "y2security/security_policies/manager"
+require "y2security/security_policies/target_config"
 require "autoinstall/activate_callbacks"
 require "autoinstall/xml_checks"
 
@@ -232,11 +233,13 @@ module Y2Autoinstallation
     end
 
     def validate_security_policies
-      issues = Y2Security::SecurityPolicies::Manager.instance.issues
-      return if issues.all.empty?
+      target_config = Y2Security::SecurityPolicies::TargetConfig.new
+      rules = Y2Security::SecurityPolicies::Manager.instance.failing_rules(target_config)
+      return if rules.empty?
 
-      y2issues = issues.all.map do |issue|
-        Y2Issues::Issue.new(issue.message, severity: :error)
+      y2issues = rules.map do |rule|
+        message = "#{rule.id} #{rule.description}"
+        Y2Issues::Issue.new(message, severity: :error)
       end
       Y2Issues.report(Y2Issues::List.new(y2issues))
     end

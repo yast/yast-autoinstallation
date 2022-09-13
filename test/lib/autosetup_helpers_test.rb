@@ -20,7 +20,7 @@
 
 require_relative "../test_helper"
 require "autoinstall/autosetup_helpers"
-require "y2security/security_policies/scopes"
+require "y2security/security_policies/rule"
 
 Yast.import "AutoinstConfig"
 Yast.import "Profile"
@@ -509,13 +509,16 @@ describe Y2Autoinstallation::AutosetupHelpers do
   end
 
   describe "#validate_security_policies" do
-    let(:issues) do
-      Y2Security::SecurityPolicies::IssuesCollection.new
+    let(:failing_rules) { [] }
+    let(:target_config) do
+      instance_double(Y2Security::SecurityPolicies::TargetConfig)
     end
 
     before do
       allow(Y2Security::SecurityPolicies::Manager.instance)
-        .to receive(:issues).and_return(issues)
+        .to receive(:failing_rules).and_return(failing_rules)
+      allow(Y2Security::SecurityPolicies::TargetConfig)
+        .to receive(:new).and_return(target_config)
     end
 
     context "when there are no issues" do
@@ -526,13 +529,11 @@ describe Y2Autoinstallation::AutosetupHelpers do
     end
 
     context "when there are issues" do
-      before do
-        policy = Y2Security::SecurityPolicies::Manager.instance.policies.first
-        issues.update(policy, [issue])
-      end
-
-      let(:issue) do
-        Y2Security::SecurityPolicies::Issue.new("wireless interfaces not allowed")
+      let(:failing_rules) do
+        [
+          instance_double(Y2Security::SecurityPolicies::Rule,
+            id: "SLES-15-000000", description: "Dummy rule")
+        ]
       end
 
       it "reports the issues to the user" do
