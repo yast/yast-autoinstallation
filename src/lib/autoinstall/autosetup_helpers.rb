@@ -238,8 +238,17 @@ module Y2Autoinstallation
     # a chance to review and fix the potential issues.
     def autosetup_security_policies
       target_config = Y2Security::SecurityPolicies::TargetConfig.new
-      rules = Y2Security::SecurityPolicies::Manager.instance.failing_rules(target_config)
-      Yast::AutoinstConfig.Confirm = true unless rules.empty?
+      manager = Y2Security::SecurityPolicies::Manager.instance
+      rules = manager.failing_rules(target_config)
+
+      return if rules.empty?
+
+      issues = rules.values.flatten.map do |rule|
+        ids = (rule.identifiers + rule.references).join(", ")
+        Y2Issues::Issue.new("#{rule.description} (#{ids})")
+      end
+
+      Y2Issues.report(Y2Issues::List.new(issues))
     end
 
   private

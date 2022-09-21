@@ -509,9 +509,12 @@ describe Y2Autoinstallation::AutosetupHelpers do
   end
 
   describe "#autosetup_security_policies" do
-    let(:failing_rules) { [] }
+    let(:failing_rules) { {} }
     let(:target_config) do
       instance_double(Y2Security::SecurityPolicies::TargetConfig)
+    end
+    let(:policy) do
+      instance_double(Y2Security::SecurityPolicies::Policy)
     end
 
     before do
@@ -522,22 +525,24 @@ describe Y2Autoinstallation::AutosetupHelpers do
     end
 
     context "when there are no issues" do
-      it "does not enable the confirm mode" do
-        expect(Yast::AutoinstConfig).to_not receive(:Confirm=)
+      it "does not report any issue" do
+        expect(Y2Issues).to_not receive(:report)
         client.autosetup_security_policies
       end
     end
 
     context "when there are issues" do
-      let(:failing_rules) do
-        [
-          instance_double(Y2Security::SecurityPolicies::Rule,
-            id: "SLES-15-000000", description: "Dummy rule")
-        ]
+      let(:rule) do
+        instance_double(Y2Security::SecurityPolicies::Rule, id: "testing",
+          description: "Dummy rule", identifiers: ["CCE-12345"], references: ["SLES-15-12345"])
       end
 
-      it "enables the confirm mode" do
-        expect(Yast::AutoinstConfig).to receive(:Confirm=).with(true)
+      let(:failing_rules) do
+        { policy => [rule] }
+      end
+
+      it "reports each rule as an installation issue" do
+        expect(Y2Issues).to receive(:report)
         client.autosetup_security_policies
       end
     end
