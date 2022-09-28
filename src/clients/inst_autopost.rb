@@ -69,14 +69,14 @@ module Yast
       Progress.NextStage
       Progress.Title(_("Checking for required packages..."))
 
-      Y2Autoinstall::Ask::Runner.new(
-        Yast::Profile.current, stage: Y2Autoinstall::Ask::Stage::CONT
-      ).run
-
       Builtins.y2milestone("Steps: %1", steps)
 
       general_settings = Profile.current.fetch("general", {})
       AutoinstGeneral.Import(general_settings) unless general_settings.empty?
+
+      Y2Autoinstall::Ask::Runner.new(
+        Yast::Profile.current, stage: Y2Autoinstall::Ask::Stage::CONT
+      ).run
 
       importer = Y2Autoinstallation::Importer.new(Profile.current)
       modules_to_write.each do |description|
