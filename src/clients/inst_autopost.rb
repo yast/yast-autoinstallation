@@ -70,10 +70,10 @@ module Yast
 
       Builtins.y2milestone("Steps: %1", steps)
 
-      general_settings = Profile.current.fetch("general", {})
-      AutoinstGeneral.Import(general_settings) unless general_settings.empty?
-
+      import_general_settings
       askDialog
+      # re-import general settings just in case they were modified by the <ask-list/>
+      import_general_settings
 
       importer = Y2Autoinstallation::Importer.new(Profile.current)
       modules_to_write.each do |description|
@@ -128,6 +128,11 @@ module Yast
         Ops.subtract(Builtins.size(filePath), Builtins.size(last))
       )
       ret
+    end
+
+    def import_general_settings
+      general_settings = Profile.current.fetch("general", {})
+      AutoinstGeneral.Import(general_settings) unless general_settings.empty?
     end
   end
 end
