@@ -68,12 +68,12 @@ module Yast
       Progress.NextStage
       Progress.Title(_("Checking for required packages..."))
 
-      askDialog
-
       Builtins.y2milestone("Steps: %1", steps)
 
       general_settings = Profile.current.fetch("general", {})
       AutoinstGeneral.Import(general_settings) unless general_settings.empty?
+
+      askDialog
 
       importer = Y2Autoinstallation::Importer.new(Profile.current)
       modules_to_write.each do |description|
