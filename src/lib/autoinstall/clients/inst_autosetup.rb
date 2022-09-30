@@ -123,13 +123,13 @@ module Y2Autoinstallation
 
         # configure general settings
         general_section = Profile.current.fetch_as_hash("general")
-        networking_section = Profile.current.fetch_as_hash("networking")
-        pkg_list = networking_section["managed"] ? ["NetworkManager"] : []
         AutoinstGeneral.Import(general_section)
         log.info("general: #{general_section}")
         AutoinstGeneral.Write
 
         autosetup_network
+        # Add needed network packages depending on the selected backend (bsc#1201435)
+        pkg_list = (Call.Function("lan_auto", ["Packages"]) || {}).fetch("install", [])
 
         if Builtins.haskey(Profile.current, "add-on")
           Progress.Title(_("Handling Add-On Products..."))
