@@ -98,21 +98,6 @@ module Yast
         else
           log.warn("Cannot evaluate ZyppRepoURL from /etc/install.inf")
         end
-      elsif AutoinstConfig.scheme == "label"
-        # autoyast=label://my_home//autoinst.xml in linuxrc:
-        # AY is searching for a partition with the label "my_home". This partition
-        # will be mounted and the autoinst.xml will be used for installation.
-        log.info("searching label #{AutoinstConfig.host}")
-        fs = Y2Storage::StorageManager.instance.probed.filesystems.find do |f|
-          f.label == AutoinstConfig.host
-        end
-        if fs&.blk_devices&.first
-          AutoinstConfig.scheme = "device"
-          AutoinstConfig.host = fs.blk_devices.first.basename
-          log.info("found on #{AutoinstConfig.host}")
-        else
-          Report.Error(_("label not found while looking for autoyast profile"))
-        end
       end
 
       filename = basename(AutoinstConfig.filepath)
