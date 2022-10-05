@@ -361,7 +361,7 @@ module Yast
       @user     = parsed_url["user"]   || ""
       @pass     = parsed_url["pass"]   || ""
 
-      if @scheme == "relurl" || @scheme == "file"
+      if @scheme == "relurl" || @scheme == "repo" || @scheme == "file"
         # "relurl": No host information has been given here. So a part of the path or the
         # complete path has been stored in the host variable while parsing it.
         # This will be reverted.
@@ -376,6 +376,9 @@ module Yast
           @filepath = @host unless @host.empty?
         end
         @host = ""
+        # keep in sync
+        @urltok["path"] = @filepath
+        @urltok["host"] = @host
       end
 
       @remoteProfile = !["default", "file", "floppy", "usb", "device"].include?(@scheme)
