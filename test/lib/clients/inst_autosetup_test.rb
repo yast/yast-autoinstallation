@@ -47,6 +47,8 @@ describe Y2Autoinstallation::Clients::InstAutosetup do
       allow(Yast::AutoinstStorage).to receive(:Write).and_return(true)
 
       allow(Yast::WFM).to receive(:CallFunction).with(/_auto/, Array).and_return(true)
+      allow(Yast::WFM).to receive(:CallFunction)
+        .with("lan_auto", ["Packages"]).and_return("install" => [])
       allow(Yast::WFM).to receive(:ClientExists).with(/_auto/).and_return(true)
       allow(Yast::Popup).to receive(:ConfirmAbort).and_return(true)
 
