@@ -41,7 +41,7 @@ module Y2Autoinstall
       def self.attributes
         [
           { name: :question },
-          { name: :default },
+          { name: :default, allow_blank: true },
           { name: :help },
           { name: :title },
           { name: :type },
