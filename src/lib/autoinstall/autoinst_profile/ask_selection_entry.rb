@@ -24,8 +24,8 @@ module Y2Autoinstall
     class AskSelectionEntry < ::Installation::AutoinstProfile::SectionWithAttributes
       def self.attributes
         [
-          { name: :value },
-          { name: :label }
+          { name: :value, allow_blank: true },
+          { name: :label, allow_blank: true }
         ]
       end
 
