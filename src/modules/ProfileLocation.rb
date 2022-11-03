@@ -31,6 +31,7 @@ require "autoinstall/y2erb"
 require "y2storage"
 require "fileutils"
 require "yast2/popup"
+require "digest/sha1"
 
 module Yast
   class ProfileLocationClass < Module
@@ -133,6 +134,9 @@ module Yast
           return false
         end
 
+        # log the profile checksum so we can verify that a particular file was really used
+        log.info("Profile SHA1 checksum: #{Digest::SHA1.hexdigest(tmp)}")
+
         if GPG.encrypted_symmetric?(localfile)
           label = _("Encrypted AutoYaST profile.")
           begin
@@ -210,6 +214,10 @@ module Yast
 
       if ret
         AutoInstallRules.userrules = true
+
+        rules_sha1 = Digest::SHA1.hexdigest(File.read(AutoinstConfig.local_rules_file))
+        # log the rules checksum so we can verify that a particular file was really used
+        log.info("Rules SHA1 checksum: #{rules_sha1}")
       else
         AutoInstallRules.userrules = false
         SCR.Execute(path(".target.remove"), AutoinstConfig.local_rules_file)

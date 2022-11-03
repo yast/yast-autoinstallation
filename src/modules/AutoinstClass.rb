@@ -13,6 +13,7 @@
 # $Id$
 require "yast"
 require "autoinstall/xml_checks"
+require "digest/sha1"
 
 module Yast
   class AutoinstClassClass < Module
@@ -54,6 +55,10 @@ module Yast
       if SCR.Read(path(".target.size"), @classPath) != -1 &&
           Y2Autoinstallation::XmlChecks.instance.valid_classes?(@classPath)
         begin
+          classes_sha1 = Digest::SHA1.hexdigest(File.read(@classPath))
+          # log the classes checksum so we can verify that a particular file was really used
+          log.info("Classes SHA1 checksum: #{classes_sha1}")
+
           classes_map = XML.XMLToYCPFile(@classPath)
           @Classes = (classes_map && classes_map["classes"]) || []
         rescue XMLDeserializationError => e
