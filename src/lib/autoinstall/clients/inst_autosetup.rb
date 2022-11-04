@@ -388,8 +388,8 @@ module Y2Autoinstallation
 
         Progress.NextStage
 
-        # Validate the security policies
-        autosetup_security_policies
+        # Validate the security policy
+        autosetup_security_policy
 
         # Results of imported values semantic check.
         return :abort unless AutoInstall.valid_imported_values

@@ -232,11 +232,10 @@ module Y2Autoinstallation
       Yast::Profile.remove_sections("firewall") if !need_second_stage_run?
     end
 
-    # Check security policies
+    # Check the security policy
     #
-    # If any of the rules of the enabled policies fails, it enables the confirm mode so the user has
-    # a chance to review and fix the potential issues.
-    def autosetup_security_policies
+    # If any of the rules of the enabled policy fails, it displays a warning.
+    def autosetup_security_policy
       target_config = Y2Security::SecurityPolicies::TargetConfig.new
       manager = Y2Security::SecurityPolicies::Manager.instance
       rules = manager.failing_rules(target_config)

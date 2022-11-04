@@ -508,7 +508,7 @@ describe Y2Autoinstallation::AutosetupHelpers do
     end
   end
 
-  describe "#autosetup_security_policies" do
+  describe "#autosetup_security_policy" do
     let(:failing_rules) { {} }
     let(:target_config) do
       instance_double(Y2Security::SecurityPolicies::TargetConfig)
@@ -527,7 +527,7 @@ describe Y2Autoinstallation::AutosetupHelpers do
     context "when there are no issues" do
       it "does not report any issue" do
         expect(Y2Issues).to_not receive(:report)
-        client.autosetup_security_policies
+        client.autosetup_security_policy
       end
     end
 
@@ -543,7 +543,7 @@ describe Y2Autoinstallation::AutosetupHelpers do
 
       it "reports each rule as an installation issue" do
         expect(Y2Issues).to receive(:report)
-        client.autosetup_security_policies
+        client.autosetup_security_policy
       end
     end
   end
