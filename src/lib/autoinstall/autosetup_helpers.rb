@@ -18,7 +18,6 @@
 # find current contact information at www.suse.com.
 
 require "y2storage"
-require "y2issues"
 require "y2security/security_policies/manager"
 require "y2security/security_policies/target_config"
 require "autoinstall/activate_callbacks"
@@ -30,6 +29,8 @@ Yast.import "Profile"
 Yast.import "Timezone"
 Yast.import "Keyboard"
 Yast.import "Language"
+Yast.import "HTML"
+Yast.import "Report"
 
 module Y2Autoinstallation
   # This module defines some methods that are used in {Y2Autoinstallation::Clients::InstAutosetup}
@@ -241,12 +242,21 @@ module Y2Autoinstallation
       rules = manager.failing_rules(target_config)
       return if rules.empty?
 
-      issues = rules.values.flatten.map do |rule|
+      # Assume that only 1 policy can be enabled
+      policy = rules.keys.first
+      items = rules.values.flatten.map do |rule|
         ids = (rule.identifiers + rule.references).join(", ")
-        Y2Issues::Issue.new("#{rule.description} (#{ids})")
+        "#{rule.description} (#{ids})"
       end
 
-      Y2Issues.report(Y2Issues::List.new(issues))
+      # TRANSLATORS: policy_name is the name of a SCAP policy
+      message = format(
+        _("The system does not comply with the %{policy_name} policy:"),
+        policy_name: policy.name
+      )
+      Yast::Report.LongWarning(
+        Yast::HTML.Para(message) + Yast::HTML.List(items)
+      )
     end
 
   private

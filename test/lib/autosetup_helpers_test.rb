@@ -514,7 +514,7 @@ describe Y2Autoinstallation::AutosetupHelpers do
       instance_double(Y2Security::SecurityPolicies::TargetConfig)
     end
     let(:policy) do
-      instance_double(Y2Security::SecurityPolicies::Policy)
+      instance_double(Y2Security::SecurityPolicies::Policy, name: "DISA STIG")
     end
 
     before do
@@ -526,7 +526,8 @@ describe Y2Autoinstallation::AutosetupHelpers do
 
     context "when there are no issues" do
       it "does not report any issue" do
-        expect(Y2Issues).to_not receive(:report)
+        expect(Yast::Report).to_not receive(:LongWarning)
+          .with(/Dummy rule/)
         client.autosetup_security_policy
       end
     end
@@ -541,8 +542,9 @@ describe Y2Autoinstallation::AutosetupHelpers do
         { policy => [rule] }
       end
 
-      it "reports each rule as an installation issue" do
-        expect(Y2Issues).to receive(:report)
+      it "reports railing rules" do
+        expect(Yast::Report).to receive(:LongWarning)
+          .with(/DISA STIG.*Dummy rule \(CCE-12345, SLES-15-12345\)/)
         client.autosetup_security_policy
       end
     end
