@@ -240,7 +240,6 @@ module Y2Autoinstallation
       target_config = Y2Security::SecurityPolicies::TargetConfig.new
       manager = Y2Security::SecurityPolicies::Manager.instance
       rules = manager.failing_rules(target_config)
-
       return if rules.empty?
 
       issues = rules.values.flatten.map do |rule|
