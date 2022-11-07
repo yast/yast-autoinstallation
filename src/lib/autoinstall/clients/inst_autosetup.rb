@@ -391,7 +391,7 @@ module Y2Autoinstallation
         Progress.NextStage
 
         # Validate the security policy
-        autosetup_security_policy
+        autosetup_security_policy unless AutoinstConfig.Confirm
 
         # Results of imported values semantic check.
         return :abort unless AutoInstall.valid_imported_values
