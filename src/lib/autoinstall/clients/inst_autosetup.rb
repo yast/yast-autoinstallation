@@ -79,7 +79,8 @@ module Y2Autoinstallation
           _("Import SSH keys/settings"),
           _("Set up user defined configuration files"),
           _("Confirm License"),
-          _("Configure firewall")
+          _("Configure firewall"),
+          _("Check security policy")
         ]
 
         @progress_descriptions = [
@@ -97,7 +98,8 @@ module Y2Autoinstallation
           _("Importing SSH keys/settings..."),
           _("Setting up user defined configuration files..."),
           _("Confirming License..."),
-          _("Configuring the firewall")
+          _("Configuring the firewall"),
+          _("Checking the security policy")
         ]
 
         Progress.New(
