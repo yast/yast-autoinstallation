@@ -509,15 +509,17 @@ describe Y2Autoinstallation::AutosetupHelpers do
   end
 
   describe "#autosetup_security_policy" do
-    let(:failing_rules) { {} }
     let(:target_config) do
       instance_double(Y2Security::SecurityPolicies::TargetConfig)
     end
     let(:policy) do
       instance_double(Y2Security::SecurityPolicies::Policy, name: "DISA STIG")
     end
+    let(:failing_rules) { [] }
 
     before do
+      allow(Y2Security::SecurityPolicies::Manager.instance)
+        .to receive(:enabled_policy).and_return(policy)
       allow(Y2Security::SecurityPolicies::Manager.instance)
         .to receive(:failing_rules).and_return(failing_rules)
       allow(Y2Security::SecurityPolicies::TargetConfig)
@@ -537,10 +539,7 @@ describe Y2Autoinstallation::AutosetupHelpers do
         instance_double(Y2Security::SecurityPolicies::Rule, id: "testing",
           description: "Dummy rule", identifiers: ["CCE-12345"], references: ["SLES-15-12345"])
       end
-
-      let(:failing_rules) do
-        { policy => [rule] }
-      end
+      let(:failing_rules) { [rule] }
 
       it "reports railing rules" do
         expect(Yast::Report).to receive(:LongWarning)

@@ -240,11 +240,9 @@ module Y2Autoinstallation
       target_config = Y2Security::SecurityPolicies::TargetConfig.new
       manager = Y2Security::SecurityPolicies::Manager.instance
       rules = manager.failing_rules(target_config)
-      return if rules.empty?
+      return if !manager.enabled_policy || rules.empty?
 
-      # Assume that only 1 policy can be enabled
-      policy = rules.keys.first
-      items = rules.values.flatten.map do |rule|
+      items = rules.map do |rule|
         ids = (rule.identifiers + rule.references).join(", ")
         "#{rule.description} (#{ids})"
       end
@@ -252,7 +250,7 @@ module Y2Autoinstallation
       # TRANSLATORS: policy_name is the name of a SCAP policy
       message = format(
         _("The system does not comply with the %{policy_name} policy:"),
-        policy_name: policy.name
+        policy_name: manager.enabled_policy.name
       )
       Yast::Report.LongWarning(
         Yast::HTML.Para(message) + Yast::HTML.List(items)
