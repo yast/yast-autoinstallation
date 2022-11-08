@@ -68,6 +68,8 @@ describe Y2Autoinstallation::Clients::InstAutosetup do
       allow(importer).to receive(:import_entry).and_call_original
       allow(Yast::ProductControl).to receive(:RunFrom).and_return(:next)
       Yast::Profile.current = Yast::ProfileHash.new(profile)
+
+      allow(Yast::Profile).to receive(:remove_sections)
     end
 
     it "sets up the network" do
@@ -297,6 +299,8 @@ describe Y2Autoinstallation::Clients::InstAutosetup do
       end
 
       it "removes the add-on section from the profile" do
+
+        allow(Yast::Profile).to receive(:remove_sections).and_call_original
         expect(Yast::Profile.current).to have_key("add-on")
         expect(Yast::WFM).to receive(:CallFunction)
           .with("add-on_auto", ["Import", profile["add-on"]])
