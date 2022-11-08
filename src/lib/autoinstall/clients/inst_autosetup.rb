@@ -279,7 +279,9 @@ module Y2Autoinstallation
 
         # For kdump we respect product defaults. So even if not specified in profile
         # import empty one to get proposal and install needed software.
+        log.info "checking for kdump auto"
         if WFM.ClientExists("kdump_auto")
+          log.info "calling import"
           Call.Function(
             "kdump_auto",
             ["Import", Ops.get_map(Profile.current, "kdump", {})]
