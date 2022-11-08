@@ -277,8 +277,9 @@ module Y2Autoinstallation
 
         Progress.NextStage
 
-        # SLES only. Have to be run before software to add required packages to enable kdump
-        if Builtins.haskey(Profile.current, "kdump")
+        # For kdump we respect product defaults. So even if not specified in profile
+        # import empty one to get proposal and install needed software.
+        if WFM.ClientExists("kdump_auto")
           Call.Function(
             "kdump_auto",
             ["Import", Ops.get_map(Profile.current, "kdump", {})]
