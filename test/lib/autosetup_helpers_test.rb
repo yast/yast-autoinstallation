@@ -20,6 +20,7 @@
 
 require_relative "../test_helper"
 require "autoinstall/autosetup_helpers"
+require "y2security/security_policies/rule"
 
 Yast.import "AutoinstConfig"
 Yast.import "Profile"
@@ -503,6 +504,47 @@ describe Y2Autoinstallation::AutosetupHelpers do
       it "removes the section when all country settings have been already imported" do
         expect(Yast::Profile).to receive(:remove_sections).with("language")
         client.autosetup_country
+      end
+    end
+  end
+
+  describe "#autosetup_security_policy" do
+    let(:target_config) do
+      instance_double(Y2Security::SecurityPolicies::TargetConfig)
+    end
+    let(:policy) do
+      instance_double(Y2Security::SecurityPolicies::Policy, name: "DISA STIG")
+    end
+    let(:failing_rules) { [] }
+
+    before do
+      allow(Y2Security::SecurityPolicies::Manager.instance)
+        .to receive(:enabled_policy).and_return(policy)
+      allow(Y2Security::SecurityPolicies::Manager.instance)
+        .to receive(:failing_rules).and_return(failing_rules)
+      allow(Y2Security::SecurityPolicies::TargetConfig)
+        .to receive(:new).and_return(target_config)
+    end
+
+    context "when there are no issues" do
+      it "does not report any issue" do
+        expect(Yast::Report).to_not receive(:LongWarning)
+          .with(/Dummy rule/)
+        client.autosetup_security_policy
+      end
+    end
+
+    context "when there are issues" do
+      let(:rule) do
+        instance_double(Y2Security::SecurityPolicies::Rule, id: "testing",
+          description: "Dummy rule", identifiers: ["CCE-12345"], references: ["SLES-15-12345"])
+      end
+      let(:failing_rules) { [rule] }
+
+      it "reports railing rules" do
+        expect(Yast::Report).to receive(:LongWarning)
+          .with(/DISA STIG.*Dummy rule \(CCE-12345, SLES-15-12345\)/)
+        client.autosetup_security_policy
       end
     end
   end

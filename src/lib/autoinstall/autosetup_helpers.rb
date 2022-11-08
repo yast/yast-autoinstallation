@@ -18,6 +18,8 @@
 # find current contact information at www.suse.com.
 
 require "y2storage"
+require "y2security/security_policies/manager"
+require "y2security/security_policies/target_config"
 require "autoinstall/activate_callbacks"
 require "autoinstall/xml_checks"
 
@@ -27,6 +29,8 @@ Yast.import "Profile"
 Yast.import "Timezone"
 Yast.import "Keyboard"
 Yast.import "Language"
+Yast.import "HTML"
+Yast.import "Report"
 
 module Y2Autoinstallation
   # This module defines some methods that are used in {Y2Autoinstallation::Clients::InstAutosetup}
@@ -227,6 +231,30 @@ module Y2Autoinstallation
       Yast::WFM.CallFunction("firewall_auto", ["Import", firewall_section])
 
       Yast::Profile.remove_sections("firewall") if !need_second_stage_run?
+    end
+
+    # Check the security policy
+    #
+    # If any of the rules of the enabled policy fails, it displays a warning.
+    def autosetup_security_policy
+      target_config = Y2Security::SecurityPolicies::TargetConfig.new
+      manager = Y2Security::SecurityPolicies::Manager.instance
+      rules = manager.failing_rules(target_config)
+      return if !manager.enabled_policy || rules.empty?
+
+      items = rules.map do |rule|
+        ids = (rule.identifiers + rule.references).join(", ")
+        "#{rule.description} (#{ids})"
+      end
+
+      # TRANSLATORS: policy_name is the name of a SCAP policy
+      message = format(
+        _("The system does not comply with the %{policy_name} policy:"),
+        policy_name: manager.enabled_policy.name
+      )
+      Yast::Report.LongWarning(
+        Yast::HTML.Para(message) + Yast::HTML.List(items)
+      )
     end
 
   private

@@ -22,7 +22,7 @@
 %endif
 
 Name:           autoyast2
-Version:        4.5.8
+Version:        4.5.9
 Release:        0
 Summary:        YaST2 - Automated Installation
 License:        GPL-2.0-only
@@ -53,8 +53,10 @@ BuildRequires:  yast2-update >= 3.3.0
 BuildRequires:  yast2-network >= 3.1.145
 BuildRequires:  yast2-slp
 BuildRequires:  yast2-country
+# Support for SecurityPolicies
+BuildRequires:  yast2-security >= 4.4.14
 # Required for test suite testing one time sync
-BuildRequires:       yast2-ntp-client >= 4.0.1
+BuildRequires:  yast2-ntp-client >= 4.0.1
 # UEFI detection in Y2Storage::Arch
 BuildRequires:  yast2-storage-ng >= 4.4.22
 # %%{_unitdir} macro definition is in a separate package since 13.1
@@ -71,10 +73,17 @@ Requires:       libxslt
 Requires:       yast2 >= 4.4.38
 Requires:       yast2-core
 Requires:       yast2-country >= 3.1.13
+<<<<<<< HEAD
 # Moving security module to first installation stage
 Requires:       yast2-security >= 4.1.1
 # Install selected network backend packages
 Requires:       yast2-network >= 4.5.9
+=======
+# Support for SecurityPolicies
+Requires:       yast2-security >= 4.4.14
+# Install selected network backend packages 
+Requires:       yast2-network >= 4.4.53
+>>>>>>> origin/SLE-15-SP4
 Requires:       yast2-schema >= 4.0.6
 Requires:       yast2-transfer >= 2.21.0
 Requires:       yast2-xml
