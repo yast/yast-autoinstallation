@@ -79,7 +79,8 @@ module Y2Autoinstallation
           _("Import SSH keys/settings"),
           _("Set up user defined configuration files"),
           _("Confirm License"),
-          _("Configure firewall")
+          _("Configure firewall"),
+          _("Check security policy")
         ]
 
         @progress_descriptions = [
@@ -97,7 +98,8 @@ module Y2Autoinstallation
           _("Importing SSH keys/settings..."),
           _("Setting up user defined configuration files..."),
           _("Confirming License..."),
-          _("Configuring the firewall")
+          _("Configuring the firewall"),
+          _("Checking the security policy")
         ]
 
         Progress.New(
@@ -275,8 +277,11 @@ module Y2Autoinstallation
 
         Progress.NextStage
 
-        # SLES only. Have to be run before software to add required packages to enable kdump
-        if Builtins.haskey(Profile.current, "kdump")
+        # For kdump we respect product defaults. So even if not specified in profile
+        # import empty one to get proposal and install needed software.
+        log.info "checking for kdump auto"
+        if WFM.ClientExists("kdump_auto")
+          log.info "calling import"
           Call.Function(
             "kdump_auto",
             ["Import", Ops.get_map(Profile.current, "kdump", {})]
@@ -385,6 +390,11 @@ module Y2Autoinstallation
         # Run firewall configuration according to the profile
         #
         autosetup_firewall
+
+        Progress.NextStage
+
+        # Validate the security policy
+        autosetup_security_policy unless AutoinstConfig.Confirm
 
         # Results of imported values semantic check.
         return :abort unless AutoInstall.valid_imported_values
