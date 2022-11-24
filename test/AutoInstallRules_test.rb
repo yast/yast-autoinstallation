@@ -124,6 +124,8 @@ describe "Yast::AutoInstallRules" do
   end
 
   describe "#Read" do
+    let(:env) { { "hostaddress" => subject.hostaddress, "mac" => subject.mac } }
+
     it "Reading rules with -or- operator" do
       expect(Yast::XML).to receive(:XMLToYCPFile).and_return(
         "rules" => [{
@@ -138,7 +140,7 @@ describe "Yast::AutoInstallRules" do
       expect(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"),
         "if  ( [ \"$hostaddress\" = \"10.69.57.43\" ] )   ||   " \
           "( [ \"$mac\" = \"000c2903d288\" ] ); then exit 0; else exit 1; fi",
-        "hostaddress" => subject.hostaddress, "mac" => subject.mac)
+        env)
         .and_return("stdout" => "", "exit" => 0, "stderr" => "")
 
       subject.Read
@@ -158,7 +160,7 @@ describe "Yast::AutoInstallRules" do
       expect(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"),
         "if  ( [ \"$hostaddress\" = \"10.69.57.43\" ] )   &&   " \
           "( [ \"$mac\" = \"000c2903d288\" ] ); then exit 0; else exit 1; fi",
-        "hostaddress" => subject.hostaddress, "mac" => subject.mac)
+        env)
         .and_return("stdout" => "", "exit" => 0, "stderr" => "")
 
       subject.Read
@@ -177,7 +179,7 @@ describe "Yast::AutoInstallRules" do
       expect(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"),
         "if  ( [ \"$hostaddress\" = \"10.69.57.43\" ] )   &&   " \
           "( [ \"$mac\" = \"000c2903d288\" ] ); then exit 0; else exit 1; fi",
-        "hostaddress" => subject.hostaddress, "mac" => subject.mac)
+        env)
         .and_return("stdout" => "", "exit" => 0, "stderr" => "")
 
       subject.Read

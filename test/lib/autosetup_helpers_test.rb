@@ -451,6 +451,8 @@ describe Y2Autoinstallation::AutosetupHelpers do
       Yast::Profile.current = profile
       allow(Yast::Installation).to receive(:encoding=)
       allow(Yast::Profile).to receive(:remove_sections)
+      allow(Yast::UI).to receive(:SetLanguage)
+      allow(Yast::WFM).to receive(:SetLanguage)
     end
 
     it "sets the language config based on the profile" do

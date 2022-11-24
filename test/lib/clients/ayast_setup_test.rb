@@ -125,9 +125,8 @@ describe "Y2Autoinstall::Clients::AyastSetup" do
     end
 
     it "imports general settings" do
-      expect(Yast::AutoinstGeneral).to receive(:Import).with(
-        "mode" => { "confirm" => true }
-      )
+      settings = { "mode" => { "confirm" => true } }
+      expect(Yast::AutoinstGeneral).to receive(:Import).with(settings)
       subject.Setup
     end
   end
