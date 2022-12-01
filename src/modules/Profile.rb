@@ -113,7 +113,7 @@ module Yast
       Yast.include self, "autoinstall/xml.rb"
 
       # The Complete current Profile
-      @current = {}
+      @current = Yast::ProfileHash.new
 
       @changed = false
 
