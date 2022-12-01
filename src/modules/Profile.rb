@@ -431,7 +431,7 @@ module Yast
 
     # Read YCP data as the control file
     # @param parsedControlFile [String] path of the ycp file
-    # @return [Boolean]
+    # @return [Boolean] false when the file is empty or missing; true otherwise
     def ReadProfileStructure(parsedControlFile)
       contents = Convert.convert(
         SCR.Read(path(".target.ycp"), [parsedControlFile, {}]),
