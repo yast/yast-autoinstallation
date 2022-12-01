@@ -734,4 +734,50 @@ describe Yast::Profile do
       end
     end
   end
+
+  describe "#ReadProfileStructure" do
+    context "when the file does not exist" do
+      let(:file_path) { FIXTURES_PATH.join("missing.ycp").to_s }
+
+      it "returns false" do
+        expect(subject.ReadProfileStructure(file_path)).to eq(false)
+      end
+
+      it "resets Profile.current" do
+        subject.Import("general" => { "self_update" => false })
+        subject.ReadProfileStructure(file_path)
+        expect(subject.current).to eq(Yast::ProfileHash.new)
+      end
+    end
+
+    context "when the structure is empty" do
+      let(:file_path) { FIXTURES_PATH.join("empty-autoconf.ycp").to_s }
+
+      it "returns false" do
+        expect(subject.ReadProfileStructure(file_path)).to eq(false)
+      end
+
+      it "resets Profile.current" do
+        subject.Import("general" => { "self_update" => false })
+        subject.ReadProfileStructure(file_path)
+        expect(subject.current).to eq(Yast::ProfileHash.new)
+      end
+    end
+
+    context "when there is some valid YCP content" do
+      let(:file_path) { FIXTURES_PATH.join("autoconf.ycp").to_s }
+
+      it "returns true" do
+        expect(subject.ReadProfileStructure(file_path)).to eq(true)
+      end
+
+      it "imports the file contents" do
+        subject.Import("general" => { "self_update" => false })
+        expect(subject).to receive(:Import).with(
+          Yast::ProfileHash.new("general" => { "mode" => { "confirm" => false } })
+        )
+        subject.ReadProfileStructure(file_path)
+      end
+    end
+  end
 end
