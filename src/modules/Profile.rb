@@ -113,7 +113,7 @@ module Yast
       Yast.include self, "autoinstall/xml.rb"
 
       # The Complete current Profile
-      @current = {}
+      @current = Yast::ProfileHash.new
 
       @changed = false
 
@@ -352,7 +352,7 @@ module Yast
     # @return [void]
     def Reset
       Builtins.y2milestone("Resetting profile contents")
-      @current = {}
+      @current = Yast::ProfileHash.new
       nil
     end
 
@@ -430,18 +430,19 @@ module Yast
     end
 
     # Read YCP data as the control file
-    # @param parsedControlFile [Hash] ycp file
-    # @return [Boolean]
+    # @param parsedControlFile [String] path of the ycp file
+    # @return [Boolean] false when the file is empty or missing; true otherwise
     def ReadProfileStructure(parsedControlFile)
-      @current = Convert.convert(
+      contents = Convert.convert(
         SCR.Read(path(".target.ycp"), [parsedControlFile, {}]),
         from: "any",
         to:   "map <string, any>"
       )
-      if @current == {}
+      if contents == {}
+        @current = Yast::ProfileHash.new(contents)
         return false
       else
-        Import(@current)
+        Import(contents)
       end
 
       true
