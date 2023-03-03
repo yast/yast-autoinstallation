@@ -1,7 +1,5 @@
 require "yast/rake"
 
-Yast::Tasks.submit_to :sle15sp5
-
 AUTOINST_DIR = Packaging::Configuration::DESTDIR + "/usr/share/autoinstall/"
 
 Yast::Tasks.configuration do |conf|
