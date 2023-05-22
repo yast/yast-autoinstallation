@@ -348,15 +348,19 @@ module Yast
       ok = true
 
       Packages.Init(true)
-      selected_base_products = Product.FindBaseProducts.map { |p| p["name"] }
+
+      # products selected by YaST (not by dependencies)
+      selected_products = Y2Packager::Resolvable.find(kind: :product,
+        status: :selected, transact_by: :app_high).map(&:name)
+      log.info("Products selected by YaST: #{selected_products.inspect}")
+
       # Resetting package selection of previous runs. This is needed
       # because it could be that additional repositories
       # are available meanwhile. (bnc#979691)
       Pkg.PkgApplReset
 
-      # Select base product again which has been reset by the previous call.
-      # (bsc#1143106)
-      selected_base_products.each { |name| Pkg.ResolvableInstall(name, :product) }
+      # reselect the products which have been reset by the previous call
+      selected_products.each { |name| Pkg.ResolvableInstall(name, :product) }
 
       sw_settings = Profile.current.fetch("software", {})
       Pkg.SetSolverFlags(
