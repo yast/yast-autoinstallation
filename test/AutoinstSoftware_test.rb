@@ -182,7 +182,7 @@ describe Yast::AutoinstSoftware do
   end
 
   describe "#Write" do
-    let(:base_product) { { "name" => "Leap" } }
+    let(:products) { [Y2Packager::Resolvable.new(name: "Leap")] }
     let(:selected_product) do
       instance_double(Y2Packager::Product, select: nil)
     end
@@ -209,7 +209,7 @@ describe Yast::AutoinstSoftware do
 
     before do
       allow(Yast::Packages).to receive(:Init)
-      allow(Yast::Product).to receive(:FindBaseProducts).and_return([base_product])
+      allow(Y2Packager::Resolvable).to receive(:find).and_return(products)
       allow(Yast::Pkg).to receive(:PkgApplReset)
       allow(Yast::Pkg).to receive(:PkgSolve).and_return(solver_result)
       allow(Y2Storage::StorageManager).to receive(:instance).and_return(storage_manager)
