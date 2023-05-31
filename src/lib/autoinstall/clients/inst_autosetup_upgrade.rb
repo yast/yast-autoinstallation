@@ -310,7 +310,9 @@ module Y2Autoinstallation
         # initialize target
         PackageCallbacks.SetConvertDBCallbacks
 
-        Pkg.TargetInit(Installation.destdir, false)
+        Pkg.TargetInitializeOptions(Installation.destdir,
+          # enable DB rebuild at upgrade (bsc#1209565)
+          "rebuild_db" => true)
 
         # read old and new product
         Update.GetProductName
