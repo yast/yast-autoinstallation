@@ -62,6 +62,10 @@ y2_partition =
   | part_crypt_fs
   | part_crypt_method
   | part_crypt_key
+  | part_crypt_pbkdf
+  | part_crypt_label
+  | part_crypt_cipher
+  | part_crypt_key_size
   | part_filesystem
   | part_format
   | part_fs_options
@@ -109,6 +113,10 @@ part_crypt_fs =
 part_crypt_method =
   element crypt_method { SYMBOL }
 part_crypt_key = element crypt_key { STRING }
+part_crypt_pbkdf = element crypt_pbkdf { SYMBOL }
+part_crypt_label = element crypt_label { STRING }
+part_crypt_cipher = element crypt_cipher { STRING }
+part_crypt_key_size = element crypt_key_size { INTEGER }
 part_filesystem =
   element filesystem { SYMBOL }
 part_format =
