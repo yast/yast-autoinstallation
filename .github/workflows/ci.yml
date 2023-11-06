@@ -1,9 +1,8 @@
-
 # See https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
 
 name: CI
 
-on: [push, pull_request]
+on: [ push, pull_request ]
 
 jobs:
   Tests:
@@ -12,33 +11,32 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        distro:  [ "tumbleweed", "leap_latest" ]
+        distro: [ "tumbleweed" ]
 
     container:
       image: registry.opensuse.org/yast/head/containers_${{matrix.distro}}/yast-ruby
 
     steps:
+      - name: Git Checkout
+        uses: actions/checkout@v2
 
-    - name: Git Checkout
-      uses: actions/checkout@v2
+      # just for easier debugging...
+      - name: Inspect Installed Packages
+        run: rpm -qa | sort
 
-    # just for easier debugging...
-    - name: Inspect Installed Packages
-      run: rpm -qa | sort
+      - name: Unit Tests
+        run: rake test:unit
+        # enable code coverage reporting
+        env:
+          COVERAGE: 1
 
-    - name: Unit Tests
-      run: rake test:unit
-      # enable code coverage reporting
-      env:
-        COVERAGE: 1
-
-    # send the coverage report to coveralls.io
-    - name: Coveralls Report
-      # send it only from the TW build to avoid duplicate submits
-      if: ${{ matrix.distro == 'tumbleweed' }}
-      uses: coverallsapp/github-action@master
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
+      # send the coverage report to coveralls.io
+      - name: Coveralls Report
+        # send it only from the TW build to avoid duplicate submits
+        if: ${{ matrix.distro == 'tumbleweed' }}
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
   Rubocop:
     runs-on: ubuntu-latest
@@ -46,18 +44,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        distro: [ "leap_latest" ]
+        distro: [ "tumbleweed" ]
 
     container:
       image: registry.opensuse.org/yast/head/containers_${{matrix.distro}}/yast-ruby
 
     steps:
+      - name: Git Checkout
+        uses: actions/checkout@v2
 
-    - name: Git Checkout
-      uses: actions/checkout@v2
-
-    - name: Rubocop
-      run: rake check:rubocop
+      - name: Rubocop
+        run: rake check:rubocop
 
   Package:
     runs-on: ubuntu-latest
@@ -65,18 +62,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        distro:  [ "tumbleweed", "leap_latest" ]
+        distro: [ "tumbleweed" ]
 
     container:
       image: registry.opensuse.org/yast/head/containers_${{matrix.distro}}/yast-ruby
 
     steps:
+      - name: Git Checkout
+        uses: actions/checkout@v2
 
-    - name: Git Checkout
-      uses: actions/checkout@v2
-
-    - name: Package Build
-      run: yast-ci-ruby -o package
+      - name: Package Build
+        run: yast-ci-ruby -o package
 
   Yardoc:
     runs-on: ubuntu-latest
@@ -84,18 +80,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        distro: [ "leap_latest" ]
+        distro: [ "tumbleweed" ]
 
     container:
       image: registry.opensuse.org/yast/head/containers_${{matrix.distro}}/yast-ruby
 
     steps:
+      - name: Git Checkout
+        uses: actions/checkout@v2
 
-    - name: Git Checkout
-      uses: actions/checkout@v2
-
-    - name: Yardoc
-      run: rake check:doc
+      - name: Yardoc
+        run: rake check:doc
 
   # downloading the Docker image takes some time so bundling several fast
   # checks into one job avoids that overhead
@@ -105,21 +100,20 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        distro: [ "leap_latest" ]
+        distro: [ "tumbleweed" ]
 
     container:
       image: registry.opensuse.org/yast/head/containers_${{matrix.distro}}/yast-ruby
 
     steps:
+      - name: Git Checkout
+        uses: actions/checkout@v2
 
-    - name: Git Checkout
-      uses: actions/checkout@v2
+      - name: Perl Syntax
+        run: yast-ci-ruby -o perl_syntax
 
-    - name: Perl Syntax
-      run: yast-ci-ruby -o perl_syntax
+      - name: POT Check
+        run: rake check:pot
 
-    - name: POT Check
-      run: rake check:pot
-
-    - name: Check RNC files
-      run: ./check_schema.sh
+      - name: Check RNC files
+        run: ./check_schema.sh
