@@ -193,7 +193,7 @@ module Yast
         logStep(_("Restarting all running services"))
         @cmd = "systemctl --type=service list-units | grep \" running \""
         @out = Convert.to_map(SCR.Execute(path(".target.bash_output"), @cmd))
-        @sl = Ops.get_string(@out, "stdout", "").split("\n").collect { |c| c.split(" ").first }
+        @sl = Ops.get_string(@out, "stdout", "").split("\n").collect { |c| c.split.first }
         Builtins.y2milestone("running services \"%1\"", @sl)
 
         # Filtering out all services which must not to be restarted

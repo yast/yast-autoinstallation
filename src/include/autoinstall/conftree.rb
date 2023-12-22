@@ -473,11 +473,12 @@ module Yast
           setModule(AutoinstConfig.runModule)
         end
         AutoinstConfig.runModule = ""
-        if ret == :groups
+        case ret
+        when :groups
           updateModules
-        elsif ret == :modules
+        when :modules
           updateDetails
-        elsif ret == :configure
+        when :configure
           currentGroup = getGroup
           currentModule = getModule
           Builtins.y2debug("configure module: %1", currentModule)
@@ -490,7 +491,7 @@ module Yast
             menus
             CreateDialog(currentGroup, currentModule)
           end
-        elsif ret == :reset
+        when :reset
           Profile.prepare = true
           Builtins.y2debug("reset")
           currentGroup = getGroup
@@ -501,7 +502,7 @@ module Yast
             Builtins.y2debug("resetModule ret : %1", configret)
             CreateDialog(currentGroup, currentModule)
           end
-        elsif ret == :writeNow
+        when :writeNow
           modulename = getModule
           if modulename != ""
             registry = Y2Autoinstallation::Entries::Registry.instance
@@ -524,7 +525,7 @@ module Yast
               Mode.SetMode(oldMode)
             end
           end
-        elsif ret == :read
+        when :read
           currentGroup = getGroup
           currentModule = getModule
           resetModule(currentModule)
@@ -536,13 +537,13 @@ module Yast
             # otherwise we have to rebuild the complete wizard
             CreateDialog(currentGroup, currentModule)
           end
-        elsif ret == "menu_tree" # source -> tree
+        when "menu_tree" # source -> tree
           Builtins.y2debug("change to tree")
           @show_source = false
           Wizard.DeleteMenus # FIXME: sucks sucks sucks sucks sucks
           menus
           CreateDialog(currentGroup, currentModule)
-        elsif ret == "menu_open" # OPEN
+        when "menu_open" # OPEN
           filename = UI.AskForExistingFile(
             AutoinstConfig.Repository,
             "*",
@@ -601,7 +602,7 @@ module Yast
             end
           end
           ret = :menu_open
-        elsif ret == "menu_source" # Show SOURCE
+        when "menu_source" # Show SOURCE
           # save previously selected group and module,
           # so we can restore them afterwards
           @show_source = true
@@ -611,7 +612,7 @@ module Yast
           currentModule = getModule
           ShowSource()
           ret = :menu_source
-        elsif ret == "menu_save" # SAVE
+        when "menu_save" # SAVE
           if AutoinstConfig.currentFile == ""
             filename = UI.AskForSaveFileName(
               AutoinstConfig.Repository,
@@ -637,10 +638,10 @@ module Yast
             Popup.Warning(_("An error occurred while saving the file."))
           end
           ret = :menu_save
-        elsif ret == "menu_saveas" # SAVE AS
+        when "menu_saveas" # SAVE AS
           SaveAs()
           ret = :menu_saveas
-        elsif ret == "menu_new" # NEW
+        when "menu_new" # NEW
           Profile.Reset
           registry = Y2Autoinstallation::Entries::Registry.instance
           registry.descriptions.each { |d| resetModule(d.resource_name) }
@@ -657,12 +658,12 @@ module Yast
           )
           updateButtons(module_name)
           ret = :menu_new
-        elsif ret == "change_encryption"
+        when "change_encryption"
           AutoinstConfig.ProfileEncrypted = !AutoinstConfig.ProfileEncrypted
           AutoinstConfig.ProfilePassword = ""
           Wizard.DeleteMenus # FIXME: sucks sucks sucks sucks sucks
           menus
-        elsif ret == "write_to_system"
+        when "write_to_system"
           if Popup.YesNo(
             _(
               "Do you really want to apply the settings of the profile to your current system?"
@@ -695,7 +696,7 @@ module Yast
             Mode.SetMode(oldMode)
             Stage.Set(oldStage)
           end
-        elsif ret == "menu_exit" || :cancel == ret # EXIT
+        when "menu_exit", :cancel # EXIT
           ret = :menu_exit
           if Profile.changed
             current = if AutoinstConfig.currentFile == ""

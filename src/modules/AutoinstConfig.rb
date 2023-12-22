@@ -391,43 +391,44 @@ module Yast
     # @return [void]
 
     def SetProtocolMessage
-      @message = if @scheme == "floppy"
+      @message = case @scheme
+      when "floppy"
         _("Retrieving control file from floppy.")
-      elsif @scheme == "tftp"
+      when "tftp"
         Builtins.sformat(
           _("Retrieving control file (%1) from TFTP server: %2."),
           @filepath,
           @host
         )
-      elsif @scheme == "nfs"
+      when "nfs"
         Builtins.sformat(
           _("Retrieving control file (%1) from NFS server: %2."),
           @filepath,
           @host
         )
-      elsif @scheme == "http"
+      when "http"
         Builtins.sformat(
           _("Retrieving control file (%1) from HTTP server: %2."),
           @filepath,
           @host
         )
-      elsif @scheme == "ftp"
+      when "ftp"
         Builtins.sformat(
           _("Retrieving control file (%1) from FTP server: %2."),
           @filepath,
           @host
         )
-      elsif @scheme == "file"
+      when "file"
         Builtins.sformat(
           _("Copying control file from file: %1."),
           @filepath
         )
-      elsif @scheme == "device"
+      when "device"
         Builtins.sformat(
           _("Copying control file from device: /dev/%1."),
           @filepath
         )
-      elsif @scheme == "default"
+      when "default"
         _("Copying control file from default location.")
       else
         _("Source unknown.")

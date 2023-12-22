@@ -100,7 +100,7 @@ module Yast
     # @return [Hash] General settings
     def export_general_settings
       # Do not export nil settings
-      general_settings.reject { |_key, value| value.nil? }
+      general_settings.compact
     end
 
     # Moved here from RootPart module (used just by this module)

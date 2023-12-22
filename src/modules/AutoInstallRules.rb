@@ -225,9 +225,10 @@ module Yast
       boardinfo = {}
 
       Builtins.foreach(smbios) do |inf|
-        if Ops.get_string(inf, "type", "") == "sysinfo"
+        case Ops.get_string(inf, "type", "")
+        when "sysinfo"
           sysinfo = deep_copy(inf)
-        elsif Ops.get_string(inf, "type", "") == "boardinfo"
+        when "boardinfo"
           boardinfo = deep_copy(inf)
         end
       end
@@ -340,9 +341,10 @@ module Yast
     # @return [void]
     def shellseg(match, var, val, op, matchtype)
       val = deep_copy(val)
-      if op == "and"
+      case op
+      when "and"
         op = " && "
-      elsif op == "or"
+      when "or"
         op = " || "
       end
 
@@ -555,7 +557,8 @@ module Yast
               Builtins.foreach(@disksize) do |dev|
                 var1 = Builtins.sformat("disksize_size%1", i)
                 var2 = Builtins.sformat("disksize_device%1", i)
-                if matchtype == "exact"
+                case matchtype
+                when "exact"
                   t = Ops.add(
                     t,
                     Builtins.sformat(
@@ -566,7 +569,7 @@ module Yast
                       Ops.get(disk, 0, "")
                     )
                   )
-                elsif matchtype == "greater"
+                when "greater"
                   t = Ops.add(
                     t,
                     Builtins.sformat(
@@ -577,7 +580,7 @@ module Yast
                       Ops.get(disk, 0, "")
                     )
                   )
-                elsif matchtype == "lower"
+                when "lower"
                   t = Ops.add(
                     t,
                     Builtins.sformat(

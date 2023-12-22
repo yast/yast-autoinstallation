@@ -376,9 +376,10 @@ module Yast
       UI.ChangeWidget(Id(:selection), :Enabled, false)
       UI.ChangeWidget(Id(:password), :Enabled, false)
 
-      if Ops.get_string(defaultValues, "type", "text") == "text"
+      case Ops.get_string(defaultValues, "type", "text")
+      when "text"
         UI.ChangeWidget(Id(:password), :Enabled, true)
-      elsif Ops.get_string(defaultValues, "type", "text") == "symbol"
+      when "symbol"
         UI.ChangeWidget(Id(:selLabel), :Enabled, true)
         UI.ChangeWidget(Id(:selValue), :Enabled, true)
         UI.ChangeWidget(Id(:selection), :Enabled, true)
@@ -402,28 +403,29 @@ module Yast
           UI.ChangeWidget(Id(:addSelection), :Enabled, true)
         end
         ret = Convert.to_symbol(UI.UserInput)
-        if ret == :addSelection
+        case ret
+        when :addSelection
           label = Convert.to_string(UI.QueryWidget(Id(:selLabel), :Value))
           val = Convert.to_string(UI.QueryWidget(Id(:selValue), :Value))
           selection = Builtins.add(selection, Item(Id(selId), label, val))
           selId = Ops.add(selId, 1)
           UI.ChangeWidget(Id(:selection), :Items, selection)
-        elsif ret == :t_symbol
+        when :t_symbol
           UI.ChangeWidget(Id(:selLabel), :Enabled, true)
           UI.ChangeWidget(Id(:selValue), :Enabled, true)
           UI.ChangeWidget(Id(:selection), :Enabled, true)
           UI.ChangeWidget(Id(:password), :Enabled, false)
-        elsif ret == :t_text
+        when :t_text
           UI.ChangeWidget(Id(:selLabel), :Enabled, false)
           UI.ChangeWidget(Id(:selValue), :Enabled, false)
           UI.ChangeWidget(Id(:selection), :Enabled, false)
           UI.ChangeWidget(Id(:password), :Enabled, true)
-        elsif ret == :t_boolean || ret == :t_integer
+        when :t_boolean, :t_integer
           UI.ChangeWidget(Id(:selLabel), :Enabled, false)
           UI.ChangeWidget(Id(:selValue), :Enabled, false)
           UI.ChangeWidget(Id(:selection), :Enabled, false)
           UI.ChangeWidget(Id(:password), :Enabled, false)
-        elsif ret == :delSelection
+        when :delSelection
           currSelId = Convert.to_integer(
             UI.QueryWidget(Id(:selection), :CurrentItem)
           )
@@ -432,7 +434,7 @@ module Yast
             Ops.get_term(l, 0) { Id(-1) } != Id(currSelId)
           end
           UI.ChangeWidget(Id(:selection), :Items, selection)
-        elsif ret == :ok
+        when :ok
           max = -1
           Builtins.foreach(askList) do |m|
             if Ops.get_string(m, "stage", "initial") == stage &&
@@ -469,11 +471,12 @@ module Yast
               Convert.to_integer(UI.QueryWidget(Id(:timeout), :Value))
             )
           end
-          if Convert.to_symbol(UI.QueryWidget(Id(:type), :CurrentButton)) == :t_symbol
+          case Convert.to_symbol(UI.QueryWidget(Id(:type), :CurrentButton))
+          when :t_symbol
             Ops.set(newVal, "type", "symbol")
-          elsif Convert.to_symbol(UI.QueryWidget(Id(:type), :CurrentButton)) == :t_boolean
+          when :t_boolean
             Ops.set(newVal, "type", "boolean")
-          elsif Convert.to_symbol(UI.QueryWidget(Id(:type), :CurrentButton)) == :t_integer
+          when :t_integer
             Ops.set(newVal, "type", "integer")
           end
           if Convert.to_string(UI.QueryWidget(Id(:path), :Value)) != ""
@@ -766,7 +769,8 @@ module Yast
           end
           deep_copy(dialog)
         end
-        if ret == :addQuestion
+        case ret
+        when :addQuestion
           l = Builtins.argsof(
             Ops.get(
               dialogs,
@@ -781,7 +785,7 @@ module Yast
             Ops.get_string(l, 1, ""),
             {}
           )
-        elsif ret == :editQuestion
+        when :editQuestion
           m = {}
           Builtins.foreach(askList) do |dummy|
             if Ops.get_integer(dummy, "dialog", -1) ==
@@ -807,7 +811,7 @@ module Yast
             Ops.get_string(l, 1, ""),
             m
           )
-        elsif ret == :deleteQuestion
+        when :deleteQuestion
           dialog_id = Convert.to_integer(
             UI.QueryWidget(Id(:dialogs), :CurrentItem)
           )
@@ -818,14 +822,14 @@ module Yast
             !(Ops.get_integer(dialog, "dialog", -1) == dialog_id &&
               Ops.get_integer(dialog, "element", -1) == element_id)
           end
-        elsif ret == :deleteDialog
+        when :deleteDialog
           dialog_id = Convert.to_integer(
             UI.QueryWidget(Id(:dialogs), :CurrentItem)
           )
           askList = Builtins.filter(askList) do |dialog|
             Ops.get_integer(dialog, "dialog", -1) != dialog_id
           end
-        elsif ret == :applyDialog
+        when :applyDialog
           askList = Builtins.maplist(askList) do |d3|
             if Ops.get_integer(d3, "dialog", -1) ==
                 Convert.to_integer(UI.QueryWidget(Id(:dialogs), :CurrentItem)) &&
@@ -844,7 +848,7 @@ module Yast
             end
             deep_copy(d3)
           end
-        elsif ret == :dialogUp
+        when :dialogUp
           dialog_id = Convert.to_integer(
             UI.QueryWidget(Id(:dialogs), :CurrentItem)
           )
@@ -871,7 +875,7 @@ module Yast
             deep_copy(dialog)
           end
           UI.ChangeWidget(Id(:dialogs), :CurrentItem, upperDialog)
-        elsif ret == :dialogDown
+        when :dialogDown
           dialog_id = Convert.to_integer(
             UI.QueryWidget(Id(:dialogs), :CurrentItem)
           )
@@ -896,7 +900,7 @@ module Yast
             deep_copy(dialog)
           end
           UI.ChangeWidget(Id(:dialogs), :CurrentItem, lowerDialog)
-        elsif ret == :questionUp
+        when :questionUp
           dialog_id = Convert.to_integer(
             UI.QueryWidget(Id(:dialogs), :CurrentItem)
           )
@@ -927,7 +931,7 @@ module Yast
             end
             deep_copy(dialog)
           end
-        elsif ret == :questionDown
+        when :questionDown
           dialog_id = Convert.to_integer(
             UI.QueryWidget(Id(:dialogs), :CurrentItem)
           )
@@ -960,7 +964,7 @@ module Yast
             end
             deep_copy(dialog)
           end
-        elsif ret == :addDialog
+        when :addDialog
           max = -1
           Builtins.foreach(askList) do |m|
             if Ops.get_string(m, "stage", "initial") == stage &&

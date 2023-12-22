@@ -214,7 +214,8 @@ module Y2Autoinstallation
             UI.ChangeWidget(Id(:source), :Enabled, false)
           end
           ret = Convert.to_symbol(UI.UserInput)
-          if ret == :next
+          case ret
+          when :next
             fileName = Convert.to_string(UI.QueryWidget(Id(:filename), :Value))
             permissions = Convert.to_string(UI.QueryWidget(Id(:perm), :Value))
             owner = Convert.to_string(UI.QueryWidget(Id(:owner), :Value))
@@ -232,7 +233,7 @@ module Y2Autoinstallation
             else
               AddEditFile(fileName, source, permissions, owner, location)
             end
-          elsif ret == :loadsource
+          when :loadsource
             filename = UI.AskForExistingFile("", "*", _("Select a file to load."))
             if filename != ""
               source = Convert.to_string(
@@ -295,9 +296,10 @@ module Y2Autoinstallation
         loop do
           ret = Convert.to_symbol(UI.UserInput)
 
-          if ret == :new
+          case ret
+          when :new
             addFileDialog(Convert.to_symbol(ret), "")
-          elsif ret == :edit
+          when :edit
             name = Convert.to_string(UI.QueryWidget(Id(:table), :CurrentItem))
             if name
               addFileDialog(Convert.to_symbol(ret), name)
@@ -305,7 +307,7 @@ module Y2Autoinstallation
               Popup.Message(select_msg)
               next
             end
-          elsif ret == :delete
+          when :delete
             name = Convert.to_string(UI.QueryWidget(Id(:table), :CurrentItem))
             if name
               AutoinstFile.Files = deleteFile(name)

@@ -234,18 +234,19 @@ module Yast
 
         ret = Convert.to_symbol(UI.UserInput)
 
-        if ret == :new
+        case ret
+        when :new
           AddEditClasses(ret, "")
 
           Wizard.SetContents(title, class_dialog_contents, help, true, true)
-        elsif ret == :edit
+        when :edit
           if _class.nil?
             Popup.Message(_("Select at least one class\nto edit.\n"))
             next
           end
           AddEditClasses(ret, _class)
           Wizard.SetContents(title, class_dialog_contents, help, true, true)
-        elsif ret == :delete
+        when :delete
           if _class.nil?
             Popup.Message(_("Select at least one class\nto delete.\n"))
             next

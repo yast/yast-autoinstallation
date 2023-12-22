@@ -296,11 +296,12 @@ module Yast
       Wizard.HideAbortButton
       Wizard.SetContents(title, contents, help, true, true)
       type = Convert.to_string(UI.QueryWidget(Id(:type), :Value))
-      if type == "pre-scripts"
+      case type
+      when "pre-scripts"
         UI.ChangeWidget(Id(:chrooted), :Enabled, false)
-      elsif type == "post-scripts"
+      when "post-scripts"
         UI.ChangeWidget(Id(:chrooted), :Enabled, false)
-      elsif type == "init-scripts"
+      when "init-scripts"
         UI.ChangeWidget(Id(:chrooted), :Enabled, false)
         UI.ChangeWidget(Id(:feedback), :Enabled, false)
         UI.ChangeWidget(Id(:notification), :Enabled, false)
@@ -334,7 +335,8 @@ module Yast
       ret = :none
       begin
         ret = Convert.to_symbol(UI.UserInput)
-        if ret == :save
+        case ret
+        when :save
           scriptName = Convert.to_string(UI.QueryWidget(Id(:filename), :Value))
 
           type2 = Convert.to_string(UI.QueryWidget(Id(:type), :Value))
@@ -375,7 +377,7 @@ module Yast
               notification
             )
           end
-        elsif ret == :loadsource
+        when :loadsource
           filename = UI.AskForExistingFile(
             AutoinstConfig.Repository,
             "*",
@@ -388,30 +390,31 @@ module Yast
             UI.ChangeWidget(Id(:source), :Value, source)
             next
           end
-        elsif ret == :type
+        when :type
           type2 = Convert.to_string(UI.QueryWidget(Id(:type), :Value))
-          if type2 == "init-scripts"
+          case type2
+          when "init-scripts"
             UI.ChangeWidget(Id(:feedback), :Enabled, false)
             UI.ChangeWidget(Id(:chrooted), :Enabled, false)
             UI.ChangeWidget(Id(:feedback), :Value, false)
             UI.ChangeWidget(Id(:chrooted), :Value, false)
             UI.ChangeWidget(Id(:notification), :Enabled, false)
-          elsif type2 == "chroot-scripts"
+          when "chroot-scripts"
             UI.ChangeWidget(Id(:chrooted), :Enabled, true)
             UI.ChangeWidget(Id(:feedback), :Enabled, true)
             UI.ChangeWidget(Id(:notification), :Enabled, true)
-          elsif type2 == "post-scripts"
+          when "post-scripts"
             UI.ChangeWidget(Id(:chrooted), :Enabled, false)
             UI.ChangeWidget(Id(:chrooted), :Value, false)
             UI.ChangeWidget(Id(:feedback), :Enabled, true)
             UI.ChangeWidget(Id(:notification), :Enabled, true)
-          elsif type2 == "pre-scripts"
+          when "pre-scripts"
             UI.ChangeWidget(Id(:chrooted), :Enabled, false)
             UI.ChangeWidget(Id(:chrooted), :Value, false)
             UI.ChangeWidget(Id(:feedback), :Enabled, true)
             UI.ChangeWidget(Id(:notification), :Enabled, true)
           end
-        elsif ret == :feedback
+        when :feedback
           UI.ChangeWidget(
             Id(:feedback_type),
             :Enabled,
@@ -461,11 +464,12 @@ module Yast
       begin
         ret = UI.UserInput
 
-        if ret == :new
+        case ret
+        when :new
           Wizard.CreateDialog
           ScriptDialog(Convert.to_symbol(ret), "")
           Wizard.CloseDialog
-        elsif ret == :edit
+        when :edit
           name = Convert.to_string(UI.QueryWidget(Id(:table), :CurrentItem))
           if name.nil?
             Popup.Message(_("Select a script first."))
@@ -475,7 +479,7 @@ module Yast
             ScriptDialog(Convert.to_symbol(ret), name)
             Wizard.CloseDialog
           end
-        elsif ret == :delete
+        when :delete
           name = Convert.to_string(UI.QueryWidget(Id(:table), :CurrentItem))
           if name.nil?
             Popup.Message(_("Select a script first."))

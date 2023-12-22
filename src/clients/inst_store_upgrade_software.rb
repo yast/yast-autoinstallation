@@ -23,11 +23,10 @@ module Yast
       # and products
       @patterns_to_remove = []
       @patterns_to_install = @patterns.map do |p|
-        if p.status == :selected ||
-            p.status == :installed
+        case p.status
+        when :selected, :installed
           next p.name
-        elsif p.status == :removed ||
-            p.status == :available
+        when :removed, :available
           @patterns_to_remove << p.name
         end
 
@@ -56,11 +55,10 @@ module Yast
 
       @products_to_remove = []
       @products_to_install = @products.map do |p|
-        if p.status == :selected ||
-            p.status == :installed
+        case p.status
+        when :selected, :installed
           next p.name
-        elsif p.status == :removed ||
-            p.status == :available
+        when :removed, :available
           @products_to_remove << p.name
         end
 

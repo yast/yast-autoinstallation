@@ -72,9 +72,10 @@ module Y2Autoinstall
           break if current_dialog.nil?
 
           result = run_dialog(current_dialog)
-          if result == :back
+          case result
+          when :back
             current_dialog = go_back
-          elsif result == :next
+          when :next
             results = current_dialog.questions.map { |q| process_question(q) }
             current_dialog = go_next unless results.any? { |r| r == :repeat }
           end

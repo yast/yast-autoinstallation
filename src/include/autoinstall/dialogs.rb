@@ -84,21 +84,22 @@ module Yast
         new_rep = Convert.to_string(UI.QueryWidget(Id(:repository), :Value))
         new_classdir = Convert.to_string(UI.QueryWidget(Id(:classdir), :Value))
 
-        if ret == :opendir
+        case ret
+        when :opendir
           new_rep = UI.AskForExistingDirectory(
             AutoinstConfig.Repository,
             _("Select Directory")
           )
           UI.ChangeWidget(Id(:repository), :Value, new_rep) if new_rep != ""
           next
-        elsif ret == :openclassdir
+        when :openclassdir
           new_classdir = UI.AskForExistingDirectory(
             AutoinstConfig.classDir,
             _("Select Directory")
           )
           UI.ChangeWidget(Id(:classdir), :Value, new_classdir) if new_classdir != ""
           next
-        elsif ret == :next
+        when :next
           if AutoinstConfig.Repository != new_rep
             changed = true
             AutoinstConfig.Repository = new_rep
@@ -176,9 +177,10 @@ module Yast
       ret = nil
       loop do
         ret = UI.UserInput
-        if ret == :cancel
+        case ret
+        when :cancel
           break
-        elsif ret == :ok
+        when :ok
           f = Convert.to_string(UI.QueryWidget(Id(:newname), :Value))
           if checkFileName(f) != 0 || f == ""
             Popup.Error(invalidFileName)
@@ -400,9 +402,10 @@ module Yast
       ret = nil
       loop do
         ret = UI.UserInput
-        if ret == :next || ret == :back
+        case ret
+        when :next, :back
           break
-        elsif ret == :abort
+        when :abort
           break
         end
       end

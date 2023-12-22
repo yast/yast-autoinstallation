@@ -512,9 +512,10 @@ module Yast
           "timezone",
           Ops.get_string(general_options, "timezone", "")
         )
-        if Ops.get_string(general_options, "hwclock", "") == "localtime"
+        case Ops.get_string(general_options, "hwclock", "")
+        when "localtime"
           Ops.set(clock, "hwclock", "localtime")
-        elsif Ops.get_string(general_options, "hwclock", "") == "GMT"
+        when "GMT"
           Ops.set(clock, "hwclock", "GMT")
         end
         Ops.set(new_general, "clock", clock)

@@ -231,7 +231,8 @@ module Yast
           end
           scriptInterpreter = Ops.get_string(script, "interpreter", "shell")
           executionString = ""
-          if scriptInterpreter == "shell"
+          case scriptInterpreter
+          when "shell"
             executionString = Builtins.sformat(
               "/bin/sh -x %1  2&> %2/%3.log",
               scriptPath,
@@ -239,7 +240,7 @@ module Yast
               scriptName
             )
             SCR.Execute(path(".target.bash"), executionString)
-          elsif scriptInterpreter == "perl"
+          when "perl"
             executionString = Builtins.sformat(
               "/usr/bin/perl %1  2&> %2/%3.log",
               scriptPath,
@@ -247,7 +248,7 @@ module Yast
               scriptName
             )
             SCR.Execute(path(".target.bash"), executionString)
-          elsif scriptInterpreter == "python"
+          when "python"
             executionString = Builtins.sformat(
               "/usr/bin/python %1  2&> %2/%3.log",
               scriptPath,
