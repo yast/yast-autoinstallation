@@ -126,7 +126,7 @@ module Y2Autoinstall
         file_size = File.size(DIALOG_FILE)
         if !is_file || file_size > MAX_DIALOG_FILE_SIZE
           log.error "Ignoring #{DIALOG_FILE} because it is not a file (#{is_file}) or " \
-            "it is too big (#{file_size}."
+                    "it is too big (#{file_size}."
           return
         end
 

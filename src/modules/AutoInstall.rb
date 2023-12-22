@@ -110,7 +110,17 @@ module Yast
       # First check if there are some other control files availabe
       # i.e. for post-installation only
       #
-      if SCR.Read(path(".target.size"), AutoinstConfig.autoconf_file) != -1
+      if SCR.Read(path(".target.size"), AutoinstConfig.autoconf_file) == -1
+        ret = Profile.ReadProfileStructure(AutoinstConfig.parsedControlFile)
+        if Profile.current == {} || !ret
+          Builtins.y2milestone("No saved autoinstall data found")
+          false
+        else
+          Builtins.y2milestone("Found and read saved autoinst data")
+          SCR.Execute(path(".target.remove"), AutoinstConfig.parsedControlFile)
+          true
+        end
+      else
         Builtins.y2milestone(
           "XML Post installation data found: %1",
           AutoinstConfig.autoconf_file
@@ -125,16 +135,6 @@ module Yast
           )
         )
         ret
-      else
-        ret = Profile.ReadProfileStructure(AutoinstConfig.parsedControlFile)
-        if Profile.current == {} || !ret
-          Builtins.y2milestone("No saved autoinstall data found")
-          false
-        else
-          Builtins.y2milestone("Found and read saved autoinst data")
-          SCR.Execute(path(".target.remove"), AutoinstConfig.parsedControlFile)
-          true
-        end
       end
     end
 
@@ -394,23 +394,23 @@ module Yast
     publish function: :callbackTrue_boolean_map, type: "boolean (map <string, any>)"
     publish function: :callbackFalse_boolean_map, type: "boolean (map <string, any>)"
     publish function: :callbackTrue_boolean_map_integer,
-            type:     "boolean (map <string, any>, integer)"
+      type:     "boolean (map <string, any>, integer)"
     publish function: :callbackFalse_boolean_map_integer,
-            type:     "boolean (map <string, any>, integer)"
+      type:     "boolean (map <string, any>, integer)"
     publish function: :callbackTrue_boolean_string_map_integer,
-            type:     "boolean (string, map <string, any>, integer)"
+      type:     "boolean (string, map <string, any>, integer)"
     publish function: :callbackFalse_boolean_string_map_integer,
-            type:     "boolean (string, map <string, any>, integer)"
+      type:     "boolean (string, map <string, any>, integer)"
     publish function: :callbackTrue_boolean_string_string, type: "boolean (string, string)"
     publish function: :callbackFalse_boolean_string_string, type: "boolean (string, string)"
     publish function: :callbackTrue_boolean_string_string_integer,
-            type:     "boolean (string, string, integer)"
+      type:     "boolean (string, string, integer)"
     publish function: :callbackFalse_boolean_string_string_integer,
-            type:     "boolean (string, string, integer)"
+      type:     "boolean (string, string, integer)"
     publish function: :callbackTrue_boolean_string_string_string,
-            type:     "boolean (string, string, string)"
+      type:     "boolean (string, string, string)"
     publish function: :callbackFalse_boolean_string_string_string,
-            type:     "boolean (string, string, string)"
+      type:     "boolean (string, string, string)"
     publish function: :Continue, type: "boolean ()"
     publish function: :AutoInstall, type: "void ()"
     publish function: :Save, type: "boolean ()"

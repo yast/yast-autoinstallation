@@ -27,7 +27,7 @@ module Y2Autoinstallation
 
       def initialize(descriptions)
         @descriptions = descriptions
-        @descriptions_map = Hash[descriptions.map { |d| [d.module_name, d] }]
+        @descriptions_map = descriptions.map { |d| [d.module_name, d] }.to_h
       end
 
       # @return [Array<Description>] sorted module names. It should be written

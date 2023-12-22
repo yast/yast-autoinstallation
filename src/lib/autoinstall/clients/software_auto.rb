@@ -250,7 +250,9 @@ module Y2Autoinstallation
         )
 
         patadd = []
-        if @ret != :back
+        if @ret == :back
+          patadd = deep_copy(Yast::AutoinstSoftware.patterns)
+        else
           all_patterns = Y2Packager::Resolvable.find(
             kind: :pattern, status: :selected
           ).map(&:name)
@@ -258,8 +260,6 @@ module Y2Autoinstallation
             "available patterns %1", all_patterns
           )
           patadd = all_patterns
-        else
-          patadd = deep_copy(Yast::AutoinstSoftware.patterns)
         end
 
         Yast::PackagesProposal.SetResolvables(

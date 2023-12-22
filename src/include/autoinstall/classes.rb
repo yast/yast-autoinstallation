@@ -193,7 +193,7 @@ module Yast
         help,
         _(
           "<p>For example, you can define a class of configurations for\n" \
-            "a specific  department, group, or site in your company environment.</p>\n"
+          "a specific  department, group, or site in your company environment.</p>\n"
         )
       )
 
@@ -201,8 +201,8 @@ module Yast
         help,
         _(
           "<p>The order (priority) defines the hierarchy of a class\n" \
-            "and when it is merged when creating a control file.\n" \
-            "</p>\n"
+          "and when it is merged when creating a control file.\n" \
+          "</p>\n"
         )
       )
 
@@ -459,10 +459,10 @@ module Yast
 
       help = _(
         "<p>If you have defined and created <b>\n" \
-          "classes</b>, you will be able to merge them using this interface to create\n" \
-          "a new <i>Profile</i>, which will contain information from every class\n" \
-          "depending on the priority (order) set when\n" \
-          "creating the classes.</P>\n"
+        "classes</b>, you will be able to merge them using this interface to create\n" \
+        "a new <i>Profile</i>, which will contain information from every class\n" \
+        "depending on the priority (order) set when\n" \
+        "creating the classes.</P>\n"
       )
 
       help = Ops.add(
@@ -547,7 +547,7 @@ module Yast
       title = _("Class Configuration")
       help = _(
         "<p>Choose one or more of the listed classes to which the current control\n" \
-          "file should belong.</p>\n"
+        "file should belong.</p>\n"
       )
 
       AutoinstClass.Files

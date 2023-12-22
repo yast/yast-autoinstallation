@@ -65,7 +65,13 @@ module Yast
     def callDialogFunction(dialog, function)
       dialog = deep_copy(dialog)
       functionTerm = Ops.get(dialog, function)
-      if nil != functionTerm
+      if nil == functionTerm
+        Builtins.y2milestone(
+          "Function not found: '%1'->'%2'.",
+          Ops.get_string(dialog, :type, "Unknown"),
+          function
+        )
+      else
         Builtins.y2milestone(
           "calling function: '%1'->'%2'.",
           Ops.get_string(dialog, :type, "Unknown"),
@@ -73,12 +79,6 @@ module Yast
         )
         # prepareStack();
         Builtins.eval(functionTerm)
-      else
-        Builtins.y2milestone(
-          "Function not found: '%1'->'%2'.",
-          Ops.get_string(dialog, :type, "Unknown"),
-          function
-        )
       end
 
       nil

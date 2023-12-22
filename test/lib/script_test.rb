@@ -243,7 +243,7 @@ describe Y2Autoinstallation::ExecutedScript do
         expect(Yast::SCR).to receive(:Execute).with(
           path(".target.bash"),
           " /bin/sh -x /var/adm/autoinstall/scripts/test.sh  " \
-            "&> /var/adm/autoinstall/logs/test.sh.log"
+          "&> /var/adm/autoinstall/logs/test.sh.log"
         )
 
         subject.execute

@@ -133,30 +133,30 @@ module Yast
 
       help_text = _(
         "<P>\n" \
-          "The options in this dialog control the behavior of the AutoYaST during\n" \
-          "automatic installation.\n" \
-          "</P>\n"
+        "The options in this dialog control the behavior of the AutoYaST during\n" \
+        "automatic installation.\n" \
+        "</P>\n"
       )
       help_text = Ops.add(
         help_text,
         _(
           "<P>\n" \
-            "The installation confirmation option is selected by default\n" \
-            "to avoid unwanted installation. It stops the system\n" \
-            "during installation and shows a summary of requested operations in the\n" \
-            "usual proposal screen.  Uncheck this option to install " \
-            "automatically without interruption.\n" \
-            "</P>\n"
+          "The installation confirmation option is selected by default\n" \
+          "to avoid unwanted installation. It stops the system\n" \
+          "during installation and shows a summary of requested operations in the\n" \
+          "usual proposal screen.  Uncheck this option to install " \
+          "automatically without interruption.\n" \
+          "</P>\n"
         )
       )
       help_text = Ops.add(
         help_text,
         _(
           "<P>\n" \
-            "If you turn off the second stage of AutoYaST, the " \
-            "installation continues in manual mode\n" \
-            "after the first reboot (after package installation).\n" \
-            "</P>\n"
+          "If you turn off the second stage of AutoYaST, the " \
+          "installation continues in manual mode\n" \
+          "after the first reboot (after package installation).\n" \
+          "</P>\n"
         )
       )
 
@@ -164,8 +164,8 @@ module Yast
         help_text,
         _(
           "<P>\n" \
-            "For signature handling, read the AutoYaST documentation.\n" \
-            "</P>\n"
+          "For signature handling, read the AutoYaST documentation.\n" \
+          "</P>\n"
         )
       )
 
@@ -571,11 +571,11 @@ module Yast
           Ops.get_integer(x, "dialog", -2),
           Ops.get_integer(y, "dialog", -1)
         ) ||
-          Ops.get_integer(x, "dialog", -2) == Ops.get_integer(y, "dialog", -1) &&
+          (Ops.get_integer(x, "dialog", -2) == Ops.get_integer(y, "dialog", -1) &&
             Ops.less_than(
               Ops.get_integer(x, "element", -2),
               Ops.get_integer(y, "element", -1)
-            )
+            ))
       end
       done = { "initial" => [] }
       Builtins.foreach(askList) do |m|
@@ -987,11 +987,11 @@ module Yast
             Ops.get_integer(x, "dialog", -2),
             Ops.get_integer(y, "dialog", -1)
           ) ||
-            Ops.get_integer(x, "dialog", -2) == Ops.get_integer(y, "dialog", -1) &&
+            (Ops.get_integer(x, "dialog", -2) == Ops.get_integer(y, "dialog", -1) &&
               Ops.less_than(
                 Ops.get_integer(x, "element", -2),
                 Ops.get_integer(y, "element", -1)
-              )
+              ))
         end
         dialogs = []
         done2 = { "initial" => [], "cont" => [] }

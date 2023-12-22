@@ -136,9 +136,9 @@ module Y2Autoinstallation
 
         if !(Yast::AutoinstFunctions.selected_product || Yast::Mode.autoupgrade)
           msg = _("None or wrong base product has been defined " \
-           "in the AutoYaST configuration file. " \
-           "Please check the <b>products</b> entry in the <b>software</b> section.<br><br>" \
-           "Following base products are available:<br>")
+                  "in the AutoYaST configuration file. " \
+                  "Please check the <b>products</b> entry in the <b>software</b> section.<br><br>" \
+                  "Following base products are available:<br>")
           Y2Packager::ProductSpec.base_products.each do |product|
             msg += "#{product.name} (#{product.display_name})<br>"
           end
@@ -207,7 +207,7 @@ module Y2Autoinstallation
           .obsolete_sections
         if unsupported_sections.any?
           log.error "Could not process these unsupported profile " \
-            "sections: #{unsupported_sections}"
+                    "sections: #{unsupported_sections}"
           Yast::Report.LongWarning(
             # TRANSLATORS: Error message, %s is replaced by newline-separated
             # list of unsupported sections of the profile
@@ -268,8 +268,8 @@ module Y2Autoinstallation
           Yast::Popup.Error(
             _(
               "Error while parsing the control file.\n" \
-                "Check the log files for more details or fix the\n" \
-                "control file and try again.\n"
+              "Check the log files for more details or fix the\n" \
+              "control file and try again.\n"
             )
           )
           return :abort
@@ -306,12 +306,12 @@ module Y2Autoinstallation
       def ProfileSourceDialog(original)
         helptext = _(
           "<p>\n" \
-            "A profile for this machine could not be found or retrieved.\n" \
-            "Check that you entered the correct location\n" \
-            "on the command line and try again. Because of this error, you\n" \
-            "can only enter a URL to a profile and not to a directory. If you\n" \
-            "are using rules or host name-based control files, restart the\n" \
-            "installation process and make sure the control files are accessible.</p>\n"
+          "A profile for this machine could not be found or retrieved.\n" \
+          "Check that you entered the correct location\n" \
+          "on the command line and try again. Because of this error, you\n" \
+          "can only enter a URL to a profile and not to a directory. If you\n" \
+          "are using rules or host name-based control files, restart the\n" \
+          "installation process and make sure the control files are accessible.</p>\n"
         )
         title = _("System Profile Location")
 
@@ -375,8 +375,8 @@ module Y2Autoinstallation
 
       def report_missing_registration
         msg = _("Registration is mandatory when using the online " \
-          "installation medium. Enable registration in " \
-          "the AutoYaST profile or use full installation medium.")
+                "installation medium. Enable registration in " \
+                "the AutoYaST profile or use full installation medium.")
         Yast::Popup.LongError(msg) # No timeout because we are stopping the installation/upgrade.
       end
 

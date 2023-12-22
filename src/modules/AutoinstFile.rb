@@ -156,13 +156,13 @@ module Yast
             Ops.get_string(file, "file_location", ""),
             file_location
           )
-          if !GetURL(
+          if GetURL(
             Ops.get_string(file, "file_location", ""),
             file_location
           )
-            Builtins.y2error("file could not be retrieved")
-          else
             Builtins.y2milestone("file was retrieved")
+          else
+            Builtins.y2error("file could not be retrieved")
           end
         end
         if Ops.get_string(file, "file_permissions", "") != ""
@@ -213,13 +213,13 @@ module Yast
               "getting script: %1",
               Ops.get_string(script, "location", "")
             )
-            if !GetURL(Ops.get_string(script, "location", ""), scriptPath)
+            if GetURL(Ops.get_string(script, "location", ""), scriptPath)
+              got_script = true
+            else
               Builtins.y2error(
                 "script %1 could not be retrieved",
                 Ops.get_string(script, "location", "")
               )
-            else
-              got_script = true
             end
           end
           if !got_script

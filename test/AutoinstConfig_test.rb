@@ -101,7 +101,7 @@ describe "Yast::AutoinstConfig" do
       let(:autoyast_profile_url) { "https://moo:woo@192.168.0.1:8080/path/auto-installation.xml" }
 
       it "parses the given profile location and fill internal structures " \
-          "and returns boolean whether it succeded" do
+         "and returns boolean whether it succeded" do
         expect(subject.ParseCmdLine(autoyast_profile_url)).to eq(true)
 
         expect(subject.scheme).to eq("https")

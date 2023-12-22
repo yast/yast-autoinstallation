@@ -131,12 +131,8 @@ module Y2Autoinstallation
         # The warning is only needed while calling "yast clone_system". It is not
         # needed in the installation workflow where it will be checked by the file selection box
         # directly. (bnc#888546)
-        if Yast::Mode.normal && Yast::FileUtils.Exists(filename)
-          # TRANSLATORS: Warning that an already existing autoyast configuration file
-          #              will be overwritten.
-          if !Yast::Popup.ContinueCancel(_("File %s exists! Really overwrite?") % filename)
-            return false
-          end
+        if Yast::Mode.normal && Yast::FileUtils.Exists(filename) && !Yast::Popup.ContinueCancel(_("File %s exists! Really overwrite?") % filename)
+          return false
         end
 
         Yast::Popup.ShowFeedback(

@@ -236,9 +236,9 @@ module Y2Autoinstallation
           Product.FindBaseProducts
         rescue StandardError
           msg = _("No new base product has been set.\n" \
-           "It can be specified in the <b>software</b>/<b>products</b> entry in the " \
-           "AutoYaST configuration file.<br><br>" \
-           "Following base products are available:<br>")
+                  "It can be specified in the <b>software</b>/<b>products</b> entry in the " \
+                  "AutoYaST configuration file.<br><br>" \
+                  "Following base products are available:<br>")
           Y2Packager::ProductSpec.base_products.each do |prod|
             msg += "#{prod.name} (#{prod.display_name})<br>"
           end

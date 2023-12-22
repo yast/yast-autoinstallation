@@ -18,8 +18,8 @@ module Yast
     # This command will produce something which last line will be like:
     # DSA/SHA1, Mon 05 Oct 2015 04:24:50 PM WEST, Key ID 9b7d32f2d50582e6
     FIND_KEY_ID_CMD = "rpm --query --info --queryformat "\
-      "\"%%|DSAHEADER?{%%{DSAHEADER:pgpsig}}:{%%|RSAHEADER?{%%{RSAHEADER:pgpsig}}:{(none}|}|\" "\
-      " --package %s".freeze
+                      "\"%%|DSAHEADER?{%%{DSAHEADER:pgpsig}}:{%%|RSAHEADER?{%%{RSAHEADER:pgpsig}}:{(none}|}|\" "\
+                      " --package %s".freeze
 
     attr_reader :result, :package, :path, :config
 

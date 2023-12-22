@@ -350,7 +350,7 @@ module Yast
       unless ignored.empty?
         log.warn(
           "Ignoring these elements from the general/storage/proposal " \
-            "profile section: #{ignored.join(", ")}"
+          "profile section: #{ignored.join(", ")}"
         )
       end
 

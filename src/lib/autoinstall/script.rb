@@ -282,7 +282,7 @@ module Y2Autoinstallation
       params_s = params.join(" ") # shell escaping is up to user, see documentation
 
       cmd_line = "#{env_vars(env)} #{cmd} #{debug_flag} #{script_path.shellescape} " \
-        "#{params_s} &> #{log_path.shellescape}"
+                 "#{params_s} &> #{log_path.shellescape}"
 
       bash_path = Yast::Path.new(".target.bash")
       res = Yast::SCR.Execute(bash_path, cmd_line)
@@ -466,6 +466,7 @@ module Y2Autoinstallation
   class AskDefaultValueScript < Y2Autoinstallation::ExecutedScript
     # @return [String,nil] Standard output from the last execution
     attr_reader :stdout
+
     def self.type
       "ask-default-value-scripts"
     end

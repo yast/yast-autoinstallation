@@ -130,7 +130,7 @@ module Y2Autoinstallation
         # help 1/2
         help = _(
           "<p>Using this dialog, copy the contents of the file and specify the final\n" \
-            "path on the installed system. YaST will copy this file to the specified location.</p>"
+          "path on the installed system. YaST will copy this file to the specified location.</p>"
         )
 
         # help 2/2
@@ -138,11 +138,11 @@ module Y2Autoinstallation
           help,
           _(
             "<p>To protect copied files, set the owner and the permissions of the files.\n" \
-              "Set the owner using the syntax <i>userid:groupid</i>. "\
-              "Permissions can be a symbolic\n" \
-              "representation of changes to make or an octal number " \
-              "representing the bit pattern for the\n" \
-              "new permissions.</p>"
+            "Set the owner using the syntax <i>userid:groupid</i>. "\
+            "Permissions can be a symbolic\n" \
+            "representation of changes to make or an octal number " \
+            "representing the bit pattern for the\n" \
+            "new permissions.</p>"
           )
         )
 
@@ -202,16 +202,16 @@ module Y2Autoinstallation
 
         ret = nil
         loop do
-          if Convert.to_string(UI.QueryWidget(Id(:location), :Value)) != ""
-            UI.ChangeWidget(Id(:source), :Enabled, false)
-          else
+          if Convert.to_string(UI.QueryWidget(Id(:location), :Value)) == ""
             UI.ChangeWidget(Id(:source), :Enabled, true)
-            if Convert.to_string(UI.QueryWidget(Id(:source), :Value)) != ""
+            if Convert.to_string(UI.QueryWidget(Id(:source), :Value)) == ""
+              UI.ChangeWidget(Id(:location), :Enabled, true)
+            else
               UI.ChangeWidget(Id(:location), :Enabled, false)
               UI.ChangeWidget(Id(:location), :Value, "")
-            else
-              UI.ChangeWidget(Id(:location), :Enabled, true)
             end
+          else
+            UI.ChangeWidget(Id(:source), :Enabled, false)
           end
           ret = Convert.to_symbol(UI.UserInput)
           if ret == :next
@@ -221,7 +221,7 @@ module Y2Autoinstallation
             source = Convert.to_string(UI.QueryWidget(Id(:source), :Value))
             location = Convert.to_string(UI.QueryWidget(Id(:location), :Value))
 
-            if source == "" && location == "" || fileName == ""
+            if (source == "" && location == "") || fileName == ""
               Popup.Message(
                 _(
                   "Provide at least the file\nname and the contents of the file.\n"
@@ -281,9 +281,9 @@ module Y2Autoinstallation
 
         help = _(
           "<p>For many applications and services, you might have prepared\n" \
-            "a configuration file that should be copied in a complete form to a location in the\n" \
-            "installed system. For example, this is the case if you are installing a web server\n" \
-            "and have an httpd.conf configuration file prepared.</p>"
+          "a configuration file that should be copied in a complete form to a location in the\n" \
+          "installed system. For example, this is the case if you are installing a web server\n" \
+          "and have an httpd.conf configuration file prepared.</p>"
         )
 
         Wizard.SetContents(title, dialog_contents, help, true, true)

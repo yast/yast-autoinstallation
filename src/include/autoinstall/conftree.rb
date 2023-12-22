@@ -465,12 +465,12 @@ module Yast
       currentModule = "general"
 
       loop do
-        if AutoinstConfig.runModule != ""
-          ret = :configure
-          setModule(AutoinstConfig.runModule)
-        else
+        if AutoinstConfig.runModule == ""
           event = UI.WaitForEvent
           ret = Ops.get(event, "ID")
+        else
+          ret = :configure
+          setModule(AutoinstConfig.runModule)
         end
         AutoinstConfig.runModule = ""
         if ret == :groups
@@ -510,7 +510,7 @@ module Yast
               Builtins.sformat(
                 _(
                   "Do you really want to apply the settings of the module '%1' " \
-                    "to your current system?"
+                  "to your current system?"
                 ),
                 modulename
               )
@@ -618,10 +618,10 @@ module Yast
               "*",
               _("Save as...")
             )
-            if !filename.nil?
-              AutoinstConfig.currentFile = Convert.to_string(filename)
-            else
+            if filename.nil?
               next
+            else
+              AutoinstConfig.currentFile = Convert.to_string(filename)
             end
           end
 

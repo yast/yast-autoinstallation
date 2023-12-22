@@ -20,9 +20,9 @@ module Yast
     # @return [Boolean] true on success
     def Get(scheme, host, urlpath, localfile)
       get_file_from_url(scheme: scheme, host: host, urlpath: urlpath,
-                        localfile: localfile,
-                        urltok: AutoinstConfig.urltok,
-                        destdir: AutoinstConfig.destdir)
+        localfile: localfile,
+        urltok: AutoinstConfig.urltok,
+        destdir: AutoinstConfig.destdir)
     end
 
     # Get a file froma  given URL

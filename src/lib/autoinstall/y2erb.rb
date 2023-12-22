@@ -63,20 +63,20 @@ module Y2Autoinstallation
         hardware["netcard"].each do |card|
           resource = card["resource"]
           mac = begin
-                  resource["hwaddr"].first["addr"]
-                rescue StandardError
-                  ""
-                end
+            resource["hwaddr"].first["addr"]
+          rescue StandardError
+            ""
+          end
           active = begin
-                     resource["io"].first["active"]
-                   rescue StandardError
-                     false
-                   end
+            resource["io"].first["active"]
+          rescue StandardError
+            false
+          end
           link = begin
-                   resource["link"].first["state"]
-                 rescue StandardError
-                   false
-                 end
+            resource["link"].first["state"]
+          rescue StandardError
+            false
+          end
           result = {
             vendor: card["vendor"],
             device: card["dev_name"],

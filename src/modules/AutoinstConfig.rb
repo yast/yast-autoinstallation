@@ -497,25 +497,24 @@ module Yast
     end
 
     def MainHelp
-      main_help = _(
+      _(
         "<h3>AutoYaST Configuration Management System</h3>\n" \
-          "<p>Almost all resources of the control file can be\n" \
-          "configured using the configuration management system.</p>\n"
+        "<p>Almost all resources of the control file can be\n" \
+        "configured using the configuration management system.</p>\n"
       ) +
         _(
           "<p>Most of the modules used to create the configuration are identical " \
-            "to those available\n" \
-            "through the YaST Control Center. Instead of configuring this system, the data\n" \
-            "entered is collected and exported to the control file that can be used to\n" \
-            "install another system using AutoYaST.\n" \
-            "</p>\n"
+          "to those available\n" \
+          "through the YaST Control Center. Instead of configuring this system, the data\n" \
+          "entered is collected and exported to the control file that can be used to\n" \
+          "install another system using AutoYaST.\n" \
+          "</p>\n"
         ) +
         _(
           "<p>In addition to the existing and familiar modules,\n" \
-            "new interfaces were created for special and complex configurations, including\n" \
-            "partitioning, general options, and software.</p>\n"
+          "new interfaces were created for special and complex configurations, including\n" \
+          "partitioning, general options, and software.</p>\n"
         )
-      main_help
     end
 
     # Profile path during installation

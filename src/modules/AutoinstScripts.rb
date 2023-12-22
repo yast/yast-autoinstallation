@@ -272,8 +272,8 @@ module Yast
     publish function: :Summary, type: "string ()"
     publish function: :deleteScript, type: "void (string)"
     publish function: :AddEditScript,
-            type:     "void (string, string, string, string, boolean, boolean, " \
-      "boolean, boolean, string, string, string)"
+      type:     "void (string, string, string, string, boolean, boolean, " \
+                "boolean, boolean, string, string, string)"
     publish function: :typeString, type: "string (string)"
     publish function: :Write, type: "boolean (string, boolean)"
 

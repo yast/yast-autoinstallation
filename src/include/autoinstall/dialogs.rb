@@ -58,16 +58,16 @@ module Yast
 
       help = _(
         "<P>\n" \
-          "Enter the directory where all <em>control files</em> should be stored in\n" \
-          "the <b>Repository</b> field.</P>"
+        "Enter the directory where all <em>control files</em> should be stored in\n" \
+        "the <b>Repository</b> field.</P>"
       )
 
       help = Ops.add(
         help,
         _(
           "<P>If you are using the classes feature\n" \
-            "of Autoyast, also enter the class directory. This is where\n" \
-            "all class files are stored.</p>\n"
+          "of Autoyast, also enter the class directory. This is where\n" \
+          "all class files are stored.</p>\n"
         )
       )
 
@@ -140,9 +140,9 @@ module Yast
     def invalidFileName
       _(
         "Invalid file name.\n" \
-          "Names can only contain letters, numbers, and underscore,\n" \
-          "must begin with letter, and must be\n" \
-          "127 characters long or less.\n"
+        "Names can only contain letters, numbers, and underscore,\n" \
+        "must begin with letter, and must be\n" \
+        "127 characters long or less.\n"
       )
     end
 
@@ -319,11 +319,11 @@ module Yast
           summary = Ops.add(
             summary,
             if Ops.get_integer(o, "exit", 1) != 0 ||
-              Ops.get_string(i, 2, "") == "jing sucks" &&
+              (Ops.get_string(i, 2, "") == "jing sucks" &&
                 Ops.greater_than(
                   Builtins.size(Ops.get_string(o, "stderr", "")),
                   0
-                )
+                ))
               html_ko
             else
               html_ok

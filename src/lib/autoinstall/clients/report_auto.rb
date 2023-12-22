@@ -197,14 +197,14 @@ module Y2Autoinstallation
 
         help_text = _(
           "<p>Depending on your experience, you can skip, log, and show (with time-out)\n" \
-            "installation messages.</p> \n"
+          "installation messages.</p> \n"
         )
 
         help_text = Ops.add(
           help_text,
           _(
             "<p>It is recommended to show all  <b>messages</b> with time-out.\n" \
-              "Warnings can be skipped in some places, but should not be ignored.</p>\n"
+            "Warnings can be skipped in some places, but should not be ignored.</p>\n"
           )
         )
 

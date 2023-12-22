@@ -70,7 +70,7 @@ module Yast
         f = caller_locations(2, 1).first
         if !tmp.nil?
           log.warn "AutoYaST profile type mismatch (from #{f}): " \
-            "#{key}: expected #{type}, got #{tmp.class}"
+                   "#{key}: expected #{type}, got #{tmp.class}"
         end
         tmp = default.is_a?(Hash) ? ProfileHash.new(default) : default
       end
@@ -266,10 +266,10 @@ module Yast
     # @return [void]
     def check_version(properties)
       version = properties["version"]
-      if version != "3.0"
-        log.info("Wrong profile version #{version}")
-      else
+      if version == "3.0"
         log.info("AutoYaST Profile Version #{version} detected.")
+      else
+        log.info("Wrong profile version #{version}")
       end
     end
 
@@ -414,7 +414,7 @@ module Yast
           )
         rescue XMLSerializationError => e
           log.error "Could not write section #{sectionName} to file #{sectionFileName}:" \
-            "#{e.inspect}"
+                    "#{e.inspect}"
         end
       end
       deep_copy(sectionFiles)
@@ -566,9 +566,7 @@ module Yast
     # @param file [String] path to file
     # @return [Boolean]
     def ReadXML(file)
-      if !GPG.encrypted_symmetric?(file)
-        content = File.read(file)
-      else
+      if GPG.encrypted_symmetric?(file)
         AutoinstConfig.ProfileEncrypted = true
         label = _("Encrypted AutoYaST profile.")
 
@@ -591,6 +589,8 @@ module Yast
             return false
           end
         end
+      else
+        content = File.read(file)
       end
       @current = XML.XMLToYCPString(content)
 
@@ -610,7 +610,7 @@ module Yast
       # autoyast has read the autoyast configuration file but something went wrong
       message = _(
         "The XML parser reported an error while parsing the autoyast profile. " \
-          "The error message is:\n"
+        "The error message is:\n"
       )
       message += e.message
       log.info "xml parsing error #{e.inspect}"
@@ -780,7 +780,7 @@ module Yast
         end
         next unless export
 
-        resource_data = WFM.CallFunction(module_auto, ["Export", "target" => target.to_s])
+        resource_data = WFM.CallFunction(module_auto, ["Export", { "target" => target.to_s }])
 
         if tomerge.size < 2
           s = (resource_data || {}).size

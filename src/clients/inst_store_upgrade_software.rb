@@ -18,7 +18,7 @@ module Yast
           p.transact_by == :app_high
       end
 
-      # note: does not matter if it is installed or to be installed, the resulting
+      # NOTE: does not matter if it is installed or to be installed, the resulting
       # state is the same; similar for uninstallation (valid for all packages, patterns
       # and products
       @patterns_to_remove = []

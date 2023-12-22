@@ -71,7 +71,7 @@ describe Y2Autoinstallation::Clients::FilesAuto do
   end
 
   describe "#change" do
-    # note: It do more testing also of script_dialogs include as it is only user
+    # NOTE: It do more testing also of script_dialogs include as it is only user
 
     before do
       allow(Yast::UI).to receive(:UserInput).and_return(:next)

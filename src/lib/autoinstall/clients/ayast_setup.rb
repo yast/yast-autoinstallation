@@ -108,8 +108,8 @@ module Y2Autoinstall
           Yast::CommandLine.Print(
             _(
               "Error while parsing the control file.\n" \
-                "Check the log files for more details or fix the\n" \
-                "control file and try again.\n"
+              "Check the log files for more details or fix the\n" \
+              "control file and try again.\n"
             )
           )
           return false

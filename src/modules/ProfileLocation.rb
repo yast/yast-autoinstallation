@@ -84,7 +84,9 @@ module Yast
         url_str = InstURL.installInf2Url("")
         log.info("installation path from install.inf: #{url_str}")
 
-        if !url_str.empty?
+        if url_str.empty?
+          log.warn("Cannot evaluate ZyppRepoURL from /etc/install.inf")
+        else
           url = URL.Parse(url_str)
           AutoinstConfig.scheme = url["scheme"]
           AutoinstConfig.host = url["host"]
@@ -96,14 +98,14 @@ module Yast
           log.info("relurl for profile changed to: #{ayrelurl}")
           SCR.Write(path(".etc.install_inf.ayrelurl"), ayrelurl)
           SCR.Write(path(".etc.install_inf"), nil)
-        else
-          log.warn("Cannot evaluate ZyppRepoURL from /etc/install.inf")
         end
       end
 
       filename = basename(AutoinstConfig.filepath)
 
-      if filename != ""
+      if filename == ""
+        is_directory = true
+      else
         Builtins.y2milestone("File=%1", filename)
         Builtins.y2milestone(
           "Get %1://%2/%3 to %4",
@@ -162,11 +164,7 @@ module Yast
         end
 
         # render erb template
-        if AutoinstConfig.filepath.end_with?(".erb")
-          return false unless render_erb(localfile)
-        end
-      else
-        is_directory = true
+        return false if AutoinstConfig.filepath.end_with?(".erb") && !render_erb(localfile)
       end
 
       AutoinstConfig.directory = dirname(AutoinstConfig.filepath)

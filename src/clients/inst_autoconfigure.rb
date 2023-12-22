@@ -40,8 +40,8 @@ module Yast
       # Help text for last dialog of base installation
       @help_text = _(
         "<p>\n" \
-          "Please wait while the system is being configured.\n" \
-          "</p>"
+        "Please wait while the system is being configured.\n" \
+        "</p>"
       )
 
       log.info "Profile general,mode:#{AutoinstGeneral.mode.inspect}"

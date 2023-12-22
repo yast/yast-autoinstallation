@@ -211,8 +211,8 @@ module Y2Autoinstallation
           Yast::Popup.Error(
             _(
               "Error while parsing the control file.\n" \
-                "Check the log files for more details or fix the\n" \
-                "AutoYaST profile and try again.\n"
+              "Check the log files for more details or fix the\n" \
+              "AutoYaST profile and try again.\n"
             )
           )
         end
@@ -238,7 +238,7 @@ module Y2Autoinstallation
 
         if !run_erb_option && Process.euid.zero?
           Yast::CommandLine.Error(_("run-erb=true option is mandatory when checking an ERB " \
-            "profile as root."))
+                                    "profile as root."))
 
           return false
         end
