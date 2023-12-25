@@ -46,6 +46,7 @@ module Y2Autoinstallation
       # @param partitioning [Y2Storage::AutoinstProfile::PartitioningSection]
       #   Partitioning section of the profile
       def initialize(partitioning = Y2Storage::AutoinstProfile::PartitioningSection.new)
+        super()
         textdomain "autoinst"
         @controller = Y2Autoinstallation::StorageController.new(partitioning)
       end

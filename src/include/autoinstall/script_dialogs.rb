@@ -297,9 +297,7 @@ module Yast
       Wizard.SetContents(title, contents, help, true, true)
       type = Convert.to_string(UI.QueryWidget(Id(:type), :Value))
       case type
-      when "pre-scripts"
-        UI.ChangeWidget(Id(:chrooted), :Enabled, false)
-      when "post-scripts"
+      when "pre-scripts", "post-scripts"
         UI.ChangeWidget(Id(:chrooted), :Enabled, false)
       when "init-scripts"
         UI.ChangeWidget(Id(:chrooted), :Enabled, false)
@@ -403,12 +401,7 @@ module Yast
             UI.ChangeWidget(Id(:chrooted), :Enabled, true)
             UI.ChangeWidget(Id(:feedback), :Enabled, true)
             UI.ChangeWidget(Id(:notification), :Enabled, true)
-          when "post-scripts"
-            UI.ChangeWidget(Id(:chrooted), :Enabled, false)
-            UI.ChangeWidget(Id(:chrooted), :Value, false)
-            UI.ChangeWidget(Id(:feedback), :Enabled, true)
-            UI.ChangeWidget(Id(:notification), :Enabled, true)
-          when "pre-scripts"
+          when "post-scripts", "pre-scripts"
             UI.ChangeWidget(Id(:chrooted), :Enabled, false)
             UI.ChangeWidget(Id(:chrooted), :Value, false)
             UI.ChangeWidget(Id(:feedback), :Enabled, true)

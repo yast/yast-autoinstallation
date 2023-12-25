@@ -32,6 +32,7 @@ module Y2Autoinstall
 
         # @param question [Y2Autoinstall::Ask::Question] Question to represent
         def initialize(question)
+          super()
           textdomain "autoinst"
           @question = question
         end

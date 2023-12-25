@@ -41,6 +41,7 @@ module Y2Autoinstallation
       include Yast::Logger
 
       def initialize
+        super
         textdomain "autoinst"
       end
 
@@ -131,7 +132,8 @@ module Y2Autoinstallation
         # The warning is only needed while calling "yast clone_system". It is not
         # needed in the installation workflow where it will be checked by the file selection box
         # directly. (bnc#888546)
-        if Yast::Mode.normal && Yast::FileUtils.Exists(filename) && !Yast::Popup.ContinueCancel(_("File %s exists! Really overwrite?") % filename)
+        if Yast::Mode.normal && Yast::FileUtils.Exists(filename) &&
+            !Yast::Popup.ContinueCancel(_("File %s exists! Really overwrite?") % filename)
           return false
         end
 

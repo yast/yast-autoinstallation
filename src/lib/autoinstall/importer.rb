@@ -61,11 +61,9 @@ module Y2Autoinstallation
       managed = registry.descriptions.map(&:managed_keys).flatten
 
       profile.keys.select do |name|
-        if managed.include?(name)
-          false
         # Generic sections are handled by AutoYast itself and not mentioned
         # in any desktop or clients/*_auto.rb file.
-        elsif GENERIC_PROFILE_SECTIONS.include?(name)
+        if managed.include?(name) || GENERIC_PROFILE_SECTIONS.include?(name)
           false
         else
           # Sections which are not handled in any desktop file but the

@@ -41,6 +41,7 @@ module Y2Autoinstallation
       include Yast::Logger
 
       def initialize
+        super
         textdomain "autoinst"
 
         Yast::Mode.SetMode("autoinst_config")

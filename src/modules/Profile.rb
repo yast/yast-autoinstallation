@@ -35,6 +35,8 @@ module Yast
 
     # Replace Hash -> ProfileHash recursively.
     def initialize(default = {})
+      super()
+
       default.each_pair do |key, value|
         self[key] = value.is_a?(Hash) ? ProfileHash.new(value) : value
       end
@@ -480,11 +482,7 @@ module Yast
       report = Ops.get_map(__current, "report", {})
 
       Builtins.foreach(general_options) do |k, v|
-        if k == "keyboard" && Ops.is_string?(v)
-          old = true
-        elsif k == "encryption_method"
-          old = true
-        elsif k == "timezone" && Ops.is_string?(v)
+        if k == "encryption_method" || (["keyboard", "timezone"].include?(k) && Ops.is_string?(v))
           old = true
         end
       end

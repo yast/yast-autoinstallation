@@ -28,6 +28,7 @@ module Y2Autoinstallation
       include Yast::I18n
 
       def initialize
+        super
         textdomain "autoinst"
 
         Yast.include self, "autoinstall/script_dialogs.rb"

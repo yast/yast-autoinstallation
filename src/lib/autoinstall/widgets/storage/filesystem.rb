@@ -30,6 +30,7 @@ module Y2Autoinstallation
       class Filesystem < CWM::ComboBox
         # Constructor
         def initialize
+          super
           textdomain "autoinst"
           self.widget_id = "filesystem_attr"
         end

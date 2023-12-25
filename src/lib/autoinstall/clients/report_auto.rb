@@ -30,6 +30,7 @@ module Y2Autoinstallation
       include Yast::I18n
 
       def initialize
+        super
         textdomain "autoinst"
       end
 

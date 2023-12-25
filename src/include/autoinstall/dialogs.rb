@@ -403,9 +403,7 @@ module Yast
       loop do
         ret = UI.UserInput
         case ret
-        when :next, :back
-          break
-        when :abort
+        when :next, :back, :abort
           break
         end
       end
