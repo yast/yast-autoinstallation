@@ -391,43 +391,44 @@ module Yast
     # @return [void]
 
     def SetProtocolMessage
-      @message = if @scheme == "floppy"
+      @message = case @scheme
+      when "floppy"
         _("Retrieving control file from floppy.")
-      elsif @scheme == "tftp"
+      when "tftp"
         Builtins.sformat(
           _("Retrieving control file (%1) from TFTP server: %2."),
           @filepath,
           @host
         )
-      elsif @scheme == "nfs"
+      when "nfs"
         Builtins.sformat(
           _("Retrieving control file (%1) from NFS server: %2."),
           @filepath,
           @host
         )
-      elsif @scheme == "http"
+      when "http"
         Builtins.sformat(
           _("Retrieving control file (%1) from HTTP server: %2."),
           @filepath,
           @host
         )
-      elsif @scheme == "ftp"
+      when "ftp"
         Builtins.sformat(
           _("Retrieving control file (%1) from FTP server: %2."),
           @filepath,
           @host
         )
-      elsif @scheme == "file"
+      when "file"
         Builtins.sformat(
           _("Copying control file from file: %1."),
           @filepath
         )
-      elsif @scheme == "device"
+      when "device"
         Builtins.sformat(
           _("Copying control file from device: /dev/%1."),
           @filepath
         )
-      elsif @scheme == "default"
+      when "default"
         _("Copying control file from default location.")
       else
         _("Source unknown.")
@@ -497,25 +498,24 @@ module Yast
     end
 
     def MainHelp
-      main_help = _(
+      _(
         "<h3>AutoYaST Configuration Management System</h3>\n" \
-          "<p>Almost all resources of the control file can be\n" \
-          "configured using the configuration management system.</p>\n"
+        "<p>Almost all resources of the control file can be\n" \
+        "configured using the configuration management system.</p>\n"
       ) +
         _(
           "<p>Most of the modules used to create the configuration are identical " \
-            "to those available\n" \
-            "through the YaST Control Center. Instead of configuring this system, the data\n" \
-            "entered is collected and exported to the control file that can be used to\n" \
-            "install another system using AutoYaST.\n" \
-            "</p>\n"
+          "to those available\n" \
+          "through the YaST Control Center. Instead of configuring this system, the data\n" \
+          "entered is collected and exported to the control file that can be used to\n" \
+          "install another system using AutoYaST.\n" \
+          "</p>\n"
         ) +
         _(
           "<p>In addition to the existing and familiar modules,\n" \
-            "new interfaces were created for special and complex configurations, including\n" \
-            "partitioning, general options, and software.</p>\n"
+          "new interfaces were created for special and complex configurations, including\n" \
+          "partitioning, general options, and software.</p>\n"
         )
-      main_help
     end
 
     # Profile path during installation

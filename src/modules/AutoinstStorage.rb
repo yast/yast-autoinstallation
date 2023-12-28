@@ -100,7 +100,7 @@ module Yast
     # @return [Hash] General settings
     def export_general_settings
       # Do not export nil settings
-      general_settings.reject { |_key, value| value.nil? }
+      general_settings.compact
     end
 
     # Moved here from RootPart module (used just by this module)
@@ -350,7 +350,7 @@ module Yast
       unless ignored.empty?
         log.warn(
           "Ignoring these elements from the general/storage/proposal " \
-            "profile section: #{ignored.join(", ")}"
+          "profile section: #{ignored.join(", ")}"
         )
       end
 

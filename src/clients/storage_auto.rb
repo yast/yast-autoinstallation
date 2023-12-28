@@ -40,7 +40,8 @@ module Yast
       Builtins.y2debug("param=%1", @param)
 
       # Import Data
-      if @func == "Import"
+      case @func
+      when "Import"
         @ret = AutoinstPartPlan.Import(
           Convert.convert(@param, from: "list", to: "list <map>")
         )
@@ -51,29 +52,29 @@ module Yast
           @ret = false
         end
         Builtins.y2milestone("Import: %1", @param)
-      elsif @func == "Read"
+      when "Read"
         @ret = AutoinstPartPlan.Read
       # Create a  summary
-      elsif @func == "Summary"
+      when "Summary"
         @ret = AutoinstPartPlan.Summary
       # Reset configuration
-      elsif @func == "Reset"
+      when "Reset"
         AutoinstPartPlan.Reset
         @ret = []
       # Change configuration (run AutoSequence)
-      elsif @func == "Change"
+      when "Change"
         storage_dialog = build_storage_dialog
         @ret = storage_dialog.run
         # After succesfully editing the storage settings, import the result as
         # the new partition plan.
         AutoinstPartPlan.Import(storage_dialog.partitioning) if @ret == :next
       # Return actual state
-      elsif @func == "Export"
+      when "Export"
         @ret = AutoinstPartPlan.Export
       # Return true if modified
-      elsif @func == "GetModified"
+      when "GetModified"
         @ret = AutoinstPartPlan.GetModified
-      elsif @func == "SetModified"
+      when "SetModified"
         AutoinstPartPlan.SetModified
       else
         Builtins.y2error("Unknown function: %1", @func)

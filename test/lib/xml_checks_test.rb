@@ -77,7 +77,7 @@ describe Y2Autoinstallation::XmlChecks do
 
       context "and it is the first time that the errors have been reported" do
         it "returns true if the user skipped the validation" do
-          allow(ENV).to receive(:"[]").with("YAST_SKIP_XML_VALIDATION").and_return("1")
+          allow(ENV).to receive(:[]).with("YAST_SKIP_XML_VALIDATION").and_return("1")
 
           expect(Yast2::Popup).to_not receive(:show)
           expect(subject.check(xml, schema, "title")).to eql(true)

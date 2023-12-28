@@ -58,16 +58,16 @@ module Yast
 
       help = _(
         "<P>\n" \
-          "Enter the directory where all <em>control files</em> should be stored in\n" \
-          "the <b>Repository</b> field.</P>"
+        "Enter the directory where all <em>control files</em> should be stored in\n" \
+        "the <b>Repository</b> field.</P>"
       )
 
       help = Ops.add(
         help,
         _(
           "<P>If you are using the classes feature\n" \
-            "of Autoyast, also enter the class directory. This is where\n" \
-            "all class files are stored.</p>\n"
+          "of Autoyast, also enter the class directory. This is where\n" \
+          "all class files are stored.</p>\n"
         )
       )
 
@@ -78,27 +78,28 @@ module Yast
 
       changed = false
       ret = :none
-      begin
+      loop do
         ret = Convert.to_symbol(UI.UserInput)
 
         new_rep = Convert.to_string(UI.QueryWidget(Id(:repository), :Value))
         new_classdir = Convert.to_string(UI.QueryWidget(Id(:classdir), :Value))
 
-        if ret == :opendir
+        case ret
+        when :opendir
           new_rep = UI.AskForExistingDirectory(
             AutoinstConfig.Repository,
             _("Select Directory")
           )
           UI.ChangeWidget(Id(:repository), :Value, new_rep) if new_rep != ""
           next
-        elsif ret == :openclassdir
+        when :openclassdir
           new_classdir = UI.AskForExistingDirectory(
             AutoinstConfig.classDir,
             _("Select Directory")
           )
           UI.ChangeWidget(Id(:classdir), :Value, new_classdir) if new_classdir != ""
           next
-        elsif ret == :next
+        when :next
           if AutoinstConfig.Repository != new_rep
             changed = true
             AutoinstConfig.Repository = new_rep
@@ -109,7 +110,8 @@ module Yast
             AutoinstClass.classDirChanged(new_classdir)
           end
         end
-      end until ret == :back || ret == :next
+        break if ret == :back || ret == :next
+      end
 
       Wizard.RestoreScreenShotName
       AutoinstConfig.Save if changed
@@ -140,9 +142,9 @@ module Yast
     def invalidFileName
       _(
         "Invalid file name.\n" \
-          "Names can only contain letters, numbers, and underscore,\n" \
-          "must begin with letter, and must be\n" \
-          "127 characters long or less.\n"
+        "Names can only contain letters, numbers, and underscore,\n" \
+        "must begin with letter, and must be\n" \
+        "127 characters long or less.\n"
       )
     end
 
@@ -176,9 +178,10 @@ module Yast
       ret = nil
       loop do
         ret = UI.UserInput
-        if ret == :cancel
+        case ret
+        when :cancel
           break
-        elsif ret == :ok
+        when :ok
           f = Convert.to_string(UI.QueryWidget(Id(:newname), :Value))
           if checkFileName(f) != 0 || f == ""
             Popup.Error(invalidFileName)
@@ -220,7 +223,7 @@ module Yast
       Wizard.SetNextButton(:next, Label.CreateButton)
 
       ret = :none
-      begin
+      loop do
         ret = Convert.to_symbol(UI.UserInput)
         if ret == :next
           AutoinstClone.additional = Convert.convert(
@@ -236,7 +239,8 @@ module Yast
           Profile.changed = true
           Popup.ClearFeedback
         end
-      end until ret == :next || ret == :back
+        break if ret == :next || ret == :back
+      end
       Wizard.CloseDialog
       ret
     end
@@ -319,11 +323,11 @@ module Yast
           summary = Ops.add(
             summary,
             if Ops.get_integer(o, "exit", 1) != 0 ||
-              Ops.get_string(i, 2, "") == "jing sucks" &&
+              (Ops.get_string(i, 2, "") == "jing sucks" &&
                 Ops.greater_than(
                   Builtins.size(Ops.get_string(o, "stderr", "")),
                   0
-                )
+                ))
               html_ko
             else
               html_ok
@@ -400,9 +404,8 @@ module Yast
       ret = nil
       loop do
         ret = UI.UserInput
-        if ret == :next || ret == :back
-          break
-        elsif ret == :abort
+        case ret
+        when :next, :back, :abort
           break
         end
       end

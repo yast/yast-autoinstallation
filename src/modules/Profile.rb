@@ -35,6 +35,8 @@ module Yast
 
     # Replace Hash -> ProfileHash recursively.
     def initialize(default = {})
+      super()
+
       default.each_pair do |key, value|
         self[key] = value.is_a?(Hash) ? ProfileHash.new(value) : value
       end
@@ -70,7 +72,7 @@ module Yast
         f = caller_locations(2, 1).first
         if !tmp.nil?
           log.warn "AutoYaST profile type mismatch (from #{f}): " \
-            "#{key}: expected #{type}, got #{tmp.class}"
+                   "#{key}: expected #{type}, got #{tmp.class}"
         end
         tmp = default.is_a?(Hash) ? ProfileHash.new(default) : default
       end
@@ -266,10 +268,10 @@ module Yast
     # @return [void]
     def check_version(properties)
       version = properties["version"]
-      if version != "3.0"
-        log.info("Wrong profile version #{version}")
-      else
+      if version == "3.0"
         log.info("AutoYaST Profile Version #{version} detected.")
+      else
+        log.info("Wrong profile version #{version}")
       end
     end
 
@@ -287,12 +289,12 @@ module Yast
       # old style
       if Builtins.haskey(profile, "configure") ||
           Builtins.haskey(profile, "install")
-        __configure = Ops.get_map(profile, "configure", {})
-        __install = Ops.get_map(profile, "install", {})
+        configure = Ops.get_map(profile, "configure", {})
+        install = Ops.get_map(profile, "install", {})
         @current = Builtins.remove(@current, "configure") if Builtins.haskey(profile, "configure")
         @current = Builtins.remove(@current, "install") if Builtins.haskey(profile, "install")
         tmp = Convert.convert(
-          Builtins.union(__configure, __install),
+          Builtins.union(configure, install),
           from: "map",
           to:   "map <string, any>"
         )
@@ -414,7 +416,7 @@ module Yast
           )
         rescue XMLSerializationError => e
           log.error "Could not write section #{sectionName} to file #{sectionFileName}:" \
-            "#{e.inspect}"
+                    "#{e.inspect}"
         end
       end
       deep_copy(sectionFiles)
@@ -449,42 +451,38 @@ module Yast
     end
 
     # General compatibility issues
-    # @param __current [Hash] current profile
+    # @param current [Hash] current profile
     # @return [Hash] converted profile
-    def Compat(__current)
-      __current = deep_copy(__current)
+    def Compat(current)
+      current = deep_copy(current)
       # scripts
-      if Builtins.haskey(__current, "pre-scripts") ||
-          Builtins.haskey(__current, "post-scripts") ||
-          Builtins.haskey(__current, "chroot-scripts")
-        pre = Ops.get_list(__current, "pre-scripts", [])
-        post = Ops.get_list(__current, "post-scripts", [])
-        chroot = Ops.get_list(__current, "chroot-scripts", [])
+      if Builtins.haskey(current, "pre-scripts") ||
+          Builtins.haskey(current, "post-scripts") ||
+          Builtins.haskey(current, "chroot-scripts")
+        pre = Ops.get_list(current, "pre-scripts", [])
+        post = Ops.get_list(current, "post-scripts", [])
+        chroot = Ops.get_list(current, "chroot-scripts", [])
         scripts = {
           "pre-scripts"    => pre,
           "post-scripts"   => post,
           "chroot-scripts" => chroot
         }
-        __current = Builtins.remove(__current, "pre-scripts")
-        __current = Builtins.remove(__current, "post-scripts")
-        __current = Builtins.remove(__current, "chroot-scripts")
+        current = Builtins.remove(current, "pre-scripts")
+        current = Builtins.remove(current, "post-scripts")
+        current = Builtins.remove(current, "chroot-scripts")
 
-        Ops.set(__current, "scripts", scripts)
+        Ops.set(current, "scripts", scripts)
       end
 
       # general
       old = false
 
-      general_options = Ops.get_map(__current, "general", {})
-      security = Ops.get_map(__current, "security", {})
-      report = Ops.get_map(__current, "report", {})
+      general_options = Ops.get_map(current, "general", {})
+      security = Ops.get_map(current, "security", {})
+      report = Ops.get_map(current, "report", {})
 
       Builtins.foreach(general_options) do |k, v|
-        if k == "keyboard" && Ops.is_string?(v)
-          old = true
-        elsif k == "encryption_method"
-          old = true
-        elsif k == "timezone" && Ops.is_string?(v)
+        if k == "encryption_method" || (["keyboard", "timezone"].include?(k) && Ops.is_string?(v))
           old = true
         end
       end
@@ -512,9 +510,10 @@ module Yast
           "timezone",
           Ops.get_string(general_options, "timezone", "")
         )
-        if Ops.get_string(general_options, "hwclock", "") == "localtime"
+        case Ops.get_string(general_options, "hwclock", "")
+        when "localtime"
           Ops.set(clock, "hwclock", "localtime")
-        elsif Ops.get_string(general_options, "hwclock", "") == "GMT"
+        when "GMT"
           Ops.set(clock, "hwclock", "GMT")
         end
         Ops.set(new_general, "clock", clock)
@@ -541,7 +540,7 @@ module Yast
           )
         end
 
-        net = Ops.get_map(__current, "networking", {})
+        net = Ops.get_map(current, "networking", {})
         ifaces = Ops.get_list(net, "interfaces", [])
 
         newifaces = Builtins.maplist(ifaces) do |iface|
@@ -553,22 +552,20 @@ module Yast
 
         Ops.set(net, "interfaces", newifaces)
 
-        Ops.set(__current, "general", new_general)
-        Ops.set(__current, "report", report)
-        Ops.set(__current, "security", security)
-        Ops.set(__current, "networking", net)
+        Ops.set(current, "general", new_general)
+        Ops.set(current, "report", report)
+        Ops.set(current, "security", security)
+        Ops.set(current, "networking", net)
       end
 
-      deep_copy(__current)
+      deep_copy(current)
     end
 
     # Read XML into  YCP data
     # @param file [String] path to file
     # @return [Boolean]
     def ReadXML(file)
-      if !GPG.encrypted_symmetric?(file)
-        content = File.read(file)
-      else
+      if GPG.encrypted_symmetric?(file)
         AutoinstConfig.ProfileEncrypted = true
         label = _("Encrypted AutoYaST profile.")
 
@@ -591,6 +588,8 @@ module Yast
             return false
           end
         end
+      else
+        content = File.read(file)
       end
       @current = XML.XMLToYCPString(content)
 
@@ -610,7 +609,7 @@ module Yast
       # autoyast has read the autoyast configuration file but something went wrong
       message = _(
         "The XML parser reported an error while parsing the autoyast profile. " \
-          "The error message is:\n"
+        "The error message is:\n"
       )
       message += e.message
       log.info "xml parsing error #{e.inspect}"
@@ -780,7 +779,7 @@ module Yast
         end
         next unless export
 
-        resource_data = WFM.CallFunction(module_auto, ["Export", "target" => target.to_s])
+        resource_data = WFM.CallFunction(module_auto, ["Export", { "target" => target.to_s }])
 
         if tomerge.size < 2
           s = (resource_data || {}).size

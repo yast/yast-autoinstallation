@@ -104,7 +104,7 @@ module Yast
     publish function: :hasValidType, type: "boolean (map <string, any>, string, any)"
     publish function: :areEqual, type: "boolean (map <string, any>, map <string, any>)"
     publish function: :set, type: "map <string, any> " \
-      "(map <string, any>, map <string, any>, string, any)"
+                                  "(map <string, any>, map <string, any>, string, any)"
   end
 
   AutoinstCommon = AutoinstCommonClass.new

@@ -35,6 +35,7 @@ module Y2Autoinstall
       end
 
       def initialize(entries = [])
+        super()
         @entries = entries
       end
 

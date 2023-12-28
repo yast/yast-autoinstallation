@@ -35,7 +35,8 @@ module Yast
       Builtins.y2debug("func=%1", @func)
       Builtins.y2debug("param=%1", @param)
 
-      if @func == "Import"
+      case @func
+      when "Import"
         @ret = AutoinstClass.Import(
           Convert.convert(@param, from: "list", to: "list <map>")
         )
@@ -46,18 +47,18 @@ module Yast
           @ret = false
         end
       # create a  summary
-      elsif @func == "Summary"
+      when "Summary"
         @ret = AutoinstClass.Summary
-      elsif @func == "Reset"
+      when "Reset"
         AutoinstClass.Import([])
         @ret = []
-      elsif @func == "Change"
+      when "Change"
         Wizard.CreateDialog
         Wizard.SetDesktopIcon("general")
         @ret = classConfiguration
         Wizard.CloseDialog
         return deep_copy(@ret)
-      elsif @func == "Export"
+      when "Export"
         @ret = AutoinstClass.Export
       else
         Builtins.y2error("unknown function: %1", @func)

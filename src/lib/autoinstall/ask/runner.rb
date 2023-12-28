@@ -72,9 +72,10 @@ module Y2Autoinstall
           break if current_dialog.nil?
 
           result = run_dialog(current_dialog)
-          if result == :back
+          case result
+          when :back
             current_dialog = go_back
-          elsif result == :next
+          when :next
             results = current_dialog.questions.map { |q| process_question(q) }
             current_dialog = go_next unless results.any? { |r| r == :repeat }
           end
@@ -126,7 +127,7 @@ module Y2Autoinstall
         file_size = File.size(DIALOG_FILE)
         if !is_file || file_size > MAX_DIALOG_FILE_SIZE
           log.error "Ignoring #{DIALOG_FILE} because it is not a file (#{is_file}) or " \
-            "it is too big (#{file_size}."
+                    "it is too big (#{file_size}."
           return
         end
 

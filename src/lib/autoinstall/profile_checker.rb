@@ -103,8 +103,8 @@ module Y2Autoinstallation
         Yast2::Popup.show(
           _(
             "Error while parsing the control file.\n" \
-              "Check the log files for more details or fix the\n" \
-              "AutoYaST profile and try again.\n"
+            "Check the log files for more details or fix the\n" \
+            "AutoYaST profile and try again.\n"
           ), headline: :error
         )
       end

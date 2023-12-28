@@ -64,13 +64,15 @@ module Yast
         unless registered?
           if Profile.current["suse_register"] &&
               Profile.current["suse_register"]["do_registration"] == true
-            error << _("The registration has failed. " \
-              "Please check your registration settings in the AutoYaST configuration file.")
+            error << _(
+              "The registration has failed. " \
+              "Please check your registration settings in the AutoYaST configuration file."
+            )
             log.warn "Registration has been called but has failed."
           else
             error << _("You have not registered your system. " \
-              "Missing packages can be added by configuring the registration " \
-              "in the AutoYaST configuration file.")
+                       "Missing packages can be added by configuring the registration " \
+                       "in the AutoYaST configuration file.")
             log.warn "Registration is not configured at all."
           end
         end

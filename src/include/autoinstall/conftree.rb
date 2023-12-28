@@ -332,81 +332,81 @@ module Yast
     # Sets the menus in the wizard.
     # @return [void]
     def menus
-      _Menu = []
-      _Menu = Wizard.AddMenu(_Menu, _("&File"), "file-menu")
-      _Menu = Wizard.AddMenu(_Menu, _("&View"), "view-menu")
-      _Menu = Wizard.AddMenu(_Menu, _("&Classes"), "class-menu")
-      _Menu = Wizard.AddMenu(_Menu, _("&Tools"), "tools-menu")
+      menu = []
+      menu = Wizard.AddMenu(menu, _("&File"), "file-menu")
+      menu = Wizard.AddMenu(menu, _("&View"), "view-menu")
+      menu = Wizard.AddMenu(menu, _("&Classes"), "class-menu")
+      menu = Wizard.AddMenu(menu, _("&Tools"), "tools-menu")
 
-      _Menu = Wizard.AddMenuEntry(_Menu, "file-menu", _("&New"), "menu_new")
-      _Menu = Wizard.AddMenuEntry(_Menu, "file-menu", _("&Open"), "menu_open")
-      _Menu = Wizard.AddMenuEntry(_Menu, "file-menu", _("&Save"), "menu_save")
-      _Menu = Wizard.AddMenuEntry(
-        _Menu,
+      menu = Wizard.AddMenuEntry(menu, "file-menu", _("&New"), "menu_new")
+      menu = Wizard.AddMenuEntry(menu, "file-menu", _("&Open"), "menu_open")
+      menu = Wizard.AddMenuEntry(menu, "file-menu", _("&Save"), "menu_save")
+      menu = Wizard.AddMenuEntry(
+        menu,
         "file-menu",
         _("Save &As"),
         "menu_saveas"
       )
-      _Menu = Wizard.AddMenuEntry(
-        _Menu,
+      menu = Wizard.AddMenuEntry(
+        menu,
         "file-menu",
         _("Settin&gs"),
         "menu_settings"
       )
-      _Menu = Wizard.AddMenuEntry(
-        _Menu,
+      menu = Wizard.AddMenuEntry(
+        menu,
         "file-menu",
         AutoinstConfig.ProfileEncrypted ? _("Change to Decrypted") : _("Change to Encrypted"),
         "change_encryption"
       )
-      _Menu = Wizard.AddMenuEntry(
-        _Menu,
+      menu = Wizard.AddMenuEntry(
+        menu,
         "file-menu",
         _("Apply Profile to this System"),
         "write_to_system"
       )
-      _Menu = Wizard.AddMenuEntry(_Menu, "file-menu", _("E&xit"), "menu_exit")
-      _Menu = if @show_source == true
+      menu = Wizard.AddMenuEntry(menu, "file-menu", _("E&xit"), "menu_exit")
+      menu = if @show_source == true
         Wizard.AddMenuEntry(
-          _Menu,
+          menu,
           "view-menu",
           _("Configu&ration Tree"),
           "menu_tree"
         )
       else
         Wizard.AddMenuEntry(
-          _Menu,
+          menu,
           "view-menu",
           _("So&urce"),
           "menu_source"
         )
       end
-      _Menu = Wizard.AddMenuEntry(
-        _Menu,
+      menu = Wizard.AddMenuEntry(
+        menu,
         "class-menu",
         _("Cla&sses"),
         "menu_classes"
       )
-      _Menu = Wizard.AddMenuEntry(
-        _Menu,
+      menu = Wizard.AddMenuEntry(
+        menu,
         "class-menu",
         _("Me&rge Classes"),
         "menu_merge"
       )
 
-      _Menu = Wizard.AddMenuEntry(
-        _Menu,
+      menu = Wizard.AddMenuEntry(
+        menu,
         "tools-menu",
         _("Create Reference Pro&file"),
         "menu_clone"
       )
-      _Menu = Wizard.AddMenuEntry(
-        _Menu,
+      menu = Wizard.AddMenuEntry(
+        menu,
         "tools-menu",
         _("Check &Validity of Profile"),
         "menu_valid"
       )
-      Wizard.CreateMenu(_Menu)
+      Wizard.CreateMenu(menu)
       nil
     end
 
@@ -458,26 +458,27 @@ module Yast
     #
     # @return [Symbol]
     def MainDialog
-      _Icons = {}
-      Ops.set(_Icons, "Net_advanced", "network_advanced")
+      icons = {}
+      Ops.set(icons, "Net_advanced", "network_advanced")
       ret = nil
       currentGroup = "System"
       currentModule = "general"
 
       loop do
-        if AutoinstConfig.runModule != ""
-          ret = :configure
-          setModule(AutoinstConfig.runModule)
-        else
+        if AutoinstConfig.runModule == ""
           event = UI.WaitForEvent
           ret = Ops.get(event, "ID")
+        else
+          ret = :configure
+          setModule(AutoinstConfig.runModule)
         end
         AutoinstConfig.runModule = ""
-        if ret == :groups
+        case ret
+        when :groups
           updateModules
-        elsif ret == :modules
+        when :modules
           updateDetails
-        elsif ret == :configure
+        when :configure
           currentGroup = getGroup
           currentModule = getModule
           Builtins.y2debug("configure module: %1", currentModule)
@@ -490,7 +491,7 @@ module Yast
             menus
             CreateDialog(currentGroup, currentModule)
           end
-        elsif ret == :reset
+        when :reset
           Profile.prepare = true
           Builtins.y2debug("reset")
           currentGroup = getGroup
@@ -501,7 +502,7 @@ module Yast
             Builtins.y2debug("resetModule ret : %1", configret)
             CreateDialog(currentGroup, currentModule)
           end
-        elsif ret == :writeNow
+        when :writeNow
           modulename = getModule
           if modulename != ""
             registry = Y2Autoinstallation::Entries::Registry.instance
@@ -510,7 +511,7 @@ module Yast
               Builtins.sformat(
                 _(
                   "Do you really want to apply the settings of the module '%1' " \
-                    "to your current system?"
+                  "to your current system?"
                 ),
                 modulename
               )
@@ -524,7 +525,7 @@ module Yast
               Mode.SetMode(oldMode)
             end
           end
-        elsif ret == :read
+        when :read
           currentGroup = getGroup
           currentModule = getModule
           resetModule(currentModule)
@@ -536,13 +537,13 @@ module Yast
             # otherwise we have to rebuild the complete wizard
             CreateDialog(currentGroup, currentModule)
           end
-        elsif ret == "menu_tree" # source -> tree
+        when "menu_tree" # source -> tree
           Builtins.y2debug("change to tree")
           @show_source = false
           Wizard.DeleteMenus # FIXME: sucks sucks sucks sucks sucks
           menus
           CreateDialog(currentGroup, currentModule)
-        elsif ret == "menu_open" # OPEN
+        when "menu_open" # OPEN
           filename = UI.AskForExistingFile(
             AutoinstConfig.Repository,
             "*",
@@ -595,13 +596,13 @@ module Yast
                 true
               )
               Wizard.SetTitleIcon(
-                Ops.get_string(_Icons, group, Builtins.tolower(group))
+                Ops.get_string(icons, group, Builtins.tolower(group))
               )
               updateButtons(modulename)
             end
           end
           ret = :menu_open
-        elsif ret == "menu_source" # Show SOURCE
+        when "menu_source" # Show SOURCE
           # save previously selected group and module,
           # so we can restore them afterwards
           @show_source = true
@@ -611,17 +612,17 @@ module Yast
           currentModule = getModule
           ShowSource()
           ret = :menu_source
-        elsif ret == "menu_save" # SAVE
+        when "menu_save" # SAVE
           if AutoinstConfig.currentFile == ""
             filename = UI.AskForSaveFileName(
               AutoinstConfig.Repository,
               "*",
               _("Save as...")
             )
-            if !filename.nil?
-              AutoinstConfig.currentFile = Convert.to_string(filename)
-            else
+            if filename.nil?
               next
+            else
+              AutoinstConfig.currentFile = Convert.to_string(filename)
             end
           end
 
@@ -637,10 +638,10 @@ module Yast
             Popup.Warning(_("An error occurred while saving the file."))
           end
           ret = :menu_save
-        elsif ret == "menu_saveas" # SAVE AS
+        when "menu_saveas" # SAVE AS
           SaveAs()
           ret = :menu_saveas
-        elsif ret == "menu_new" # NEW
+        when "menu_new" # NEW
           Profile.Reset
           registry = Y2Autoinstallation::Entries::Registry.instance
           registry.descriptions.each { |d| resetModule(d.resource_name) }
@@ -657,12 +658,12 @@ module Yast
           )
           updateButtons(module_name)
           ret = :menu_new
-        elsif ret == "change_encryption"
+        when "change_encryption"
           AutoinstConfig.ProfileEncrypted = !AutoinstConfig.ProfileEncrypted
           AutoinstConfig.ProfilePassword = ""
           Wizard.DeleteMenus # FIXME: sucks sucks sucks sucks sucks
           menus
-        elsif ret == "write_to_system"
+        when "write_to_system"
           if Popup.YesNo(
             _(
               "Do you really want to apply the settings of the profile to your current system?"
@@ -695,7 +696,7 @@ module Yast
             Mode.SetMode(oldMode)
             Stage.Set(oldStage)
           end
-        elsif ret == "menu_exit" || :cancel == ret # EXIT
+        when "menu_exit", :cancel # EXIT
           ret = :menu_exit
           if Profile.changed
             current = if AutoinstConfig.currentFile == ""

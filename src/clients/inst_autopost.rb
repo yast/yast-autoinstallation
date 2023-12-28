@@ -125,12 +125,11 @@ module Yast
         Ops.subtract(Builtins.size(pathComponents), 1),
         ""
       )
-      ret = Builtins.substring(
+      Builtins.substring(
         filePath,
         0,
         Ops.subtract(Builtins.size(filePath), Builtins.size(last))
       )
-      ret
     end
   end
 end

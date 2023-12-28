@@ -35,22 +35,23 @@ module Yast
       Builtins.y2debug("func=%1", @func)
       Builtins.y2debug("param=%1", @param)
 
-      if @func == "Import"
+      case @func
+      when "Import"
         @ret = AutoinstGeneral.Import(@param)
       # create a  summary
-      elsif @func == "Summary"
+      when "Summary"
         @ret = AutoinstGeneral.Summary
-      elsif @func == "GetModified"
+      when "GetModified"
         @ret = AutoinstGeneral.GetModified
-      elsif @func == "SetModified"
+      when "SetModified"
         AutoinstGeneral.SetModified
-      elsif @func == "Reset"
+      when "Reset"
         AutoinstGeneral.Import({})
         @ret = {}
-      elsif @func == "Change"
+      when "Change"
         @ret = generalSequence
         return deep_copy(@ret)
-      elsif @func == "Export"
+      when "Export"
         @ret = AutoinstGeneral.Export
       else
         Builtins.y2error("unknown function: %1", @func)

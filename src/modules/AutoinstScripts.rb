@@ -106,7 +106,7 @@ module Yast
 
       groups = scripts.group_by { |s| s.class.type }
 
-      groups.each_with_object({}) { |(type, scs), result| result[type] = scs.map(&:to_hash) }
+      groups.transform_values { |scs| scs.map(&:to_hash) }
     end
 
     # Get all the configuration from a map.
@@ -226,15 +226,16 @@ module Yast
     # @return [String] type as translated string
     def typeString(type)
       # TODO: move to script class
-      if type == "pre-scripts"
+      case type
+      when "pre-scripts"
         return _("Pre")
-      elsif type == "post-scripts"
+      when "post-scripts"
         return _("Post")
-      elsif type == "init-scripts"
+      when "init-scripts"
         return _("Init")
-      elsif type == "chroot-scripts"
+      when "chroot-scripts"
         return _("Chroot")
-      elsif type == "postpartitioning-scripts"
+      when "postpartitioning-scripts"
         return _("Postpartitioning")
       end
 
@@ -272,8 +273,8 @@ module Yast
     publish function: :Summary, type: "string ()"
     publish function: :deleteScript, type: "void (string)"
     publish function: :AddEditScript,
-            type:     "void (string, string, string, string, boolean, boolean, " \
-      "boolean, boolean, string, string, string)"
+      type:     "void (string, string, string, string, boolean, boolean, " \
+                "boolean, boolean, string, string, string)"
     publish function: :typeString, type: "string (string)"
     publish function: :Write, type: "boolean (string, boolean)"
 

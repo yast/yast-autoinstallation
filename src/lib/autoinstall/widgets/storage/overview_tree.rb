@@ -33,6 +33,7 @@ module Y2Autoinstallation
         #
         # @param items [Array<CWM::PagerTreeItem>] List of tree items to be included
         def initialize(items)
+          super()
           textdomain "autoinst"
           @items = items
         end

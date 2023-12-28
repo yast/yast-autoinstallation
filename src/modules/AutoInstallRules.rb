@@ -170,7 +170,7 @@ module Yast
       ip_route = SCR.Execute(path(".target.bash_output"), "/usr/sbin/ip route")
 
       # Regexp to fetch match the network address.
-      regexp = /([\h:\.]+)\/\d+ .+src #{hostaddress}/
+      regexp = /([\h:.]+)\/\d+ .+src #{hostaddress}/
       ret = ip_route["stdout"][regexp, 1]
       log.warn "Cannot find network address through 'ip': #{ip_route}" unless ret
 
@@ -225,9 +225,10 @@ module Yast
       boardinfo = {}
 
       Builtins.foreach(smbios) do |inf|
-        if Ops.get_string(inf, "type", "") == "sysinfo"
+        case Ops.get_string(inf, "type", "")
+        when "sysinfo"
           sysinfo = deep_copy(inf)
-        elsif Ops.get_string(inf, "type", "") == "boardinfo"
+        when "boardinfo"
           boardinfo = deep_copy(inf)
         end
       end
@@ -325,7 +326,7 @@ module Yast
       Ops.set(@ATTR, "installed_product_version", @installed_product_version)
 
       log.info "Installing #{@installed_product}, " \
-        "version: #{@installed_product_version}"
+               "version: #{@installed_product_version}"
       log.info "ATTR=#{@ATTR}"
 
       nil
@@ -340,9 +341,10 @@ module Yast
     # @return [void]
     def shellseg(match, var, val, op, matchtype)
       val = deep_copy(val)
-      if op == "and"
+      case op
+      when "and"
         op = " && "
-      elsif op == "or"
+      when "or"
         op = " || "
       end
 
@@ -544,18 +546,19 @@ module Yast
               disk = Builtins.splitstring(match, " ")
               i = 0
               t = ""
-              t = if @shell != ""
+              t = if @shell == ""
+                Ops.add(@shell, Builtins.sformat(" ( "))
+              else
                 Ops.add(
                   @shell,
                   Builtins.sformat(" %1 ( ", (op == "and") ? "&&" : "||")
                 )
-              else
-                Ops.add(@shell, Builtins.sformat(" ( "))
               end
               Builtins.foreach(@disksize) do |dev|
                 var1 = Builtins.sformat("disksize_size%1", i)
                 var2 = Builtins.sformat("disksize_device%1", i)
-                if matchtype == "exact"
+                case matchtype
+                when "exact"
                   t = Ops.add(
                     t,
                     Builtins.sformat(
@@ -566,7 +569,7 @@ module Yast
                       Ops.get(disk, 0, "")
                     )
                   )
-                elsif matchtype == "greater"
+                when "greater"
                   t = Ops.add(
                     t,
                     Builtins.sformat(
@@ -577,7 +580,7 @@ module Yast
                       Ops.get(disk, 0, "")
                     )
                   )
-                elsif matchtype == "lower"
+                when "lower"
                   t = Ops.add(
                     t,
                     Builtins.sformat(
@@ -864,9 +867,9 @@ module Yast
       @tomerge = deep_copy(valid)
       if Builtins.size(@tomerge) == 0
         Builtins.y2milestone("No files from rules found")
-        return false
+        false
       else
-        return true
+        true
       end
     end
 
@@ -926,7 +929,7 @@ module Yast
           log.error("Error reading XML file: #{e.inspect}")
           message = _(
             "The XML parser reported an error while parsing the autoyast profile. " \
-              "The error message is:\n"
+            "The error message is:\n"
           )
           message += e.message
           Yast2::Popup.show(message, headline: :error)
@@ -965,8 +968,8 @@ module Yast
         Popup.Error(
           _(
             "Error while parsing the control file.\n" \
-              "Check the log files for more details or fix the\n" \
-              "control file and try again.\n"
+            "Check the log files for more details or fix the\n" \
+            "control file and try again.\n"
           )
         )
         return false
@@ -1026,10 +1029,10 @@ module Yast
           Report.Error(
             _(
               "\n" \
-                "User-defined classes could not be retrieved.  Make sure all classes \n" \
-                "are defined correctly and available for this system via the network\n" \
-                "or locally. The system cannot be installed with the original control \n" \
-                "file without using classes.\n"
+              "User-defined classes could not be retrieved.  Make sure all classes \n" \
+              "are defined correctly and available for this system via the network\n" \
+              "or locally. The system cannot be installed with the original control \n" \
+              "file without using classes.\n"
             )
           )
 

@@ -60,18 +60,18 @@ module Yast
       # help 1/6
       help = _(
         "\n" \
-          "<h3>Preinstallation Scripts</h3>\n" \
-          "<P>Add commands to run on the system  before the installation begins. </P>\n"
+        "<h3>Preinstallation Scripts</h3>\n" \
+        "<P>Add commands to run on the system  before the installation begins. </P>\n"
       )
       # help 2/6
       help = Ops.add(
         help,
         _(
           "\n" \
-            "<h3>Postinstallation Scripts</h3>\n" \
-            "<P>You can also add commands to execute on the system after the installation\n" \
-            "is completed. These scripts are run outside the chroot environment.\n" \
-            "</P>"
+          "<h3>Postinstallation Scripts</h3>\n" \
+          "<P>You can also add commands to execute on the system after the installation\n" \
+          "is completed. These scripts are run outside the chroot environment.\n" \
+          "</P>"
         )
       )
       # help 3/6
@@ -79,13 +79,13 @@ module Yast
         help,
         _(
           "\n" \
-            "<H3>Chroot Scripts</H3>\n" \
-            "<P>For your postinstallation script to run inside the chroot\n" \
-            "environment, choose the <i>chroot scripts</i> options. Those scripts are\n" \
-            "run before the system reboots for the first time. By default, the chroot \n" \
-            "scripts are run in the installation system. To access files in the installed \n" \
-            "system, always use the mount point \"/mnt\" in your scripts.\n" \
-            "</P>\n"
+          "<H3>Chroot Scripts</H3>\n" \
+          "<P>For your postinstallation script to run inside the chroot\n" \
+          "environment, choose the <i>chroot scripts</i> options. Those scripts are\n" \
+          "run before the system reboots for the first time. By default, the chroot \n" \
+          "scripts are run in the installation system. To access files in the installed \n" \
+          "system, always use the mount point \"/mnt\" in your scripts.\n" \
+          "</P>\n"
         )
       )
       # help 4/6
@@ -93,10 +93,10 @@ module Yast
         help,
         _(
           "\n" \
-            "<p>It is possible to run chroot scripts in a later stage after\n" \
-            "the boot loader has been configured using the special boolean tag \"chrooted\".\n" \
-            "This runs the scripts in the installed system. \n" \
-            "</p>\n"
+          "<p>It is possible to run chroot scripts in a later stage after\n" \
+          "the boot loader has been configured using the special boolean tag \"chrooted\".\n" \
+          "This runs the scripts in the installed system. \n" \
+          "</p>\n"
         )
       )
       # help 5/6
@@ -104,13 +104,13 @@ module Yast
         help,
         _(
           "\n" \
-            "<H3>Init Scripts</H3>\n" \
-            "<P>These scripts are executed during the initial boot process and after\n" \
-            "YaST has finished configuring the system. The final scripts are executed \n" \
-            "using a special <b>rc</b> script that is executed only once. \n" \
-            "The final scripts are executed toward the end of the boot\n" \
-            "process and after network has been initialized.\n" \
-            "</P>\n"
+          "<H3>Init Scripts</H3>\n" \
+          "<P>These scripts are executed during the initial boot process and after\n" \
+          "YaST has finished configuring the system. The final scripts are executed \n" \
+          "using a special <b>rc</b> script that is executed only once. \n" \
+          "The final scripts are executed toward the end of the boot\n" \
+          "process and after network has been initialized.\n" \
+          "</P>\n"
         )
       )
 
@@ -119,22 +119,22 @@ module Yast
         help,
         _(
           "\n" \
-            "<H3>Interpreter:</H3>\n" \
-            "<P>Preinstallation scripts can only be shell scripts. Do not use <i>Perl</i> or \n" \
-            "<i>Python</i> for preinstallation scripts.\n" \
-            "</P>\n"
+          "<H3>Interpreter:</H3>\n" \
+          "<P>Preinstallation scripts can only be shell scripts. Do not use <i>Perl</i> or \n" \
+          "<i>Python</i> for preinstallation scripts.\n" \
+          "</P>\n"
         )
       )
       help = Ops.add(
         help,
         _(
           "\n" \
-            "<H3>Feedback and Debug:</H3>\n" \
-            "<P>All scripts except the init scripts can show STDOUT+STDERR " \
-            "in a pop-up box as feedback.\n" \
-            "If you turn on debugging, you get more output in the " \
-            "feedback dialog that might help\n" \
-            "you to debug your script.</P>\n"
+          "<H3>Feedback and Debug:</H3>\n" \
+          "<P>All scripts except the init scripts can show STDOUT+STDERR " \
+          "in a pop-up box as feedback.\n" \
+          "If you turn on debugging, you get more output in the " \
+          "feedback dialog that might help\n" \
+          "you to debug your script.</P>\n"
         )
       )
 
@@ -296,11 +296,10 @@ module Yast
       Wizard.HideAbortButton
       Wizard.SetContents(title, contents, help, true, true)
       type = Convert.to_string(UI.QueryWidget(Id(:type), :Value))
-      if type == "pre-scripts"
+      case type
+      when "pre-scripts", "post-scripts"
         UI.ChangeWidget(Id(:chrooted), :Enabled, false)
-      elsif type == "post-scripts"
-        UI.ChangeWidget(Id(:chrooted), :Enabled, false)
-      elsif type == "init-scripts"
+      when "init-scripts"
         UI.ChangeWidget(Id(:chrooted), :Enabled, false)
         UI.ChangeWidget(Id(:feedback), :Enabled, false)
         UI.ChangeWidget(Id(:notification), :Enabled, false)
@@ -332,9 +331,10 @@ module Yast
       UI.ChangeWidget(Id(:filename), :Enabled, false) if mode == :edit
 
       ret = :none
-      begin
+      loop do
         ret = Convert.to_symbol(UI.UserInput)
-        if ret == :save
+        case ret
+        when :save
           scriptName = Convert.to_string(UI.QueryWidget(Id(:filename), :Value))
 
           type2 = Convert.to_string(UI.QueryWidget(Id(:type), :Value))
@@ -353,7 +353,7 @@ module Yast
             UI.QueryWidget(Id(:notification), :Value)
           )
 
-          if source == "" && location == "" || scriptName == ""
+          if (source == "" && location == "") || scriptName == ""
             Popup.Message(
               _(
                 "Provide at least the script\nname and the location or content of the script.\n"
@@ -375,7 +375,7 @@ module Yast
               notification
             )
           end
-        elsif ret == :loadsource
+        when :loadsource
           filename = UI.AskForExistingFile(
             AutoinstConfig.Repository,
             "*",
@@ -388,30 +388,26 @@ module Yast
             UI.ChangeWidget(Id(:source), :Value, source)
             next
           end
-        elsif ret == :type
+        when :type
           type2 = Convert.to_string(UI.QueryWidget(Id(:type), :Value))
-          if type2 == "init-scripts"
+          case type2
+          when "init-scripts"
             UI.ChangeWidget(Id(:feedback), :Enabled, false)
             UI.ChangeWidget(Id(:chrooted), :Enabled, false)
             UI.ChangeWidget(Id(:feedback), :Value, false)
             UI.ChangeWidget(Id(:chrooted), :Value, false)
             UI.ChangeWidget(Id(:notification), :Enabled, false)
-          elsif type2 == "chroot-scripts"
+          when "chroot-scripts"
             UI.ChangeWidget(Id(:chrooted), :Enabled, true)
             UI.ChangeWidget(Id(:feedback), :Enabled, true)
             UI.ChangeWidget(Id(:notification), :Enabled, true)
-          elsif type2 == "post-scripts"
-            UI.ChangeWidget(Id(:chrooted), :Enabled, false)
-            UI.ChangeWidget(Id(:chrooted), :Value, false)
-            UI.ChangeWidget(Id(:feedback), :Enabled, true)
-            UI.ChangeWidget(Id(:notification), :Enabled, true)
-          elsif type2 == "pre-scripts"
+          when "post-scripts", "pre-scripts"
             UI.ChangeWidget(Id(:chrooted), :Enabled, false)
             UI.ChangeWidget(Id(:chrooted), :Value, false)
             UI.ChangeWidget(Id(:feedback), :Enabled, true)
             UI.ChangeWidget(Id(:notification), :Enabled, true)
           end
-        elsif ret == :feedback
+        when :feedback
           UI.ChangeWidget(
             Id(:feedback_type),
             :Enabled,
@@ -439,7 +435,8 @@ module Yast
         else
           UI.ChangeWidget(Id(:location), :Enabled, true)
         end
-      end until ret == :save || ret == :cancel || ret == :back
+        break if ret == :save || ret == :cancel || ret == :back
+      end
       ret
     end
 
@@ -448,8 +445,8 @@ module Yast
     def ScriptsDialog
       help = _(
         "<p>\n" \
-          "By adding scripts to the autoinstallation process, customize the installation for\n" \
-          "your needs and take control in different stages of the installation.</p>\n"
+        "By adding scripts to the autoinstallation process, customize the installation for\n" \
+        "your needs and take control in different stages of the installation.</p>\n"
       )
 
       title = _("User Script Management")
@@ -458,34 +455,36 @@ module Yast
       Wizard.HideAbortButton
       Wizard.SetNextButton(:next, Label.FinishButton)
       ret = nil
-      begin
+      loop do
         ret = UI.UserInput
 
-        if ret == :new
+        case ret
+        when :new
           Wizard.CreateDialog
           ScriptDialog(Convert.to_symbol(ret), "")
           Wizard.CloseDialog
-        elsif ret == :edit
+        when :edit
           name = Convert.to_string(UI.QueryWidget(Id(:table), :CurrentItem))
-          if !name.nil?
+          if name.nil?
+            Popup.Message(_("Select a script first."))
+            next
+          else
             Wizard.CreateDialog
             ScriptDialog(Convert.to_symbol(ret), name)
             Wizard.CloseDialog
-          else
-            Popup.Message(_("Select a script first."))
-            next
           end
-        elsif ret == :delete
+        when :delete
           name = Convert.to_string(UI.QueryWidget(Id(:table), :CurrentItem))
-          if !name.nil?
-            AutoinstScripts.deleteScript(name)
-          else
+          if name.nil?
             Popup.Message(_("Select a script first."))
             next
+          else
+            AutoinstScripts.deleteScript(name)
           end
         end
         Wizard.SetContents(title, script_dialog_contents, help, true, true)
-      end until ret == :next || ret == :back || ret == :cancel
+        break if ret == :next || ret == :back || ret == :cancel
+      end
 
       Convert.to_symbol(ret)
     end

@@ -54,6 +54,7 @@ module Y2Autoinstall
           # @param widgets [Array<AbstractWidget>] Widgets to wrap
           # @param timeout [Integer,nil] Time limit. No time out if is set to 0 or nil.
           def initialize(widgets, timeout: 0)
+            super()
             textdomain "autoinst"
             @timeout = timeout || 0
             @remaining = @timeout
@@ -130,6 +131,7 @@ module Y2Autoinstall
         # @param dialog [Y2Autoinstall::Ask::Dialog] Dialog specification
         # @param disable_back_button [Boolean] Whether the :back button should be disabled
         def initialize(dialog, disable_back_button: false)
+          super()
           textdomain "autoinst"
           @dialog = dialog
           @disable_buttons = disable_back_button ? ["back_button"] : []

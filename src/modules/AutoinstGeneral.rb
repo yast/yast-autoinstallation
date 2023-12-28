@@ -152,7 +152,7 @@ module Yast
           _("Not accepting unknown GPG Keys")
         end
       )
-      summary = Summary.AddLine(
+      Summary.AddLine(
         summary,
         if signature_handling["import_gpg_key"]
           _("Importing new GPG keys")
@@ -160,8 +160,6 @@ module Yast
           _("Not importing new GPG Keys")
         end
       )
-
-      summary
     end
 
     # Import Configuration

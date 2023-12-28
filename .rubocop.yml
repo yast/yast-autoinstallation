@@ -1,6 +1,6 @@
 # use the shared Yast defaults
 inherit_from:
-  - /usr/share/YaST2/data/devtools/data/rubocop-0.71.0_yast_style.yml
+  - /usr/share/YaST2/data/devtools/data/rubocop-1.24.1_yast_style.yml
 
 # this needs more testing if we can have frozen string literals
 Style/FrozenStringLiteralComment:
@@ -10,46 +10,9 @@ Naming/FileName:
   Include:
     - "library/*/src/lib/**/*.rb"
 
-# TODO: enable it, just ENOTIME
-# Offense count: 21
-Lint/Loop:
-  Exclude:
-    - 'src/clients/files_auto.rb'
-    - 'src/clients/inst_autosetup.rb'
-    - 'src/clients/inst_autosetup_upgrade.rb'
-    - 'src/clients/report_auto.rb'
-    - 'src/clients/software_auto.rb'
-    - 'src/include/autoinstall/classes.rb'
-    - 'src/include/autoinstall/dialogs.rb'
-    - 'src/include/autoinstall/general_dialogs.rb'
-    - 'src/include/autoinstall/script_dialogs.rb'
-    - 'src/modules/Profile.rb'
-    - 'src/modules/ProfileLocation.rb'
-
-# TODO: enable it, just ENOTIME
-# Offense count: 7
-Lint/ShadowingOuterLocalVariable:
-  Exclude:
-    - 'src/clients/inst_autoinit.rb'
-    - 'src/include/autoinstall/conftree.rb'
-    - 'src/include/autoinstall/general_dialogs.rb'
-
-# TODO: enable it, just ENOTIME
-# Offense count: 27
-# Configuration parameters: AllowKeywordBlockArguments.
-Lint/UnderscorePrefixedVariableName:
-  Exclude:
-    - 'src/clients/inst_autoconfigure.rb'
-    - 'src/clients/inst_autopost.rb'
-    - 'src/include/autoinstall/classes.rb'
-    - 'src/include/autoinstall/conftree.rb'
-    - 'src/modules/AutoInstallRules.rb'
-    - 'src/modules/Profile.rb'
-    - 'src/modules/Y2ModuleConfig.rb'
-
-# Offense count: 95
+# GeneralDialogs.AskDialog rules them all
 Metrics/AbcSize:
-  Max: 448
+  Max: 455
 
 # Offense count: 105
 # Configuration parameters: CountComments, ExcludedMethods.
@@ -70,9 +33,9 @@ Metrics/BlockNesting:
 Metrics/ClassLength:
   Max: 1000
 
-# Offense count: 82
+# GeneralDialogs.AskDialog rules them all
 Metrics/CyclomaticComplexity:
-  Max: 78
+  Max: 86
 
 # Offense count: 112
 # Configuration parameters: CountComments, ExcludedMethods.
@@ -82,7 +45,7 @@ Metrics/MethodLength:
 # Offense count: 12
 # Configuration parameters: CountComments.
 Metrics/ModuleLength:
-  Max: 1062
+  Max: 1063
 
 # Offense count: 2
 # Configuration parameters: CountKeywordArgs.
@@ -110,7 +73,7 @@ Naming/MethodName:
 # TODO: enable it, just ENOTIME
 # Offense count: 16
 # Configuration parameters: MinNameLength, AllowNamesEndingInNumbers, AllowedNames, ForbiddenNames.
-Naming/UncommunicativeBlockParamName:
+Naming/BlockParameterName:
   Exclude:
     - 'src/clients/clone_system.rb'
     - 'src/include/autoinstall/PartitionDialog.rb'
@@ -124,7 +87,7 @@ Naming/UncommunicativeBlockParamName:
 # Offense count: 91
 # Configuration parameters: MinNameLength, AllowNamesEndingInNumbers, AllowedNames, ForbiddenNames.
 # AllowedNames: io, id, to, by, on, in, at, ip, db
-Naming/UncommunicativeMethodParamName:
+Naming/MethodParameterName:
   Enabled: false
 
 # Offense count: 573

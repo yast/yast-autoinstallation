@@ -48,6 +48,7 @@ module Y2Autoinstallation
       # @param timeout     [Integer] Countdown (in seconds); 0 means no timeout.
       # @param buttons_set [Symbol]  Buttons set (:abort, :question)
       def initialize(headline, content, timeout: 10, buttons_set: :question)
+        super()
         @headline = headline
         @content = content
         @remaining_time = timeout

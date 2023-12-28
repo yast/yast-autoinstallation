@@ -16,9 +16,9 @@ module Yast
 
     # XML_cleanup()
     # @return [Boolean]
-    def XML_cleanup(_in, out)
+    def XML_cleanup(input, out)
       # Note, inputs should be already valid, so exceptions is not handled here
-      ycpin = XML.XMLToYCPFile(_in)
+      ycpin = XML.XMLToYCPFile(input)
       Builtins.y2debug("Writing clean XML file to  %1, YCP is (%2)", out, ycpin)
       XML.YCPToXMLFile(:profile, ycpin, out)
     end
@@ -26,20 +26,20 @@ module Yast
     # class_dialog_contents()
     # @return [Yast::Term]
     def class_dialog_contents
-      classes = Builtins.maplist(AutoinstClass.Classes) do |_class|
+      classes = Builtins.maplist(AutoinstClass.Classes) do |klass|
         pathtoClass = Builtins.sformat(
           "%1/%2",
           AutoinstConfig.classDir,
-          Ops.get_string(_class, "name", "Unknown")
+          Ops.get_string(klass, "name", "Unknown")
         )
         files_in_class = Convert.to_list(
           SCR.Read(path(".target.dir"), pathtoClass)
         )
-        Builtins.y2milestone("class: %1", _class)
+        Builtins.y2milestone("class: %1", klass)
         i = Item(
-          Id(Ops.get_string(_class, "name", "Unknown")),
-          Ops.get_string(_class, "name", "No name"),
-          Ops.get_integer(_class, "order", 0),
+          Id(Ops.get_string(klass, "name", "Unknown")),
+          Ops.get_string(klass, "name", "No name"),
+          Ops.get_integer(klass, "order", 0),
           Builtins.size(files_in_class)
         )
         deep_copy(i)
@@ -76,14 +76,14 @@ module Yast
         Ops.get_string(c, "name", "")
       end
 
-      _class = (AutoinstClass.Classes || []).find { |c| c["name"] == name }
-      _class ||= {}
+      klass = (AutoinstClass.Classes || []).find { |c| c["name"] == name }
+      klass ||= {}
 
       tmp = Builtins.sformat(
         "%1",
         Ops.add(Builtins.size(AutoinstClass.Classes), 1)
       )
-      order = Builtins.tointeger(Ops.get_string(_class, "order", tmp))
+      order = Builtins.tointeger(Ops.get_string(klass, "order", tmp))
 
       UI.OpenDialog(
         Opt(:decorated),
@@ -96,7 +96,7 @@ module Yast
               TextEntry(
                 Id(:name),
                 _("Na&me"),
-                Ops.get_string(_class, "name", "")
+                Ops.get_string(klass, "name", "")
               ),
               IntField(
                 Id(:order),
@@ -110,7 +110,7 @@ module Yast
               Id(:description),
               Opt(:hstretch),
               _("Descri&ption:"),
-              Ops.get_string(_class, "description", "")
+              Ops.get_string(klass, "description", "")
             ),
             VSpacing(1),
             ButtonBox(
@@ -123,7 +123,7 @@ module Yast
       )
       UI.ChangeWidget(Id(:name), :Enabled, false) if mode == :edit
       ret = :none
-      begin
+      loop do
         ret = Convert.to_symbol(UI.UserInput)
         if ret == :save
           if Convert.to_string(UI.QueryWidget(Id(:name), :Value)) == ""
@@ -172,7 +172,8 @@ module Yast
             end
           end
         end
-      end until ret == :save || ret == :cancel
+        break if ret == :save || ret == :cancel
+      end
 
       UI.CloseDialog
 
@@ -193,7 +194,7 @@ module Yast
         help,
         _(
           "<p>For example, you can define a class of configurations for\n" \
-            "a specific  department, group, or site in your company environment.</p>\n"
+          "a specific  department, group, or site in your company environment.</p>\n"
         )
       )
 
@@ -201,8 +202,8 @@ module Yast
         help,
         _(
           "<p>The order (priority) defines the hierarchy of a class\n" \
-            "and when it is merged when creating a control file.\n" \
-            "</p>\n"
+          "and when it is merged when creating a control file.\n" \
+          "</p>\n"
         )
       )
 
@@ -213,18 +214,18 @@ module Yast
 
       Wizard.HideAbortButton
       ret = nil
-      begin
+      loop do
         if Builtins.size(AutoinstClass.Classes) == 0
           UI.ChangeWidget(Id(:edit), :Enabled, false)
           UI.ChangeWidget(Id(:delete), :Enabled, false)
         end
 
-        _class = Convert.to_string(UI.QueryWidget(Id(:table), :CurrentItem))
+        klass = Convert.to_string(UI.QueryWidget(Id(:table), :CurrentItem))
         cl = Builtins.filter(AutoinstClass.Classes) do |c|
-          Ops.get_string(c, "name", "") == _class
+          Ops.get_string(c, "name", "") == klass
         end
         selected_class = Ops.get_map(cl, 0, {})
-        if !_class.nil?
+        if !klass.nil?
           UI.ChangeWidget(
             Id(:description),
             :Value,
@@ -234,33 +235,35 @@ module Yast
 
         ret = Convert.to_symbol(UI.UserInput)
 
-        if ret == :new
+        case ret
+        when :new
           AddEditClasses(ret, "")
 
           Wizard.SetContents(title, class_dialog_contents, help, true, true)
-        elsif ret == :edit
-          if _class.nil?
+        when :edit
+          if klass.nil?
             Popup.Message(_("Select at least one class\nto edit.\n"))
             next
           end
-          AddEditClasses(ret, _class)
+          AddEditClasses(ret, klass)
           Wizard.SetContents(title, class_dialog_contents, help, true, true)
-        elsif ret == :delete
-          if _class.nil?
+        when :delete
+          if klass.nil?
             Popup.Message(_("Select at least one class\nto delete.\n"))
             next
           end
           AutoinstClass.Classes = Builtins.filter(AutoinstClass.Classes) do |c|
-            Ops.get_string(c, "name", "") != _class
+            Ops.get_string(c, "name", "") != klass
           end
           AutoinstClass.deletedClasses = Builtins.add(
             AutoinstClass.deletedClasses,
-            _class
+            klass
           )
 
           Wizard.SetContents(title, class_dialog_contents, help, true, true)
         end
-      end until ret == :back || ret == :next
+        break if ret == :back || ret == :next
+      end
 
       AutoinstClass.Save if ret == :next
       Wizard.CloseDialog
@@ -272,8 +275,8 @@ module Yast
     # @return [Fixnum] class order
     def GetClassOrder(name)
       order = 0
-      Builtins.foreach(AutoinstClass.Classes) do |_class|
-        order = Ops.get_integer(_class, "order", 0) if Ops.get_string(_class, "name", "") == name
+      Builtins.foreach(AutoinstClass.Classes) do |klass|
+        order = Ops.get_integer(klass, "order", 0) if Ops.get_string(klass, "name", "") == name
       end
       order
     end
@@ -396,11 +399,11 @@ module Yast
       title = _("Merge Classes")
       profiles = {}
 
-      _Combo = VBox()
+      combo = VBox()
       AutoinstClass.Files
       Builtins.foreach(AutoinstClass.confs) do |prof|
-        _class = Ops.get_string(prof, "class", "Default")
-        ui_list = Ops.get(profiles, _class, [])
+        klass = Ops.get_string(prof, "class", "Default")
+        ui_list = Ops.get(profiles, klass, [])
         ui_list = Builtins.add(ui_list, Item(Id("none"), _("None"))) if Builtins.size(ui_list) == 0
         ui_list = Builtins.add(
           ui_list,
@@ -409,13 +412,13 @@ module Yast
             Ops.get_string(prof, "name", "Unknown")
           )
         )
-        Ops.set(profiles, _class, ui_list)
+        Ops.set(profiles, klass, ui_list)
       end
 
       if Ops.greater_than(Builtins.size(profiles), 0)
         Builtins.foreach(profiles) do |k, v|
-          _Combo = Builtins.add(
-            _Combo,
+          combo = Builtins.add(
+            combo,
             HBox(
               HWeight(
                 50,
@@ -426,13 +429,13 @@ module Yast
           )
         end
       else
-        _Combo = Left(Label(Id(:emptyclasses), _("No control files defined")))
+        combo = Left(Label(Id(:emptyclasses), _("No control files defined")))
       end
 
       contents = Top(
         Left(
           VBox(
-            _Combo,
+            combo,
             VSpacing(),
             RadioButtonGroup(
               Id(:rbg),
@@ -459,10 +462,10 @@ module Yast
 
       help = _(
         "<p>If you have defined and created <b>\n" \
-          "classes</b>, you will be able to merge them using this interface to create\n" \
-          "a new <i>Profile</i>, which will contain information from every class\n" \
-          "depending on the priority (order) set when\n" \
-          "creating the classes.</P>\n"
+        "classes</b>, you will be able to merge them using this interface to create\n" \
+        "a new <i>Profile</i>, which will contain information from every class\n" \
+        "depending on the priority (order) set when\n" \
+        "creating the classes.</P>\n"
       )
 
       help = Ops.add(
@@ -478,7 +481,7 @@ module Yast
       Wizard.DisableNextButton
 
       ret = nil
-      begin
+      loop do
         ret = UI.UserInput
         base = Convert.to_symbol(UI.QueryWidget(Id(:rbg), :CurrentButton))
         n = 0
@@ -537,7 +540,8 @@ module Yast
 
           Wizard.EnableNextButton
         end
-      end until ret == :next || ret == :back
+        break if ret == :next || ret == :back
+      end
 
       Wizard.CloseDialog
       Convert.to_symbol(ret)
@@ -547,7 +551,7 @@ module Yast
       title = _("Class Configuration")
       help = _(
         "<p>Choose one or more of the listed classes to which the current control\n" \
-          "file should belong.</p>\n"
+        "file should belong.</p>\n"
       )
 
       AutoinstClass.Files
@@ -555,8 +559,8 @@ module Yast
       profiles = {}
 
       Builtins.foreach(AutoinstClass.confs) do |prof|
-        _class = Ops.get_string(prof, "class", "default")
-        ui_list = Ops.get(profiles, _class, [])
+        klass = Ops.get_string(prof, "class", "default")
+        ui_list = Ops.get(profiles, klass, [])
         ui_list = Builtins.add(ui_list, Item(Id("none"), _("None"))) if Builtins.size(ui_list) == 0
         ui_list = Builtins.add(
           ui_list,
@@ -565,23 +569,23 @@ module Yast
             Ops.get_string(prof, "name", "Unknown")
           )
         )
-        Ops.set(profiles, _class, ui_list)
+        Ops.set(profiles, klass, ui_list)
       end
 
-      _Combo = VBox()
+      combo = VBox()
 
       if Ops.greater_than(Builtins.size(profiles), 0)
         Builtins.foreach(profiles) do |k, v|
-          _Combo = Builtins.add(
-            _Combo,
+          combo = Builtins.add(
+            combo,
             Left(ComboBox(Id(k), Opt(:hstretch, :autoShortcut), k, v))
           )
         end
       else
-        _Combo = Left(Label(Id(:emptyclasses), _("No profiles in this class")))
+        combo = Left(Label(Id(:emptyclasses), _("No profiles in this class")))
       end
 
-      contents = Top(Left(VBox(_Combo)))
+      contents = Top(Left(VBox(combo)))
 
       Wizard.SetContents(title, contents, help, true, true)
 
@@ -590,7 +594,7 @@ module Yast
 
       ret = nil
       _next = nil
-      begin
+      loop do
         ret = UI.UserInput
         n = 0
         if ret == :next
@@ -623,7 +627,8 @@ module Yast
           Builtins.y2debug("Selected Profiles: %1", sorted_profiles)
           AutoinstClass.profile_conf = deep_copy(sorted_profiles)
         end
-      end until ret == :next || ret == :back
+        break if ret == :next || ret == :back
+      end
       Convert.to_symbol(ret)
     end
   end

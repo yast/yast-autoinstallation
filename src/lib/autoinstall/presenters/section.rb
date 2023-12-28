@@ -37,6 +37,7 @@ module Y2Autoinstallation
       # @param section [Y2Storage::AutoinstProfile::SectionWithAttributes] the
       #   concrete type of section depends on the presenter subclass
       def initialize(section)
+        super
         textdomain "autoinst"
         __setobj__(section)
       end

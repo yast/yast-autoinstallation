@@ -29,6 +29,7 @@ module Y2Autoinstallation
         #
         # @param controller [Y2Autoinstallation::StorageController] UI controller
         def initialize(controller)
+          super()
           textdomain "autoinst"
           @controller = controller
         end

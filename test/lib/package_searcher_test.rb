@@ -34,13 +34,13 @@ describe Y2Autoinstallation::PackagerSearcher do
     let(:packages) do
       [
         Y2Packager::Resolvable.new("kind" => :package,
-           "name" => "foo", "source" => 1,
-           "version" => "1.0", "arch" => "x86_64", "status" => :selected,
-           "deps" => [{ "provides" => "foo" }]),
+          "name" => "foo", "source" => 1,
+          "version" => "1.0", "arch" => "x86_64", "status" => :selected,
+          "deps" => [{ "provides" => "foo" }]),
         Y2Packager::Resolvable.new("kind" => :package,
-           "name" => "yast2-users", "source" => 1,
-           "version" => "1.0", "arch" => "x86_64", "status" => :selected,
-           "deps" => [{ "supplements" => "autoyast(groups:users)" }])
+          "name" => "yast2-users", "source" => 1,
+          "version" => "1.0", "arch" => "x86_64", "status" => :selected,
+          "deps" => [{ "supplements" => "autoyast(groups:users)" }])
       ]
     end
 

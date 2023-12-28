@@ -418,10 +418,10 @@ module Yast
       if !Pkg.PkgSolve(false)
         # TRANSLATORS: Error message
         msg = _("The package resolver run failed. Please check your software " \
-          "section in the autoyast profile.")
+                "section in the autoyast profile.")
         # TRANSLATORS: Error message, %s is replaced by "/var/log/YaST2/y2log"
-        msg += "\n" + _("Additional details can be found in the %s file.") %
-          "/var/log/YaST2/y2log"
+        msg += "\n" + (_("Additional details can be found in the %s file.") %
+          "/var/log/YaST2/y2log")
 
         # read the details saved by pkg-bindings
         if File.exist?(BAD_LIST_FILE)
@@ -662,8 +662,8 @@ module Yast
           # TRANSLATORS: Error message, %d is replaced by the amount of failed packages.
           error_message += _("and %d additional packages") % (failed_count - MAX_PACKAGE_VIEW)
           # TRANSLATORS: Error message, %s is replaced by "/var/log/YaST2/y2log"
-          error_message += "\n\n" + _("Details can be found in the %s file.") %
-            "/var/log/YaST2/y2log"
+          error_message += "\n\n" + (_("Details can be found in the %s file.") %
+            "/var/log/YaST2/y2log")
         end
 
         Report.Error(error_message)

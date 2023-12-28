@@ -139,7 +139,7 @@ describe "Yast::AutoInstallRules" do
       )
       expect(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"),
         "if  ( [ \"$hostaddress\" = \"10.69.57.43\" ] )   ||   " \
-          "( [ \"$mac\" = \"000c2903d288\" ] ); then exit 0; else exit 1; fi",
+        "( [ \"$mac\" = \"000c2903d288\" ] ); then exit 0; else exit 1; fi",
         env)
         .and_return("stdout" => "", "exit" => 0, "stderr" => "")
 
@@ -159,7 +159,7 @@ describe "Yast::AutoInstallRules" do
       )
       expect(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"),
         "if  ( [ \"$hostaddress\" = \"10.69.57.43\" ] )   &&   " \
-          "( [ \"$mac\" = \"000c2903d288\" ] ); then exit 0; else exit 1; fi",
+        "( [ \"$mac\" = \"000c2903d288\" ] ); then exit 0; else exit 1; fi",
         env)
         .and_return("stdout" => "", "exit" => 0, "stderr" => "")
 
@@ -178,7 +178,7 @@ describe "Yast::AutoInstallRules" do
       )
       expect(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"),
         "if  ( [ \"$hostaddress\" = \"10.69.57.43\" ] )   &&   " \
-          "( [ \"$mac\" = \"000c2903d288\" ] ); then exit 0; else exit 1; fi",
+        "( [ \"$mac\" = \"000c2903d288\" ] ); then exit 0; else exit 1; fi",
         env)
         .and_return("stdout" => "", "exit" => 0, "stderr" => "")
 
@@ -242,9 +242,9 @@ describe "Yast::AutoInstallRules" do
     let(:merge_xslt_path) { File.join(root_path, "xslt", "merge.xslt") }
     let(:xsltproc_command) do
       "/usr/bin/xsltproc --novalid --maxdepth 10000 --param replace \"'false'\" " \
-      "--param with \"'#{to_merge_path}'\" "\
-      "--output \"#{output_path}\" " \
-      "#{merge_xslt_path} #{base_profile_path}"
+        "--param with \"'#{to_merge_path}'\" "\
+        "--output \"#{output_path}\" " \
+        "#{merge_xslt_path} #{base_profile_path}"
     end
 
     before(:each) do
@@ -291,10 +291,10 @@ describe "Yast::AutoInstallRules" do
       let(:dontmerge) { ["partition"] }
       let(:xsltproc_command) do
         "/usr/bin/xsltproc --novalid --maxdepth 10000 --param replace \"'false'\" " \
-        "--param dontmerge1 \"'partition'\" " \
-        "--param with \"'#{to_merge_path}'\" "\
-        "--output \"#{output_path}\" " \
-        "#{merge_xslt_path} #{base_profile_path}"
+          "--param dontmerge1 \"'partition'\" " \
+          "--param with \"'#{to_merge_path}'\" "\
+          "--output \"#{output_path}\" " \
+          "#{merge_xslt_path} #{base_profile_path}"
       end
 
       it "does not merge those elements" do

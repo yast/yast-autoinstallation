@@ -342,7 +342,7 @@ describe Yast::Profile do
       allow(Yast::WFM).to receive(:CallFunction)
         .with("custom_auto", ["GetModified"]).and_return(true)
       allow(Yast::WFM).to receive(:CallFunction)
-        .with("custom_auto", ["Export", "target" => "default"]).and_return(custom_export)
+        .with("custom_auto", ["Export", { "target" => "default" }]).and_return(custom_export)
       allow(Yast::AutoinstClone).to receive(:General)
         .and_return("mode" => { "confirm" => false })
 
@@ -358,7 +358,7 @@ describe Yast::Profile do
     context "when a 'target' is given" do
       it "exports the module data using the given 'target'" do
         expect(Yast::WFM).to receive(:CallFunction)
-          .with("custom_auto", ["Export", "target" => "compact"])
+          .with("custom_auto", ["Export", { "target" => "compact" }])
         subject.Prepare(target: :compact)
       end
     end
@@ -461,7 +461,7 @@ describe Yast::Profile do
       reset_singleton(Y2Autoinstallation::Entries::Registry)
       allow(Yast::WFM).to receive(:CallFunction).and_call_original
       allow(Yast::WFM).to receive(:CallFunction)
-        .with("custom_auto", ["Export", "target" => "default"]).and_return(custom_export)
+        .with("custom_auto", ["Export", { "target" => "default" }]).and_return(custom_export)
     end
 
     it "exports modules data into the current profile" do

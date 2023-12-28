@@ -61,26 +61,27 @@ module Y2Autoinstallation
 
         # create a  summary
 
-        if @func == "Summary"
+        case @func
+        when "Summary"
           @ret = Yast::AutoinstSoftware.Summary
-        elsif @func == "Import"
+        when "Import"
           @ret = Yast::AutoinstSoftware.Import(@param)
-        elsif @func == "Read"
+        when "Read"
           # use the previously saved software selection if defined (bsc#956325)
           @ret = Yast::AutoinstSoftware.SavedPackageSelection || Yast::AutoinstSoftware.Read
-        elsif @func == "Reset"
+        when "Reset"
           Yast::AutoinstSoftware.Import({})
           @ret = {}
-        elsif @func == "Change"
+        when "Change"
           @ret = packageSelector
-        elsif @func == "GetModified"
+        when "GetModified"
           packages = Yast::PackagesProposal.GetResolvables("autoyast", :package) +
             Yast::PackagesProposal.GetTaboos("autoyast", :package)
           @ret = Yast::AutoinstSoftware.GetModified || !packages.empty?
-        elsif @func == "SetModified"
+        when "SetModified"
           Yast::AutoinstSoftware.SetModified
           @ret = true
-        elsif @func == "Export"
+        when "Export"
           @ret = Yast::AutoinstSoftware.Export
         else
           Yast::Builtins.y2error("unknown function: %1", @func)
@@ -163,7 +164,8 @@ module Y2Autoinstallation
             UI.ChangeWidget(Id(:localSource), :Enabled, true)
           end
           ret = UI.UserInput
-          if ret == :ok
+          case ret
+          when :ok
             if Yast::Convert.to_boolean(UI.QueryWidget(Id(:localSource), :Value))
               Yast::Pkg.TargetInit("/", false)
               break
@@ -177,10 +179,10 @@ module Y2Autoinstallation
                 Yast::Popup.Error(_("using that installation source failed"))
               end
             end
-          elsif ret == :abort
+          when :abort
             UI.CloseDialog
             return :back
-          elsif ret == :localSource
+          when :localSource
             localSource = Yast::Convert.to_boolean(
               UI.QueryWidget(Id(:localSource), :Value)
             )
@@ -250,7 +252,9 @@ module Y2Autoinstallation
         )
 
         patadd = []
-        if @ret != :back
+        if @ret == :back
+          patadd = deep_copy(Yast::AutoinstSoftware.patterns)
+        else
           all_patterns = Y2Packager::Resolvable.find(
             kind: :pattern, status: :selected
           ).map(&:name)
@@ -258,8 +262,6 @@ module Y2Autoinstallation
             "available patterns %1", all_patterns
           )
           patadd = all_patterns
-        else
-          patadd = deep_copy(Yast::AutoinstSoftware.patterns)
         end
 
         Yast::PackagesProposal.SetResolvables(
