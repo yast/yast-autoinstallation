@@ -123,7 +123,7 @@ module Yast
       )
       UI.ChangeWidget(Id(:name), :Enabled, false) if mode == :edit
       ret = :none
-      begin
+      loop do
         ret = Convert.to_symbol(UI.UserInput)
         if ret == :save
           if Convert.to_string(UI.QueryWidget(Id(:name), :Value)) == ""
@@ -172,7 +172,8 @@ module Yast
             end
           end
         end
-      end until ret == :save || ret == :cancel
+        break if ret == :save || ret == :cancel
+      end
 
       UI.CloseDialog
 
@@ -213,7 +214,7 @@ module Yast
 
       Wizard.HideAbortButton
       ret = nil
-      begin
+      loop do
         if Builtins.size(AutoinstClass.Classes) == 0
           UI.ChangeWidget(Id(:edit), :Enabled, false)
           UI.ChangeWidget(Id(:delete), :Enabled, false)
@@ -261,7 +262,8 @@ module Yast
 
           Wizard.SetContents(title, class_dialog_contents, help, true, true)
         end
-      end until ret == :back || ret == :next
+        break if ret == :back || ret == :next
+      end
 
       AutoinstClass.Save if ret == :next
       Wizard.CloseDialog
@@ -479,7 +481,7 @@ module Yast
       Wizard.DisableNextButton
 
       ret = nil
-      begin
+      loop do
         ret = UI.UserInput
         base = Convert.to_symbol(UI.QueryWidget(Id(:rbg), :CurrentButton))
         n = 0
@@ -538,7 +540,8 @@ module Yast
 
           Wizard.EnableNextButton
         end
-      end until ret == :next || ret == :back
+        break if ret == :next || ret == :back
+      end
 
       Wizard.CloseDialog
       Convert.to_symbol(ret)
@@ -591,7 +594,7 @@ module Yast
 
       ret = nil
       _next = nil
-      begin
+      loop do
         ret = UI.UserInput
         n = 0
         if ret == :next
@@ -624,7 +627,8 @@ module Yast
           Builtins.y2debug("Selected Profiles: %1", sorted_profiles)
           AutoinstClass.profile_conf = deep_copy(sorted_profiles)
         end
-      end until ret == :next || ret == :back
+        break if ret == :next || ret == :back
+      end
       Convert.to_symbol(ret)
     end
   end

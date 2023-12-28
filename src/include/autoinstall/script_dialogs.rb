@@ -331,7 +331,7 @@ module Yast
       UI.ChangeWidget(Id(:filename), :Enabled, false) if mode == :edit
 
       ret = :none
-      begin
+      loop do
         ret = Convert.to_symbol(UI.UserInput)
         case ret
         when :save
@@ -435,7 +435,8 @@ module Yast
         else
           UI.ChangeWidget(Id(:location), :Enabled, true)
         end
-      end until ret == :save || ret == :cancel || ret == :back
+        break if ret == :save || ret == :cancel || ret == :back
+      end
       ret
     end
 
@@ -454,7 +455,7 @@ module Yast
       Wizard.HideAbortButton
       Wizard.SetNextButton(:next, Label.FinishButton)
       ret = nil
-      begin
+      loop do
         ret = UI.UserInput
 
         case ret
@@ -482,7 +483,8 @@ module Yast
           end
         end
         Wizard.SetContents(title, script_dialog_contents, help, true, true)
-      end until ret == :next || ret == :back || ret == :cancel
+        break if ret == :next || ret == :back || ret == :cancel
+      end
 
       Convert.to_symbol(ret)
     end

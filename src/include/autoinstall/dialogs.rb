@@ -78,7 +78,7 @@ module Yast
 
       changed = false
       ret = :none
-      begin
+      loop do
         ret = Convert.to_symbol(UI.UserInput)
 
         new_rep = Convert.to_string(UI.QueryWidget(Id(:repository), :Value))
@@ -110,7 +110,8 @@ module Yast
             AutoinstClass.classDirChanged(new_classdir)
           end
         end
-      end until ret == :back || ret == :next
+        break if ret == :back || ret == :next
+      end
 
       Wizard.RestoreScreenShotName
       AutoinstConfig.Save if changed
@@ -222,7 +223,7 @@ module Yast
       Wizard.SetNextButton(:next, Label.CreateButton)
 
       ret = :none
-      begin
+      loop do
         ret = Convert.to_symbol(UI.UserInput)
         if ret == :next
           AutoinstClone.additional = Convert.convert(
@@ -238,7 +239,8 @@ module Yast
           Profile.changed = true
           Popup.ClearFeedback
         end
-      end until ret == :next || ret == :back
+        break if ret == :next || ret == :back
+      end
       Wizard.CloseDialog
       ret
     end

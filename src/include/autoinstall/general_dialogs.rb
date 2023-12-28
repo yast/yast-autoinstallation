@@ -175,7 +175,7 @@ module Yast
       Wizard.SetNextButton(:next, Label.NextButton)
 
       ret = nil
-      begin
+      loop do
         ret = UI.UserInput
         if ret == :next
           confirm = Convert.to_boolean(UI.QueryWidget(Id(:confirm), :Value))
@@ -239,7 +239,8 @@ module Yast
           )
           AutoinstGeneral.signature_handling = deep_copy(signature_handling)
         end
-      end until ret == :next || ret == :back || ret == :cancel
+        break if ret == :next || ret == :back || ret == :cancel
+      end
       Convert.to_symbol(ret)
     end
 
@@ -384,7 +385,7 @@ module Yast
         UI.ChangeWidget(Id(:selValue), :Enabled, true)
         UI.ChangeWidget(Id(:selection), :Enabled, true)
       end
-      begin
+      loop do
         if Builtins.size(
           Convert.to_list(UI.QueryWidget(Id(:selection), :Items))
         ) == 0
@@ -529,7 +530,8 @@ module Yast
             end
           end
         end
-      end until ret == :abort || ret == :ok
+        break if ret == :abort || ret == :ok
+      end
       UI.CloseDialog
 
       deep_copy(askList)
@@ -716,7 +718,7 @@ module Yast
       ret = nil
       dialog_id = -1
       element_id = -1
-      begin
+      loop do
         if Builtins.size(Convert.to_list(UI.QueryWidget(Id(:dialogs), :Items))) == 0
           UI.ChangeWidget(Id(:addQuestion), :Enabled, false)
           UI.ChangeWidget(Id(:editQuestion), :Enabled, false)
@@ -1063,7 +1065,8 @@ module Yast
         UI.ChangeWidget(Id(:dialogs), :CurrentItem, dialog_id)
 
         AutoinstGeneral.askList = deep_copy(askList) if ret == :next
-      end until ret == :next || ret == :back || ret == :cancel
+        break if ret == :next || ret == :back || ret == :cancel
+      end
       Convert.to_symbol(ret)
     end
 
