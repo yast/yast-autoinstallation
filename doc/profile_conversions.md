@@ -37,7 +37,7 @@ data types to the old ones. This is useful if you want to use a new profile
 in an old system (SLE15-SP2 and older). The old AutoYaST cannot read the new
 data types and it would fail.
 
-The [`old_types.xslt`](../xslt/old_types.xslt) file converts the short
+The [old_types.xslt](../xslt/old_types.xslt) file converts the short
 attributes `t="boolean"` to long attributes `config:type="boolean"`.
 
 ```shell
