@@ -966,10 +966,10 @@ module Yast
           end
         when :addDialog
           max = -1
-          Builtins.foreach(askList) do |m|
-            if Ops.get_string(m, "stage", "initial") == stage &&
-                Ops.greater_than(Ops.get_integer(m, "dialog", 0), max)
-              max = Ops.get_integer(m, "dialog", 0)
+          Builtins.foreach(askList) do |ask_item|
+            if Ops.get_string(ask_item, "stage", "initial") == stage &&
+                Ops.greater_than(Ops.get_integer(ask_item, "dialog", 0), max)
+              max = Ops.get_integer(ask_item, "dialog", 0)
             end
           end
           max = Ops.add(max, 1)
@@ -999,17 +999,17 @@ module Yast
         end
         dialogs = []
         done2 = { "initial" => [], "cont" => [] }
-        Builtins.foreach(askList) do |m|
-          if Ops.get_string(m, "stage", "initial") == stage &&
+        Builtins.foreach(askList) do |ask_item|
+          if Ops.get_string(ask_item, "stage", "initial") == stage &&
               !Builtins.contains(
                 Ops.get(done2, stage, []),
-                Ops.get_integer(m, "dialog", -1)
+                Ops.get_integer(ask_item, "dialog", -1)
               )
             dialogs = Builtins.add(
               dialogs,
               Item(
-                Id(Ops.get_integer(m, "dialog", -1)),
-                Ops.get_string(m, "title", "")
+                Id(Ops.get_integer(ask_item, "dialog", -1)),
+                Ops.get_string(ask_item, "title", "")
               )
             )
             Ops.set(
@@ -1017,7 +1017,7 @@ module Yast
               stage,
               Builtins.add(
                 Ops.get(done2, stage, []),
-                Ops.get_integer(m, "dialog", -1)
+                Ops.get_integer(ask_item, "dialog", -1)
               )
             )
           end
@@ -1051,11 +1051,11 @@ module Yast
         )
         UI.ChangeWidget(Id(:hlp), :Value, Ops.get_string(d2, [0, "help"], ""))
         id_counter2 = 0
-        Builtins.foreach(d2) do |m|
-          id_counter2 = Ops.get_integer(m, "element", id_counter2)
+        Builtins.foreach(d2) do |ask_item|
+          id_counter2 = Ops.get_integer(ask_item, "element", id_counter2)
           questions = Builtins.add(
             questions,
-            Item(Id(id_counter2), Ops.get_string(m, "question", ""))
+            Item(Id(id_counter2), Ops.get_string(ask_item, "question", ""))
           )
           id_counter2 = Ops.add(id_counter2, 1)
         end
