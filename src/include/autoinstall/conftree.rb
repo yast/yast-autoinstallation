@@ -332,81 +332,81 @@ module Yast
     # Sets the menus in the wizard.
     # @return [void]
     def menus
-      _Menu = []
-      _Menu = Wizard.AddMenu(_Menu, _("&File"), "file-menu")
-      _Menu = Wizard.AddMenu(_Menu, _("&View"), "view-menu")
-      _Menu = Wizard.AddMenu(_Menu, _("&Classes"), "class-menu")
-      _Menu = Wizard.AddMenu(_Menu, _("&Tools"), "tools-menu")
+      menu = []
+      menu = Wizard.AddMenu(menu, _("&File"), "file-menu")
+      menu = Wizard.AddMenu(menu, _("&View"), "view-menu")
+      menu = Wizard.AddMenu(menu, _("&Classes"), "class-menu")
+      menu = Wizard.AddMenu(menu, _("&Tools"), "tools-menu")
 
-      _Menu = Wizard.AddMenuEntry(_Menu, "file-menu", _("&New"), "menu_new")
-      _Menu = Wizard.AddMenuEntry(_Menu, "file-menu", _("&Open"), "menu_open")
-      _Menu = Wizard.AddMenuEntry(_Menu, "file-menu", _("&Save"), "menu_save")
-      _Menu = Wizard.AddMenuEntry(
-        _Menu,
+      menu = Wizard.AddMenuEntry(menu, "file-menu", _("&New"), "menu_new")
+      menu = Wizard.AddMenuEntry(menu, "file-menu", _("&Open"), "menu_open")
+      menu = Wizard.AddMenuEntry(menu, "file-menu", _("&Save"), "menu_save")
+      menu = Wizard.AddMenuEntry(
+        menu,
         "file-menu",
         _("Save &As"),
         "menu_saveas"
       )
-      _Menu = Wizard.AddMenuEntry(
-        _Menu,
+      menu = Wizard.AddMenuEntry(
+        menu,
         "file-menu",
         _("Settin&gs"),
         "menu_settings"
       )
-      _Menu = Wizard.AddMenuEntry(
-        _Menu,
+      menu = Wizard.AddMenuEntry(
+        menu,
         "file-menu",
         AutoinstConfig.ProfileEncrypted ? _("Change to Decrypted") : _("Change to Encrypted"),
         "change_encryption"
       )
-      _Menu = Wizard.AddMenuEntry(
-        _Menu,
+      menu = Wizard.AddMenuEntry(
+        menu,
         "file-menu",
         _("Apply Profile to this System"),
         "write_to_system"
       )
-      _Menu = Wizard.AddMenuEntry(_Menu, "file-menu", _("E&xit"), "menu_exit")
-      _Menu = if @show_source == true
+      menu = Wizard.AddMenuEntry(menu, "file-menu", _("E&xit"), "menu_exit")
+      menu = if @show_source == true
         Wizard.AddMenuEntry(
-          _Menu,
+          menu,
           "view-menu",
           _("Configu&ration Tree"),
           "menu_tree"
         )
       else
         Wizard.AddMenuEntry(
-          _Menu,
+          menu,
           "view-menu",
           _("So&urce"),
           "menu_source"
         )
       end
-      _Menu = Wizard.AddMenuEntry(
-        _Menu,
+      menu = Wizard.AddMenuEntry(
+        menu,
         "class-menu",
         _("Cla&sses"),
         "menu_classes"
       )
-      _Menu = Wizard.AddMenuEntry(
-        _Menu,
+      menu = Wizard.AddMenuEntry(
+        menu,
         "class-menu",
         _("Me&rge Classes"),
         "menu_merge"
       )
 
-      _Menu = Wizard.AddMenuEntry(
-        _Menu,
+      menu = Wizard.AddMenuEntry(
+        menu,
         "tools-menu",
         _("Create Reference Pro&file"),
         "menu_clone"
       )
-      _Menu = Wizard.AddMenuEntry(
-        _Menu,
+      menu = Wizard.AddMenuEntry(
+        menu,
         "tools-menu",
         _("Check &Validity of Profile"),
         "menu_valid"
       )
-      Wizard.CreateMenu(_Menu)
+      Wizard.CreateMenu(menu)
       nil
     end
 
@@ -458,8 +458,8 @@ module Yast
     #
     # @return [Symbol]
     def MainDialog
-      _Icons = {}
-      Ops.set(_Icons, "Net_advanced", "network_advanced")
+      icons = {}
+      Ops.set(icons, "Net_advanced", "network_advanced")
       ret = nil
       currentGroup = "System"
       currentModule = "general"
@@ -596,7 +596,7 @@ module Yast
                 true
               )
               Wizard.SetTitleIcon(
-                Ops.get_string(_Icons, group, Builtins.tolower(group))
+                Ops.get_string(icons, group, Builtins.tolower(group))
               )
               updateButtons(modulename)
             end
