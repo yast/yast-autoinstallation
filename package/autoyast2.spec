@@ -22,7 +22,7 @@
 %endif
 
 Name:           autoyast2
-Version:        4.6.4
+Version:        4.6.5
 Release:        0
 Summary:        YaST2 - Automated Installation
 License:        GPL-2.0-only
