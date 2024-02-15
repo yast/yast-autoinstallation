@@ -8,6 +8,13 @@ module Yast
   class AutoinstFunctionsClass < Module
     include Yast::Logger
 
+    # special mapping for handling dropped or renamed products,
+    # a map with <old product name> => <new_product name> values
+    PRODUCT_MAPPING = {
+      # the SLE_HPC product was dropped and replaced by standard SLES in SP6
+      "SLE_HPC" => "SLES"
+    }.freeze
+
     def main
       textdomain "installation"
 
@@ -220,7 +227,7 @@ module Yast
     # FIXME: Currently it returns first found product name. It should be no
     # problem since this section was unused in AY installation so far.
     # However, it might be needed to add a special handling for multiple
-    # poducts in the future. At least we can filter out products which are
+    # products in the future. At least we can filter out products which are
     # not base products.
     #
     # @param profile [Hash] AutoYaST profile
@@ -234,7 +241,15 @@ module Yast
         return nil
       end
 
-      software.fetch_as_array("products").first
+      product = software.fetch_as_array("products").first
+      new_product = PRODUCT_MAPPING[product]
+
+      if new_product
+        log.info "Replacing requested product #{product.inspect} with #{new_product.inspect}"
+        return new_product
+      end
+
+      product
     end
   end
 
