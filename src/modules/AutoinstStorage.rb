@@ -320,7 +320,7 @@ module Yast
       preprocessor.run(settings)
     end
 
-    ALLOWED_OVERRIDES = [:lvm, :encryption_password].freeze
+    ALLOWED_OVERRIDES = [:lvm, :lvm_vg_reuse, :encryption_password].freeze
     private_constant :ALLOWED_OVERRIDES
     DELETE_RESIZE_OVERRIDES = [
       :windows_delete_mode, :linux_delete_mode, :other_delete_mode, :resize_windows
