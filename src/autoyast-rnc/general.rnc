@@ -35,7 +35,16 @@ general = element general {
       }? &
       element storage {
           MAP,
-          element start_multipath { BOOLEAN }?
+          element start_multipath { BOOLEAN }? &
+          element proposal {
+            MAP,
+            element lvm { BOOLEAN }? &
+            element resize_windows { BOOLEAN }? &
+            element windows_delete_mode { SYMBOL }? &
+            element linux_delete_mode { SYMBOL }? &
+            element other_delete_mode { SYMBOL }? &
+            element encryption_delete_mode { STRING }?
+          }?
       }? &
       element wait {
           MAP,
