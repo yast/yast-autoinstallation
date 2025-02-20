@@ -28,6 +28,7 @@ module Yast
         "children"                 => "child",
         "chroot-scripts"           => "script",
         "classes"                  => "class",
+        "crypt_pervasive_apqns"    => "crypt_pervasive_apqn",
         "denyusers"                => "denyuser",
         "device_map"               => "device_map_entry",
         "device_map_entry"         => "device",
