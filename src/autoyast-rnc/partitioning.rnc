@@ -66,6 +66,8 @@ y2_partition =
   | part_crypt_label
   | part_crypt_cipher
   | part_crypt_key_size
+  | part_crypt_pervasive_apqns
+  | part_crypt_pervasive_key_type
   | part_filesystem
   | part_format
   | part_fs_options
@@ -117,6 +119,12 @@ part_crypt_pbkdf = element crypt_pbkdf { SYMBOL }
 part_crypt_label = element crypt_label { STRING }
 part_crypt_cipher = element crypt_cipher { STRING }
 part_crypt_key_size = element crypt_key_size { INTEGER }
+part_crypt_pervasive_apqns =
+  element crypt_pervasive_apqns {
+    LIST,
+    element crypt_pervasive_apqn { STRING }
+  }
+part_crypt_pervasive_key_type = element crypt_pervasive_key_type { STRING_ATTR, ("CCA-AESCIPHER" | "CCA-AESDATA") }
 part_filesystem =
   element filesystem { SYMBOL }
 part_format =
