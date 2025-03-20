@@ -71,6 +71,30 @@ describe "Yast::ProfileLocation" do
       end
     end
 
+    context "when the profile does not exist" do
+      before do
+        allow(subject).to receive(:Get).and_return(false)
+      end
+
+      it "reports an error" do
+        expect(Yast::Report).to receive(:Error)
+        expect(subject.Process).to eq(false)
+      end
+
+      context "and fetch errors are disabled" do
+        around do |example|
+          ENV["YAST_SKIP_PROFILE_FETCH_ERROR"] = "1"
+          example.run
+          ENV.delete("YAST_SKIP_PROFILE_FETCH_ERROR")
+        end
+
+        it "does not report an error" do
+          expect(Yast::Report).to_not receive(:Error)
+          expect(subject.Process).to eq(false)
+        end
+      end
+    end
+
     context "when the profile is an erb file" do
       let(:filepath) { "autoinst.erb" }
 
