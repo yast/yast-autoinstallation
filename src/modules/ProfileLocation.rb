@@ -123,7 +123,7 @@ module Yast
         if !ret
           # autoyast hit an error while fetching it's config file
           error = _("An error occurred while fetching the profile:\n")
-          Report.Error(Ops.add(error, @GET_error))
+          Report.Error(Ops.add(error, @GET_error)) if ENV["YAST_SKIP_PROFILE_FETCH_ERROR"] != "1"
           return false
         end
         tmp = SCR.Read(path(".target.string"), localfile)
