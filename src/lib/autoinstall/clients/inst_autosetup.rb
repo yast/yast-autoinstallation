@@ -430,6 +430,10 @@ module Y2Autoinstallation
       #
       # @return [Boolean] Determine whether the import was successful
       def autosetup_security
+        require "installation/security_settings"
+        # Force to propose defaults for security and security policy configuration
+        @settings ||= ::Installation::SecuritySettings.instance
+
         result = importer.import_entry("security")
         result.sections.each { |e| Profile.remove_sections(e) }
         result.success?
