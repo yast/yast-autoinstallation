@@ -70,6 +70,7 @@ module Y2Autoinstallation
           _("Create partition plans"),
           _("Configure Bootloader"),
           _("Configure security settings"),
+          _("Configure firewall"),
           _("Set up configuration management system"),
           _("Registration"),
           _("Configure Kdump"),
@@ -79,7 +80,6 @@ module Y2Autoinstallation
           _("Import SSH keys/settings"),
           _("Set up user defined configuration files"),
           _("Confirm License"),
-          _("Configure firewall"),
           _("Check security policy")
         ]
 
@@ -89,6 +89,7 @@ module Y2Autoinstallation
           _("Creating partition plans..."),
           _("Configuring Bootloader..."),
           _("Configuring security settings"),
+          _("Configuring the firewall"),
           _("Setting up configuration management system..."),
           _("Registering the system..."),
           _("Configuring Kdump..."),
@@ -98,7 +99,6 @@ module Y2Autoinstallation
           _("Importing SSH keys/settings..."),
           _("Setting up user defined configuration files..."),
           _("Confirming License..."),
-          _("Configuring the firewall"),
           _("Checking the security policy")
         ]
 
@@ -254,6 +254,13 @@ module Y2Autoinstallation
 
         Progress.NextStage
 
+        #
+        # Run firewall configuration according to the profile
+        #
+        autosetup_firewall
+
+        Progress.NextStage
+
         # The configuration_management has to be called before software selection.
         # So the software selection is aware and can manage packages
         # needed by the configuration_management.
@@ -384,12 +391,6 @@ module Y2Autoinstallation
             return :abort if result == :abort && Yast::Popup.ConfirmAbort(:painless)
           end
         end
-
-        Progress.NextStage
-        #
-        # Run firewall configuration according to the profile
-        #
-        autosetup_firewall
 
         Progress.NextStage
 
