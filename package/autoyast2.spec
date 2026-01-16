@@ -123,11 +123,6 @@ Requires:       yast2-bootloader
 Requires:       yast2-core
 Requires:       yast2-country
 
-# require the ncurses UI only in openSUSE Tumbleweed or Leap
-%if 0%{?suse_version} == 1699 || 0%{?is_opensuse}
-Requires:       yast2-ncurses
-%endif
-
 # ProductSpec API
 Requires:       yast2-packager >= 4.4.13
 # ServicesManagerTargetClass::BaseTargets
