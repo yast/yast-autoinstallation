@@ -1,7 +1,7 @@
 #
 # spec file for package autoyast2
 #
-# Copyright (c) 2013 SUSE LINUX Products GmbH, Nuernberg, Germany.
+# Copyright (c) 2026 SUSE LLC
 #
 # All modifications and additions to the file contributed by third parties
 # remain the property of their copyright owners, unless otherwise agreed
@@ -27,7 +27,7 @@ Release:        0
 Summary:        YaST2 - Automated Installation
 License:        GPL-2.0-only
 Group:          System/YaST
-Url:            https://github.com/yast/yast-autoinstallation
+URL:            https://github.com/yast/yast-autoinstallation
 
 Source0:        autoyast2-%{version}.tar.bz2
 Source1:        autoyast_en_html.tar.bz2
@@ -45,14 +45,14 @@ BuildRequires:  rubygem(%{rb_default_ruby_abi}:rspec)
 BuildRequires:  yast2 >= 4.4.38
 # FileSystems.read_default_subvol_from_target
 BuildRequires:  yast2-xml
-BuildRequires:  yast2-transfer
 BuildRequires:  yast2-services-manager
+BuildRequires:  yast2-transfer
 # ProductSpec API
 BuildRequires:  yast2-packager >= 4.4.13
-BuildRequires:  yast2-update >= 3.3.0
+BuildRequires:  yast2-country
 BuildRequires:  yast2-network >= 3.1.145
 BuildRequires:  yast2-slp
-BuildRequires:  yast2-country
+BuildRequires:  yast2-update >= 3.3.0
 # Support for SecurityPolicies
 BuildRequires:  yast2-security >= 4.5.3
 # Required for test suite testing one time sync
@@ -87,12 +87,12 @@ Requires:       yast2-ruby-bindings >= 1.0.0
 Conflicts:      yast2-installation < 3.1.166
 
 Provides:       yast2-config-autoinst
-Provides:       yast2-module-autoinst
 Provides:       yast2-lib-autoinst
+Provides:       yast2-module-autoinst
 
 Obsoletes:      yast2-config-autoinst
-Obsoletes:      yast2-module-autoinst
 Obsoletes:      yast2-lib-autoinst
+Obsoletes:      yast2-module-autoinst
 
 BuildArch:      noarch
 
@@ -122,7 +122,6 @@ Requires:       yast2
 Requires:       yast2-bootloader
 Requires:       yast2-core
 Requires:       yast2-country
-
 # ProductSpec API
 Requires:       yast2-packager >= 4.4.13
 # ServicesManagerTargetClass::BaseTargets
