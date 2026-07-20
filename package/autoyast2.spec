@@ -22,7 +22,7 @@
 %endif
 
 Name:           autoyast2
-Version:        5.0.9
+Version:        5.0.10
 Release:        0
 Summary:        YaST2 - Automated Installation
 License:        GPL-2.0-only
@@ -158,12 +158,6 @@ generated with the autoyast2 package.
 %install
 %yast_install
 %yast_metainfo
-
-# Do not *blindly* remove the suse_update_desktop_file calls here. It is
-# different from the code in the yast_install macro.
-for d in %{buildroot}%{_datadir}/autoinstall/modules/*.desktop ; do
-    %suse_update_desktop_file $d
-done
 
 %post
 %{fillup_only -n autoinstall}
