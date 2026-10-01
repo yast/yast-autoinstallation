@@ -241,7 +241,8 @@ describe "Yast::AutoInstallRules" do
     let(:dontmerge) { [] }
     let(:merge_xslt_path) { File.join(root_path, "xslt", "merge.xslt") }
     let(:xsltproc_command) do
-      "/usr/bin/xsltproc --novalid --maxdepth 10000 --param replace \"'false'\" " \
+      "/usr/bin/xsltproc --novalid --maxdepth 10000 --maxvars 30000 " \
+      "--param replace \"'false'\" " \
       "--param with \"'#{to_merge_path}'\" "\
       "--output \"#{output_path}\" " \
       "#{merge_xslt_path} #{base_profile_path}"
@@ -290,7 +291,8 @@ describe "Yast::AutoInstallRules" do
       end
       let(:dontmerge) { ["partition"] }
       let(:xsltproc_command) do
-        "/usr/bin/xsltproc --novalid --maxdepth 10000 --param replace \"'false'\" " \
+        "/usr/bin/xsltproc --novalid --maxdepth 10000 --maxvars 30000 " \
+        "--param replace \"'false'\" " \
         "--param dontmerge1 \"'partition'\" " \
         "--param with \"'#{to_merge_path}'\" "\
         "--output \"#{output_path}\" " \
