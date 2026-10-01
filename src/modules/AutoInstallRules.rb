@@ -875,7 +875,7 @@ module Yast
     # AutoinstClass one.
 
     MERGE_CMD = "/usr/bin/xsltproc".freeze
-    MERGE_DEFAULTS = "--novalid --maxdepth 10000 --param replace \"'false'\"".freeze
+    MERGE_DEFAULTS = "--novalid --maxdepth 10000 --maxvars 30000 --param replace \"'false'\"".freeze
     MERGE_XSLT_PATH = "/usr/share/autoinstall/xslt/merge.xslt".freeze
 
     # Merges the given profiles
